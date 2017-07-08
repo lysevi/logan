@@ -1,46 +1,50 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.2
 
-Item {
+Rectangle {
     property alias logModel: tableView.model
 
+    Component {
+        id: logLineDelegate
+        Text{
+            text: modelData
+        }
+    }
+
+    Component {
+        id: rowDelegate
+        Item{
+            width: parent.width
+            height: 15*count
+            Row {
+                anchors.fill: parent
+                spacing: 20
+
+                Text {
+                    id: titleColumn
+                    text: timestamp
+                    elide: Text.ElideRight
+                }
+
+                Column {
+                    Repeater {
+                        model: message
+                        delegate: logLineDelegate
+                    }
+                }
+            }
+        }
+
+    }
     ScrollView{
         anchors.fill: parent
         ListView {
             id: tableView
             anchors.fill: parent
-
-            delegate: Row {
-                width: parent.width
-                spacing: 20
-                Text {
-                    id: titleColumn
-                    text: timestamp
-                    elide: Text.ElideRight
-                    anchors.rightMargin: 10
-                }
-
-                Column {
-                    anchors.margins: 5
-                    Repeater {
-                        model: message
-
-                        anchors {
-                            fill: parent
-                            margins: 2
-                        }
-                        delegate:/*Rectangle {
-                            anchors {left: parent.left; right: parent.right; }
-                            color: ( index % 2 == 0 ) ? "white" : "lightgrey"*/
-                            Text{
-                                text: modelData
-//                                anchors.verticalCenter: parent.verticalCenter
-//                                anchors.left: parent.left
-                            }
-                        //}
-                    }
-                }
-            }
+            delegate: rowDelegate
+            highlight: Rectangle { color: "lightsteelblue"; radius: 5 }
+            focus: true
+            interactive: true
         }
     }
 }

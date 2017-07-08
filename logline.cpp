@@ -21,3 +21,8 @@ QVariant LogLine::message() const{
     qDebug()<<"read messages";
     return m_variant_message;
 }
+
+
+int LogLine::count()const{
+    return m_message.size();
+}
