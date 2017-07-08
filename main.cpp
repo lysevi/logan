@@ -15,11 +15,12 @@ int main(int argc, char *argv[])
     dataList.append(new LogLine(QDateTime::currentDateTime(), "m1"));
     dataList.append(new LogLine(QDateTime::currentDateTimeUtc(), "m2"));
 
-    QQuickView view;
-    view.setResizeMode(QQuickView::SizeRootObjectToView);
-    QQmlContext *ctxt = view.rootContext();
-    ctxt->setContextProperty("myModel", QVariant::fromValue(dataList));
-    view.setSource(QUrl("qrc:/main.qml"));
+    QQmlApplicationEngine engine;
+    auto ctx=engine.rootContext();
+    ctx->setContextProperty("myModel", QVariant::fromValue(dataList));
+    engine.load(QUrl(QLatin1String("qrc:/main.qml")));
+    if (engine.rootObjects().isEmpty())
+        return -1;
 
     return app.exec();
 }
