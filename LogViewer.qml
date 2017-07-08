@@ -7,6 +7,8 @@ Item {
     property int fontSize: 10
     property string fontFace: "Monospace"
 
+    property var editorFont: fontSize + "pt \"" + fontFace + "\"" + ", monospace"
+
     FontMetrics {
         id: fontMetrics
         font.family: viewerRoot.fontFace
@@ -74,24 +76,26 @@ Item {
             width: tableView.width/4*3
             delegate: Rectangle{
                 height: lineHeight*modelData.count
-                border.width: 2
+                border.width: 1
                 border.color: "grey"
-                Column {
+                Canvas{
+                    id: lineCanvas
                     anchors.fill: parent
-                    Repeater {
-                        model: modelData.message
-
-                        delegate: Rectangle{
-                            border.width: 0
-                            color: ( index % 2 == 0 ) ? "white" : "lightblue"
-                            height: lineHeight
-                            width: messageColumn.width
-                            Text {
-                                text: modelData
-                            }
+                    //height: lineHeight + 2
+                    onPaint: {
+                        var ctx = lineCanvas.getContext('2d');
+                        //console.log("modelData[i]")
+                        var x=10
+                        var y=lineHeight*0.75
+                        ctx.font=editorFont;
+                        for(var i=0;i<modelData.count;++i){
+                            //console.log(modelData.message[i],x, y)
+                            ctx.fillText(modelData.message[i], x, y);
+                            y=y+lineHeight
                         }
-                    }
 
+                        //ctx.fillText("qteveloper", 50, 150);
+                    }
                 }
             }
         }
