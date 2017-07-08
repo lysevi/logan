@@ -12,9 +12,12 @@ int main(int argc, char *argv[])
     QGuiApplication app(argc, argv);
 
     QList<QObject*> dataList;
-    dataList.append(new LogLine(QDateTime::currentDateTime(), "m1"));
-    dataList.append(new LogLine(QDateTime::currentDateTimeUtc(), "m2"));
-
+    auto curDT=QDateTime::currentDateTime();
+    for(int i=0;i<100;++i){
+        dataList.append(new LogLine(curDT, QStringList({"m1"+QString::number(i), "m11"+QString::number(i), "m111"+QString::number(i)})));
+        dataList.append(new LogLine(curDT.addSecs(10), QStringList({"m2"+QString::number(i)})));
+        curDT=curDT.addSecs(i*60);
+    }
     QQmlApplicationEngine engine;
     auto ctx=engine.rootContext();
     ctx->setContextProperty("myModel", QVariant::fromValue(dataList));
