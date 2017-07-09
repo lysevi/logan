@@ -10,7 +10,7 @@ ApplicationWindow {
     title: qsTr("LView")
 
     LogViewer {
-        logModel: myModel
+        logModel: logfile
         anchors.fill: parent
     }
 
