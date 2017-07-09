@@ -92,8 +92,8 @@ Item {
                             var y=lineHeight*0.75
                             ctx.font=editorFont;
                             for(var i=0;i<modelData.count;++i){
-                                console.log(modelData.messages[i].message,x, y)
-                                ctx.fillText(modelData.messages[i].message, x, y);
+                                console.log(modelData.messages[i].shortMessage,x, y)
+                                ctx.fillText(modelData.messages[i].shortMessage, x, y);
 
                                 y=y+lineHeight
                             }

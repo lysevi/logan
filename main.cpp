@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
     for(int i=0;i<50000;++i){
         QList<QObject*> ql1;
         ql1<<new Message("m1"+QString::number(i))
-          <<new Message("m11"+QString::number(i))
+          <<new Message("line1\nline"+QString::number(i))
          <<new Message("m111"+QString::number(i));
 
         dataList.append(new LogLine(curDT,ql1));
