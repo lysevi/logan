@@ -4,14 +4,16 @@ import QtQuick.Layouts 1.3
 
 Item {
     id: viewerRoot
-    property var logModel: nil
+    property var logModel:null
     property int fontSize: 10
     property string fontFace: "Monospace"
 
     property var editorFont: fontSize + "pt \"" + fontFace + "\"" + ", monospace"
 
     Component.onCompleted: {
-        tableView.model=logModel.lines
+        if(logModel!==null){
+            tableView.model=logModel.lines
+        }
     }
 
     FontMetrics {
@@ -65,10 +67,10 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            TableViewColumn{
-                role:"timestamp"
-                title:"time"
+            onWidthChanged: {
+                messageColumn.width=tableView.width/4*3
             }
+
 
             rowDelegate: Rectangle {
                 height: lineHeight*modelData.count
@@ -80,6 +82,11 @@ Item {
                     var baseColor = styleData.alternate?myPalette.alternateBase:myPalette.base
                     return styleData.selected?myPalette.highlight:baseColor
                 }
+            }
+
+            TableViewColumn{
+                role:"timestamp"
+                title:"time"
             }
 
             TableViewColumn {
@@ -99,6 +106,14 @@ Item {
                         Canvas{
                             id: lineCanvas
                             anchors.fill: parent
+
+                            onWidthChanged: {
+                                lineCanvas.requestPaint();
+                            }
+
+                            onHeightChanged: {
+                                lineCanvas.requestPaint();
+                            }
 
                             //height: lineHeight + 2
                             onPaint: {
@@ -144,7 +159,9 @@ Item {
             Layout.alignment: Qt.AlignBottom
             anchors.left: linesLebel.right
             anchors.top: linesLebel.top
-            text:logModel.count
+            text: {
+                return logModel==null?0:logModel.count
+            }
         }
 
     }
