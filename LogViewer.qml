@@ -55,6 +55,7 @@ Item {
         TableView {
             id: tableView
             width: parent.width
+            alternatingRowColors:true
             focus: true
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: true
@@ -67,10 +68,16 @@ Item {
 
 
             rowDelegate: Rectangle {
+                id: rowDelegateId
                 height: lineHeight*modelData.count
                 SystemPalette {
                     id: myPalette;
                     colorGroup: SystemPalette.Active
+                }
+                border.width: 1
+                border.color: {
+                    var baseColor = styleData.alternate?myPalette.alternateBase:myPalette.base
+                    return styleData.selected?myPalette.highlight:baseColor
                 }
                 color: {
                     var baseColor = styleData.alternate?myPalette.alternateBase:myPalette.base
@@ -94,18 +101,18 @@ Item {
 
                 title: "message"
                 width: tableView.width/4*3
-                delegate: Rectangle{
+                delegate: Item{
                     id: canvasRect
                     height: lineHeight*modelData.count
-                    border.width: 1
-                    SystemPalette {
-                        id: myRowPalette;
-                        colorGroup: SystemPalette.Active
-                    }
-                    border.color: {
-                        var baseColor = styleData.alternate?myRowPalette.alternateBase:myRowPalette.base
-                        return styleData.selected?myRowPalette.highlight:baseColor
-                    }
+//                    border.width: 0
+//                    SystemPalette {
+//                        id: myRowPalette;
+//                        colorGroup: SystemPalette.Active
+//                    }
+//                    border.color: {
+//                        var baseColor = styleData.alternate?myRowPalette.alternateBase:myRowPalette.base
+//                        return styleData.selected?myRowPalette.highlight:baseColor
+//                    }
 
                     MouseArea{
                         anchors.fill: parent
@@ -125,7 +132,6 @@ Item {
                             //height: lineHeight + 2
                             onPaint: {
                                 var ctx = lineCanvas.getContext('2d');
-                                ctx.clearRect(0,0, lineCanvas.width, lineCanvas.height)
                                 ctx.renderStrategy =Canvas.Cooperative
                                 //console.log("modelData[i]")
                                 var x=10
