@@ -72,39 +72,52 @@ Item {
 
         TableViewColumn {
             id: messageColumn
+
             title: "message"
             width: tableView.width/4*3
             delegate: Rectangle{
+                id: canvasRect
                 height: lineHeight*modelData.count
                 border.width: 1
-                border.color: "grey"
+                border.color: "lightgrey"
+
                 MouseArea{
                     anchors.fill: parent
 
                     Canvas{
                         id: lineCanvas
                         anchors.fill: parent
+
                         //height: lineHeight + 2
                         onPaint: {
                             var ctx = lineCanvas.getContext('2d');
+                            ctx.clearRect(0,0, lineCanvas.width, lineCanvas.height)
                             //console.log("modelData[i]")
                             var x=10
                             var y=lineHeight*0.75
                             ctx.font=editorFont;
+                            ctx.beginPath()
+                            ctx.strokeStyle = 'black'
                             for(var i=0;i<modelData.count;++i){
                                 console.log(modelData.messages[i].shortMessage,x, y)
-                                ctx.fillText(modelData.messages[i].shortMessage, x, y);
+                                ctx.strokeText(modelData.messages[i].shortMessage, x, y);
 
                                 y=y+lineHeight
                             }
+                            ctx.stroke()
                         }
                     }
+
                     onClicked: {
-                        //lineCanvas.update();
-                        console.log("click on ", modelData.message)
+                        console.log("click on ", styleData.row)
+                        tableView.selection.clear()
+                        tableView.selection.select(styleData.row)
+                        lineCanvas.requestPaint()
                     }
                 }
             }
+
+
         }
     }
 
