@@ -5,6 +5,7 @@
 
 #include <QObject>
 #include "log.h"
+#include "windowcontroller.h"
 
 Log* createLogMock(QDateTime curDT, const QString&name){
     Log* ll;
@@ -40,19 +41,29 @@ int main(int argc, char *argv[])
 
 
     QQmlApplicationEngine engine;
-//    auto ctx=engine.rootContext();
-//    ctx->setContextProperty("logfile", QVariant::fromValue(ll));
+    //    auto ctx=engine.rootContext();
+    //    ctx->setContextProperty("logfile", QVariant::fromValue(ll));
     engine.load(QUrl(QLatin1String("qrc:/main.qml")));
     if (engine.rootObjects().isEmpty())
         return -1;
 
     auto rootObject=engine.rootObjects().first();
-    auto logs=createLogs(10);
+    qDebug()<<"rootObject:"<<rootObject->objectName();
+    WindowController *wc=new WindowController();
+    QObject::connect(rootObject, SIGNAL(updateAllSignal(QString)),
+                     wc,  SLOT(updateAllSlot(QString)));
+
+    auto logs=createLogs(5);
+
+    wc->addLogs(logs);
+
     for(auto&v:logs){
         QVariant returnedValue;
         QMetaObject::invokeMethod(rootObject, "addTab",
                                   Q_RETURN_ARG(QVariant, returnedValue),
                                   Q_ARG(QVariant, v->name()), Q_ARG(QVariant, QVariant::fromValue(v)));
     }
+
+
     return app.exec();
 }

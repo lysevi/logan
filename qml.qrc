@@ -3,5 +3,6 @@
         <file>main.qml</file>
         <file>qtquickcontrols2.conf</file>
         <file>LogViewer.qml</file>
+        <file>icons/update.svg</file>
     </qresource>
 </RCC>

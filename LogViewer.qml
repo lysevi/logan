@@ -7,14 +7,7 @@ Item {
     property var logModel:null
     property int fontSize: 10
     property string fontFace: "Monospace"
-
     property var editorFont: fontSize + "pt \"" + fontFace + "\"" + ", monospace"
-
-    Component.onCompleted: {
-        if(logModel!==null){
-            tableView.model=logModel.lines
-        }
-    }
 
     FontMetrics {
         id: fontMetrics
@@ -66,6 +59,7 @@ Item {
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: true
             Layout.fillWidth: true
+            model:logModel.lines
 
             onWidthChanged: {
                 messageColumn.width=tableView.width/4*3
@@ -156,14 +150,12 @@ Item {
             text:qsTr("Lines:");
         }
         Text {
+            id: countText
             Layout.alignment: Qt.AlignBottom
             anchors.left: linesLebel.right
             anchors.top: linesLebel.top
-            text: {
-                return logModel==null?0:logModel.count
-            }
+            text: logModel.count;
         }
-
     }
 }
 

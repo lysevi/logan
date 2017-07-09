@@ -25,3 +25,10 @@ int Log::count()const{
 QString Log::name()const{
     return m_name;
 }
+
+void Log::update(){
+    qDebug()<<"update "<<m_name;
+    m_lines.clear();
+    emit countChanged(m_lines.size());
+    emit linesChanged();
+}

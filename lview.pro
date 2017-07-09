@@ -5,7 +5,8 @@ CONFIG += c++11
 SOURCES += main.cpp \
     logline.cpp \
     message.cpp \
-    log.cpp
+    log.cpp \
+    windowcontroller.cpp
 
 RESOURCES += qml.qrc
 
@@ -34,4 +35,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 HEADERS += \
     logline.h \
     message.h \
-    log.h
+    log.h \
+    windowcontroller.h

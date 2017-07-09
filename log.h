@@ -19,9 +19,11 @@ public:
     QList<QObject*> lines()const;
     int count()const;
     QString name()const;
+
+    void update();
 signals:
     void linesChanged();
-    void countChanged();
+    void countChanged(int);
     void nameChanged();
 public slots:
 
