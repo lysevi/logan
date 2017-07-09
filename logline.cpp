@@ -9,6 +9,7 @@ LogLine::LogLine(const QDateTime &timestamp, const QList<QObject*> &messages, QO
     m_time=timestamp;
     m_messages=messages;
     m_variant_message= QVariant::fromValue(m_messages);
+    m_type=LineType::Info;
 }
 
 LogLine::~LogLine(){
@@ -31,4 +32,8 @@ QList<QObject*> LogLine::messages() const{
 
 int LogLine::count()const{
     return m_messages.size();
+}
+
+LogLine::LineType LogLine::type()const{
+    return m_type;
 }

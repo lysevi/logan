@@ -15,13 +15,17 @@ ApplicationWindow {
     signal updateAllSignal(string msg)
 
     toolBar:ToolBar {
-        //height: 50
         RowLayout {
             anchors.fill: parent
 
             ToolButton {
                 height: parent.height
-                iconSource: "qrc:/icons/update.svg"
+                width: parent.height
+                Image {
+                    source: "qrc:/icons/update.svg"
+                    anchors.fill: parent
+                    anchors.margins: 4
+                }
                 onClicked: {
                     console.log("on update all")
                     rootWindow.updateAllSignal("qml")
@@ -29,6 +33,7 @@ ApplicationWindow {
             }
         }
     }
+
     Component {
         id: tabTemplate
 

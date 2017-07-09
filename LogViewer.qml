@@ -83,6 +83,12 @@ Item {
                 title:"time"
             }
 
+            TableViewColumn{
+                role:"type"
+                title:"type"
+                width: 20
+            }
+
             TableViewColumn {
                 id: messageColumn
 
