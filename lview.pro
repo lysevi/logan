@@ -3,7 +3,8 @@ QT += qml quick
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    logline.cpp
+    logline.cpp \
+    message.cpp
 
 RESOURCES += qml.qrc
 
@@ -30,4 +31,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    logline.h
+    logline.h \
+    message.h

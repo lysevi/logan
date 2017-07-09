@@ -13,9 +13,16 @@ int main(int argc, char *argv[])
 
     QList<QObject*> dataList;
     auto curDT=QDateTime::currentDateTime();
-    for(int i=0;i<5000;++i){
-        dataList.append(new LogLine(curDT, QStringList({"m1"+QString::number(i), "m11"+QString::number(i), "m111"+QString::number(i)})));
-        dataList.append(new LogLine(curDT.addSecs(10), QStringList({"m2"+QString::number(i)})));
+    for(int i=0;i<50000;++i){
+        QList<QObject*> ql1;
+        ql1<<new Message("m1"+QString::number(i))
+          <<new Message("m11"+QString::number(i))
+         <<new Message("m111"+QString::number(i));
+
+        dataList.append(new LogLine(curDT,ql1));
+        QList<QObject*> ql2;
+        ql2<<new Message("m2"+QString::number(i));
+        dataList.append(new LogLine(curDT.addSecs(10),ql2));
         curDT=curDT.addSecs(i*60);
     }
     QQmlApplicationEngine engine;

@@ -4,31 +4,34 @@
 #include <QObject>
 #include <QDateTime>
 #include <QString>
+#include <QList>
 #include <QVariant>
+
+#include "message.h"
 
 class LogLine : public QObject
 {
     Q_OBJECT
     Q_PROPERTY(QDateTime timestamp READ timestamp NOTIFY timestampChanged)
-    Q_PROPERTY(QVariant message READ message NOTIFY messageChanged)
+    Q_PROPERTY(QList<QObject*> messages READ messages NOTIFY messagesChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit LogLine(QObject *parent = nullptr);
-    LogLine(const QDateTime &timestamp, const QStringList &message, QObject *parent=0);
-
+    LogLine(const QDateTime &timestamp, const QList<QObject*> &messages, QObject *parent=0);
+    ~LogLine();
     QDateTime timestamp() const;
     void setTimestamp(const QDateTime &ts);
 
-    QVariant message() const;
+    QList<QObject*> messages() const;
 
     int count()const;
 signals:
     void timestampChanged();
-    void messageChanged();
-     void countChanged();
+    void messagesChanged();
+    void countChanged();
 private:
     QDateTime m_time;
-    QStringList m_message;
+    QList<QObject*> m_messages;
     QVariant m_variant_message;
 };
 

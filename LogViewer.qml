@@ -78,23 +78,30 @@ Item {
                 height: lineHeight*modelData.count
                 border.width: 1
                 border.color: "grey"
-                Canvas{
-                    id: lineCanvas
+                MouseArea{
                     anchors.fill: parent
-                    //height: lineHeight + 2
-                    onPaint: {
-                        var ctx = lineCanvas.getContext('2d');
-                        //console.log("modelData[i]")
-                        var x=10
-                        var y=lineHeight*0.75
-                        ctx.font=editorFont;
-                        for(var i=0;i<modelData.count;++i){
-                            //console.log(modelData.message[i],x, y)
-                            ctx.fillText(modelData.message[i], x, y);
-                            y=y+lineHeight
-                        }
 
-                        //ctx.fillText("qteveloper", 50, 150);
+                    Canvas{
+                        id: lineCanvas
+                        anchors.fill: parent
+                        //height: lineHeight + 2
+                        onPaint: {
+                            var ctx = lineCanvas.getContext('2d');
+                            //console.log("modelData[i]")
+                            var x=10
+                            var y=lineHeight*0.75
+                            ctx.font=editorFont;
+                            for(var i=0;i<modelData.count;++i){
+                                console.log(modelData.messages[i].message,x, y)
+                                ctx.fillText(modelData.messages[i].message, x, y);
+
+                                y=y+lineHeight
+                            }
+                        }
+                    }
+                    onClicked: {
+                        //lineCanvas.update();
+                        console.log("click on ", modelData.message)
                     }
                 }
             }
