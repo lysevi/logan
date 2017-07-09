@@ -86,7 +86,7 @@ Item {
             TableViewColumn{
                 role:"type"
                 title:"type"
-                width: 20
+                width: tableView.width*0.1
             }
 
             TableViewColumn {
@@ -98,7 +98,14 @@ Item {
                     id: canvasRect
                     height: lineHeight*modelData.count
                     border.width: 1
-                    border.color: "lightgrey"
+                    SystemPalette {
+                        id: myRowPalette;
+                        colorGroup: SystemPalette.Active
+                    }
+                    border.color: {
+                        var baseColor = styleData.alternate?myRowPalette.alternateBase:myRowPalette.base
+                        return styleData.selected?myRowPalette.highlight:baseColor
+                    }
 
                     MouseArea{
                         anchors.fill: parent

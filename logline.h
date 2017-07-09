@@ -12,20 +12,10 @@
 class LogLine : public QObject
 {
     Q_OBJECT
-public:
-
-    enum class LineType
-    {
-        Debug,
-        Info,
-        Warn,
-        Error
-    };
-    Q_ENUM(LineType)
 private:
     Q_PROPERTY(QDateTime timestamp READ timestamp NOTIFY timestampChanged)
     Q_PROPERTY(QList<QObject*> messages READ messages NOTIFY messagesChanged)
-    Q_PROPERTY(LineType type READ type NOTIFY typeChanged)
+    Q_PROPERTY(QString type READ type NOTIFY typeChanged)
     Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit LogLine(QObject *parent = nullptr);
@@ -38,7 +28,7 @@ public:
 
     int count()const;
 
-    LineType type()const;
+    QString type()const;
 signals:
     void timestampChanged();
     void messagesChanged();
@@ -48,8 +38,6 @@ private:
     QDateTime m_time;
     QList<QObject*> m_messages;
     QVariant m_variant_message;
-    LineType m_type;
+    QString m_type;
 };
-
-Q_DECLARE_METATYPE(LogLine::LineType)
 #endif // LOGLINE_H
