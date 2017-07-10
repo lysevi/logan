@@ -7,19 +7,19 @@
 #include "log.h"
 #include "windowcontroller.h"
 
-Log* createLogMock(QDateTime curDT, const QString&name){
+Log* createLogMock(QTime curDT, const QString&name){
     Log* ll;
-    QList<LogLine*> loglines;
+    QList<QObject*> loglines;
     for(int i=0;i<1000;++i){
         QList<QObject*> ql1;
         ql1<<new Message(name+ "m1"+QString::number(i))
           <<new Message(name+ "line1\nline"+QString::number(i))
          <<new Message(name+ "m111"+QString::number(i));
 
-        loglines.append(new LogLine(curDT,ql1));
+        loglines.append(new LogLine(curDT, "null!",ql1));
         QList<QObject*> ql2;
         ql2<<new Message(name+ "m2"+QString::number(i));
-        loglines.append(new LogLine(curDT.addSecs(10),ql2));
+        loglines.append(new LogLine(curDT.addSecs(10),"null!",ql2));
         curDT=curDT.addSecs(i*60);
     }
     ll=new Log(name,loglines);
@@ -28,7 +28,7 @@ Log* createLogMock(QDateTime curDT, const QString&name){
 
 QList<Log*> createLogs(int count){
     QList<Log*> logs;
-    auto curDT=QDateTime::currentDateTime();
+    auto curDT=QTime::currentTime();
     for(int i=0;i<count;++i){
         logs<<createLogMock(curDT, "mockLokg" + QString::number(i));
     }
@@ -47,23 +47,17 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
-    auto rootObject=engine.rootObjects().first();
+    QObject* rootObject=engine.rootObjects().first();
     qDebug()<<"rootObject:"<<rootObject->objectName();
-    WindowController *wc=new WindowController();
+    WindowController *wc=new WindowController(rootObject);
     QObject::connect(rootObject, SIGNAL(updateAllSignal(QString)),
                      wc,  SLOT(updateAllSlot(QString)));
+    QObject::connect(rootObject, SIGNAL(openFileSignal(QString)),
+                     wc,  SLOT(openFileSlot(QString)));
 
-    auto logs=createLogs(5);
+//    auto logs=createLogs(5);
 
-    wc->addLogs(logs);
-
-    for(auto&v:logs){
-        QVariant returnedValue;
-        QMetaObject::invokeMethod(rootObject, "addTab",
-                                  Q_RETURN_ARG(QVariant, returnedValue),
-                                  Q_ARG(QVariant, v->name()), Q_ARG(QVariant, QVariant::fromValue(v)));
-    }
-
+//    wc->addLogs(logs);
 
     return app.exec();
 }

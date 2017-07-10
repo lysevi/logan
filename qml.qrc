@@ -4,5 +4,8 @@
         <file>qtquickcontrols2.conf</file>
         <file>LogViewer.qml</file>
         <file>icons/update.svg</file>
+        <file>MergeWindow.qml</file>
+        <file>icons/merge.svg</file>
+        <file>icons/open.svg</file>
     </qresource>
 </RCC>

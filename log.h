@@ -14,8 +14,9 @@ class Log : public QObject
     Q_PROPERTY(QString  name READ name NOTIFY nameChanged)
 public:
     explicit Log(QObject *parent = nullptr);
-    Log(const QString&name,const QList<LogLine*>&lines, QObject *parent = nullptr);
+    Log(const QString&name,const QList<QObject*>&lines, QObject *parent = nullptr);
 
+    static Log* openFile(const QString&fname, QObject *parent = nullptr);
     QList<QObject*> lines()const;
     int count()const;
     QString name()const;

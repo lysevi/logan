@@ -5,11 +5,11 @@ LogLine::LogLine(QObject *parent) : QObject(parent)
 
 }
 
-LogLine::LogLine(const QDateTime &timestamp, const QList<QObject*> &messages, QObject *parent):QObject(parent){
+LogLine::LogLine(const QTime &timestamp, const QString&typeStr,const QList<QObject*> &messages, QObject *parent):QObject(parent){
     m_time=timestamp;
     m_messages=messages;
     m_variant_message= QVariant::fromValue(m_messages);
-    m_type="not set";
+    m_type=typeStr;
 }
 
 LogLine::~LogLine(){
@@ -18,7 +18,7 @@ LogLine::~LogLine(){
     }
 }
 
-QDateTime LogLine::timestamp() const{
+QTime LogLine::timestamp() const{
     qDebug()<<"read ts";
     return m_time;
 }
