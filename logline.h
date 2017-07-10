@@ -7,36 +7,28 @@
 #include <QList>
 #include <QVariant>
 
-#include "message.h"
-
 class LogLine : public QObject
 {
     Q_OBJECT
 private:
     Q_PROPERTY(QTime timestamp READ timestamp NOTIFY timestampChanged)
-    Q_PROPERTY(QList<QObject*> messages READ messages NOTIFY messagesChanged)
+    Q_PROPERTY(QString message READ message NOTIFY messageChanged)
     Q_PROPERTY(QString type READ type NOTIFY typeChanged)
-    Q_PROPERTY(int count READ count NOTIFY countChanged)
 public:
     explicit LogLine(QObject *parent = nullptr);
-    LogLine(const QTime &timestamp, const QString&typeStr, const QList<QObject*> &messages, QObject *parent=0);
+    LogLine(const QTime &timestamp, const QString&typeStr, const QString&messages, QObject *parent=0);
     ~LogLine();
     QTime timestamp() const;
-
-    QList<QObject*> messages() const;
-
-    int count()const;
-
+    QString message() const;
     QString type()const;
 signals:
     void timestampChanged();
-    void messagesChanged();
+    void messageChanged();
     void countChanged();
     void typeChanged();
 private:
     QTime m_time;
-    QList<QObject*> m_messages;
-    QVariant m_variant_message;
+    QString m_message;
     QString m_type;
 };
 #endif // LOGLINE_H

@@ -7,5 +7,6 @@
         <file>MergeWindow.qml</file>
         <file>icons/merge.svg</file>
         <file>icons/open.svg</file>
+        <file>MergeLog.qml</file>
     </qresource>
 </RCC>
