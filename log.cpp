@@ -21,15 +21,15 @@ Log* Log::openFile(const QString&fname, QObject *parent){
        auto all_lines=all_text.split("\r\n");
        for(auto&line:all_lines){
           //qDebug()<<"line:"<<line;
-          if(lineRe.indexIn(line)!=-1){
+          /*if(lineRe.indexIn(line)!=-1){
               QString typeStr;
               QString dateStr;
 
               dateStr=lineRe.cap(1);
               typeStr=lineRe.cap(2);
-              QString messageStr=lineRe.cap(3);
-              loglines.append(new LogLine(QTime::fromString(dateStr), typeStr,messageStr));
-          }
+              QString messageStr=lineRe.cap(3);*/
+              loglines.append(new LogLine(/*QTime::fromString(dateStr) typeStr,*/line));
+          //}
        }
        inputFile.close();
     }

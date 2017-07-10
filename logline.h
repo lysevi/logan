@@ -11,24 +11,24 @@ class LogLine : public QObject
 {
     Q_OBJECT
 private:
-    Q_PROPERTY(QTime timestamp READ timestamp NOTIFY timestampChanged)
+    //Q_PROPERTY(QTime timestamp READ timestamp NOTIFY timestampChanged)
     Q_PROPERTY(QString message READ message NOTIFY messageChanged)
-    Q_PROPERTY(QString type READ type NOTIFY typeChanged)
+    //Q_PROPERTY(QString type READ type NOTIFY typeChanged)
 public:
     explicit LogLine(QObject *parent = nullptr);
-    LogLine(const QTime &timestamp, const QString&typeStr, const QString&messages, QObject *parent=0);
+    LogLine(const QString&messages, QObject *parent=0);
     ~LogLine();
-    QTime timestamp() const;
+    //QTime timestamp() const;
     QString message() const;
-    QString type()const;
+    //QString type()const;
 signals:
-    void timestampChanged();
     void messageChanged();
+    /*void timestampChanged();
     void countChanged();
-    void typeChanged();
+    void typeChanged();*/
 private:
-    QTime m_time;
+    //QTime m_time;
     QString m_message;
-    QString m_type;
+    //QString m_type;
 };
 #endif // LOGLINE_H

@@ -22,30 +22,28 @@ Item {
         Item {
             width: 180; height: 40
             Row {
-                Text { text: '<b>' + modelData.timestamp +'</b>'  }
-                Text { text: modelData.type+" " }
                 Text { text: modelData.message }
             }
         }
     }
 
-
-
-    ListView {
-        id: tableView
+    ScrollView{
         anchors.fill: parent
-        width: parent.width
-        focus: true
-        Layout.alignment: Qt.AlignTop
-        Layout.fillHeight: true
-        Layout.fillWidth: true
+        ListView {
+            id: tableView
+            anchors.fill: parent
+            width: parent.width
+            focus: true
+            Layout.alignment: Qt.AlignTop
+            Layout.fillHeight: true
+            Layout.fillWidth: true
 
-        model:logModel.lines
+            model:logModel.lines
 
-        delegate: contactDelegate
+            delegate: contactDelegate
+        }
     }
+
 }
-
-
 
 
