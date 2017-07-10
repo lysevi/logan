@@ -16,22 +16,31 @@ Log* Log::openFile(const QString&fname, QObject *parent){
     QRegExp lineRe("(^\\d\\d:\\d\\d:\\d\\d\\.\\d*)\\s(\\[\\w{0,3}\\])(.*)");
     if (inputFile.open(QIODevice::ReadOnly))
     {
-       auto all_bts=inputFile.readAll();
-       auto all_text=QString(all_bts);
-       auto all_lines=all_text.split("\r\n");
-       for(auto&line:all_lines){
-          //qDebug()<<"line:"<<line;
-          /*if(lineRe.indexIn(line)!=-1){
+        auto all_bts=inputFile.readAll();
+        int start=0;
+        for(int i=0;i<all_bts.size();++i){
+            if(all_bts[i]=='\n'){
+                QString line(int(i-start));
+                int insertPos=0;
+                for(int pos=start;pos<i;++pos){
+                    line[insertPos++]=all_bts[pos];
+                }
+                start=i+1;
+
+                qDebug()<<"percent:"<< 100.0*i/all_bts.size();
+                /*if(lineRe.indexIn(line)!=-1){
               QString typeStr;
               QString dateStr;
 
               dateStr=lineRe.cap(1);
               typeStr=lineRe.cap(2);
               QString messageStr=lineRe.cap(3);*/
-              loglines.append(new LogLine(/*QTime::fromString(dateStr) typeStr,*/line));
-          //}
-       }
-       inputFile.close();
+                loglines.append(new LogLine(/*QTime::fromString(dateStr) typeStr,*/line));
+                //}
+
+            }
+        }
+        inputFile.close();
     }
 
     ll=new Log(fname,loglines, parent);
