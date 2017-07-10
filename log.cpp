@@ -12,32 +12,24 @@ Log* Log::openFile(const QString&fname, QObject *parent){
     QList<QObject*> loglines;
 
     QFile inputFile(fname);
-    QRegExp dateRE("(^\\d\\d:\\d\\d:\\d\\d\\.\\d*)");
-    QRegExp typeRE("(\\[\\w{0,3}\\])");
-    QRegExp messageRE("\\[\\w{0,3}\\](.*$)");
+    QRegExp lineRe("(^\\d\\d:\\d\\d:\\d\\d\\.\\d*)\\s(\\[\\w{0,3}\\])(.*$)");
     if (inputFile.open(QIODevice::ReadOnly))
     {
        QTextStream in(&inputFile);
        while (!in.atEnd())
        {
           QString line = in.readLine();
-          QString typeStr;
 
-          if(typeRE.indexIn(line)!=-1){
-              typeStr=typeRE.cap(1);
-              //qDebug()<<"type: "<<typeStr;
-          }
+          if(lineRe.indexIn(line)!=-1){
+              QString typeStr;
+              QString dateStr;
 
-          if(dateRE.indexIn(line)!=-1){
-             QString dateStr=dateRE.cap(1);
-             //qDebug()<<"date: "<<dateStr;
-
-             if(messageRE.indexIn(line)!=-1){
-                QString messageStr=messageRE.cap(1);
-                QList<QObject*> ql1;
-                ql1<<new Message(messageStr);
-                loglines.append(new LogLine(QTime::fromString(dateStr), typeStr,ql1));
-             }
+              dateStr=lineRe.cap(1);
+              typeStr=lineRe.cap(2);
+              QString messageStr=lineRe.cap(3);
+              QList<QObject*> ql1;
+              ql1<<new Message(messageStr);
+              loglines.append(new LogLine(QTime::fromString(dateStr), typeStr,ql1));
           }
        }
        inputFile.close();
