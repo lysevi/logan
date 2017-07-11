@@ -15,6 +15,7 @@ public:
 protected:
     QHash<QString, Log*> m_logs;
     QObject* m_rootObject;
+    QSet<QString> m_heightlight;
 private:
     void addTab(const QString&title, Log*v);
 signals:
@@ -23,6 +24,7 @@ public slots:
     void updateAllSlot(const QString &msg);
     void openFileSlot(const QString &fname);
     void closeFileSlot(const QString &fname);
+    void addHighlightedTextSlot(const QString &s);
 };
 
 #endif // WINDOWCONTROLLER_H

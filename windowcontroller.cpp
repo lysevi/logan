@@ -20,6 +20,7 @@ void WindowController::updateAllSlot(const QString &/*msg*/) {
 
 void WindowController::openFileSlot(const QString &fname){
     auto log=Log::openFile(fname);
+    log->heighlightWords(m_heightlight);
     m_logs[fname]=log;
     addTab(fname, log);
 }
@@ -37,4 +38,12 @@ void WindowController::closeFileSlot(const QString &fname){
         throw std::logic_error("fname not found");
     }
 
+}
+
+void WindowController::addHighlightedTextSlot(const QString &s){
+    qDebug()<<"addHighlightedTextSlot "<<s;
+    m_heightlight<<s;
+    for(auto&kv:m_logs){
+        kv->heighlightWords(m_heightlight);
+    }
 }

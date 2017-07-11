@@ -17,6 +17,7 @@ ApplicationWindow {
     signal updateAllSignal(string msg)
     signal openFileSignal(string fname)
     signal closeFileSignal(string fname)
+    signal addHighlightedTextSignal(string str)
 
     FileDialog {
         id: openFileDialog
@@ -114,7 +115,7 @@ ApplicationWindow {
         var tab=tabView.addTab(tabTitle,tabTemplate)
         tab.active=true
         logsMap[tabTitle]=model
-        var obj=viewTemplate.createObject(tab.item,{logModel:model})
+        var obj=viewTemplate.createObject(tab.item,{logModel:model,rootWindow:rootWindow})
     }
 
     TabView{
@@ -129,6 +130,7 @@ ApplicationWindow {
                 implicitHeight: 20
                 radius: 2
                 Row{
+
                     Text {
                         id: text
                         text: styleData.title

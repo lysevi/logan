@@ -2,9 +2,15 @@
 #define LOG_H
 
 #include <QAbstractListModel>
+#include <QSet>
 
 //TODO array!
 using LinePositionList = QList<QPair<int,int>>;
+struct CachedString{
+    QString rawValue;
+    QString Value;
+    QModelIndex mi;
+};
 
 class Log : public QAbstractListModel
 {
@@ -28,6 +34,10 @@ public:
     void update();
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
+
+    void heighlightWords(const QSet<QString>&sl);
+    void updateHeighlights();
+    static QString heighlightStr(const QString&str,const QSet<QString>&sl );
 signals:
     void linesChanged();
     void countChanged(int);
@@ -42,7 +52,8 @@ protected:
     QString m_name;
     QString m_fname;
 
-    mutable QHash<int, QString> m_line_cache;
+    mutable QHash<int, CachedString> m_line_cache;
+    QSet<QString> m_heighlight_patterns;
 };
 
 #endif // LOG_H

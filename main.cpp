@@ -29,6 +29,8 @@ int main(int argc, char *argv[])
                      wc,  SLOT(openFileSlot(QString)));
     QObject::connect(rootObject, SIGNAL(closeFileSignal(QString)),
                      wc,  SLOT(closeFileSlot(QString)));
+    QObject::connect(rootObject, SIGNAL(addHighlightedTextSignal(QString)),
+                     wc,  SLOT(addHighlightedTextSlot(QString)));
 
     return app.exec();
 }

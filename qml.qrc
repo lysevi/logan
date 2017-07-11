@@ -9,5 +9,7 @@
         <file>icons/open.svg</file>
         <file>MergeLog.qml</file>
         <file>icons/close.svg</file>
+        <file>icons/felt.svg</file>
+        <file>icons/clear.svg</file>
     </qresource>
 </RCC>

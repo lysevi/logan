@@ -6,9 +6,7 @@
 #include <QDateTime>
 #include <QFileInfo>
 Log::Log(QObject *parent) : QAbstractListModel(parent)
-{
-
-}
+{}
 
 QList<QPair<int,int>> allLinePos(const QByteArray&bts){
     auto curDT=QDateTime::currentDateTimeUtc();
@@ -89,19 +87,57 @@ QVariant Log::data(const QModelIndex & index, int role) const {
 
     auto it=m_line_cache.find(index.row());
     if(it!=m_line_cache.end()){
-        return *it;
+        return it->Value;
     }
     auto pos = m_lines[index.row()];
     if (role == MessageRole){
         int start=pos.first;
         int i=pos.second;
+
         QString line(int(i-start));
         int insertPos=0;
         for(int pos=start;pos<i;++pos){
             line[insertPos++]=m_bts[pos];
         }
-        m_line_cache.insert(index.row(), line);
-        return line;
+        CachedString cs;
+        cs.rawValue=line;
+        cs.Value=heighlightStr(line, m_heighlight_patterns);
+        cs.mi=index;
+        m_line_cache.insert(index.row(), cs);
+
+        return cs.Value;
     }
     return QVariant();
+}
+
+QString Log::heighlightStr(const QString&str,const QSet<QString>&sl ){
+    auto result=str;
+    for(auto&hWord:sl){
+        if(result.contains(hWord)){
+            qDebug()<<"H+"<<str;
+            result.replace(QRegExp(hWord),"<b>"+hWord+"</b>");
+        }
+    }
+    return result;
+}
+
+void Log::updateHeighlights(){
+    auto keys=m_line_cache.keys();
+    for(auto&k:keys){
+        auto cs=m_line_cache[k];
+        auto str=cs.rawValue;
+        str=heighlightStr(str, m_heighlight_patterns);
+        bool updated=str!=cs.rawValue;
+        if(updated){
+            cs.Value=str;
+            m_line_cache.insert(k,cs);
+
+            dataChanged(cs.mi, cs.mi);
+        }
+    }
+}
+
+void Log::heighlightWords(const QSet<QString>&sl){
+    m_heighlight_patterns=sl;
+    updateHeighlights();
 }
