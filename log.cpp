@@ -38,18 +38,19 @@ Log* Log::openFile(const QString&fname, QObject *parent){
 
 
         QFileInfo fileInfo(fname);
-        ll=new Log(fileInfo.fileName(),all_bts, allLinePositions, parent);
+        ll=new Log(fileInfo.fileName(), fname,all_bts, allLinePositions, parent);
         qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
         return ll;
     }
     throw std::logic_error("file not exists!");
 }
 
-Log::Log(const QString&name, const QByteArray&bts,const LinePositionList&lines, QObject *parent):QAbstractListModel(parent){
+Log::Log(const QString&name,const QString&filename, const QByteArray&bts,const LinePositionList&lines, QObject *parent):QAbstractListModel(parent){
     qDebug()<<"load "<<name<<" lines:"<<lines.count();
     m_name=name;
     m_lines=lines;
     m_bts=bts;
+    m_fname=filename;
     qDebug()<<"load "<<name<<" loaded";
 }
 
@@ -58,8 +59,13 @@ QString Log::name()const{
     return m_name;
 }
 
+QString Log::filename()const{
+    return m_fname;
+}
+
 void Log::update(){
     qDebug()<<"update "<<m_name;
+    m_line_cache.clear();
     m_lines.clear();
     emit countChanged(m_lines.size());
     emit linesChanged();
@@ -81,9 +87,12 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     if (index.row() < 0 || index.row() >= m_lines.count())
         return QVariant();
 
+    auto it=m_line_cache.find(index.row());
+    if(it!=m_line_cache.end()){
+        return *it;
+    }
     auto pos = m_lines[index.row()];
     if (role == MessageRole){
-        //TODO cache!
         int start=pos.first;
         int i=pos.second;
         QString line(int(i-start));
@@ -91,6 +100,7 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         for(int pos=start;pos<i;++pos){
             line[insertPos++]=m_bts[pos];
         }
+        m_line_cache.insert(index.row(), line);
         return line;
     }
     return QVariant();

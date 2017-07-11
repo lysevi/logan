@@ -4,6 +4,7 @@ import QtQuick.Controls 1.4
 import QtQuick.Layouts 1.3
 import QtQuick.Window 2.2
 import QtQuick.Dialogs 1.2
+import QtQuick.Controls.Styles 1.4
 
 ApplicationWindow {
     id: rootWindow
@@ -15,6 +16,7 @@ ApplicationWindow {
 
     signal updateAllSignal(string msg)
     signal openFileSignal(string fname)
+    signal closeFileSignal(string fname)
 
     FileDialog {
         id: openFileDialog
@@ -118,5 +120,37 @@ ApplicationWindow {
     TabView{
         id: tabView
         anchors.fill: parent
+        style: TabViewStyle {
+            frameOverlap: 1
+            tab: Rectangle {
+                color: styleData.selected ? "steelblue" :"lightsteelblue"
+                border.color:  "steelblue"
+                implicitWidth: Math.max(text.width + 4+img.width, 80)
+                implicitHeight: 20
+                radius: 2
+                Row{
+                    Text {
+                        id: text
+                        text: styleData.title
+                        color: styleData.selected ? "white" : "black"
+                    }
+                    Image{
+                        id: img
+                        width: 10; height:  10
+                        source: "qrc:/icons/close.svg"
+                        MouseArea{
+                            anchors.fill: parent
+                            onClicked: {
+                                console.log("clin on: close ",styleData.title )
+                                tabView.removeTab(styleData.index)
+                                var model=logsMap[styleData.title]
+                                closeFileSignal(model.filename)
+                            }
+                        }
+                    }
+                }
+            }
+            //frame: Rectangle { color: "steelblue" }
+        }
     }
 }

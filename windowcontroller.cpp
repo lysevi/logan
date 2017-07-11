@@ -4,13 +4,6 @@ WindowController::WindowController(QObject* rootObject,QObject*parent):QObject(p
     m_rootObject=rootObject;
 }
 
-void WindowController::addLogs(const QList<Log*>&logs){
-    for(auto&v:logs){
-        m_logs<<v;
-        addTab(v->name(),v);
-    }
-}
-
 void WindowController::addTab(const QString&title, Log*v){
     QVariant returnedValue;
     QMetaObject::invokeMethod(m_rootObject, "addTab",
@@ -26,7 +19,22 @@ void WindowController::updateAllSlot(const QString &/*msg*/) {
 
 
 void WindowController::openFileSlot(const QString &fname){
-   auto log=Log::openFile(fname);
-   m_logs.append(log);
-   addTab(fname, log);
+    auto log=Log::openFile(fname);
+    m_logs[fname]=log;
+    addTab(fname, log);
+}
+
+
+void WindowController::closeFileSlot(const QString &fname){
+    auto it=m_logs.find(fname);
+
+    if((*it)->filename()==fname){
+        auto ptr=*it;
+        qDebug()<<"erase "<<fname;
+        delete ptr;
+        m_logs.erase(it);
+    }else{
+        throw std::logic_error("fname not found");
+    }
+
 }
