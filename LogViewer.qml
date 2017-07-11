@@ -26,20 +26,21 @@ Item {
             id: wrapper
             height: lineHeight
             radius: 5
+            width: parent.width
             TextEdit {
                 id: te
+                width: parent.width
                 text: modelData
                 activeFocusOnPress: true
-                //mouseSelectionMode:TextEdit.SelectWords
                 selectByMouse: true
                 textFormat: TextEdit.RichText
-                //persistentSelection:true
                 onActiveFocusChanged: {
                     if(activeFocus){
                         rootWindow.selectedTextEdit=te
+                        tableView.currentIndex = index
                     }
                     font.italic = activeFocus
-                    tableView.currentIndex = index
+
                 }
             }
         }
@@ -63,12 +64,6 @@ Item {
                 orientation: Qt.Vertical
                 interactive: false
                 delegate: contactDelegate
-                highlight: Rectangle {
-                    width: tableView.width;  height: lineHeight
-                    color: "#FFFF88"
-                    y: tableView.currentItem.y;
-                }
-
             }
         }
     }
