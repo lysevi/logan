@@ -9,7 +9,7 @@
 
 Log* createLogMock(QTime curDT, const QString&name){
     Log* ll;
-    QList<QObject*> loglines;
+    QList<LogLine*> loglines;
     for(int i=0;i<1000;++i){
         loglines.append(new LogLine(curDT.toString()+ "null!"+name+ "m1"+QString::number(i)));
         loglines.append(new LogLine(curDT.addSecs(10).toString()+"null!"+name+ "m2"+QString::number(i)));

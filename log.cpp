@@ -1,7 +1,7 @@
 #include "log.h"
 #include <QDebug>
 #include <QRegExp>
-Log::Log(QObject *parent) : QObject(parent)
+Log::Log(QObject *parent) : QAbstractListModel(parent)
 {
 
 }
@@ -10,7 +10,7 @@ Log* Log::openFile(const QString&fname, QObject *parent){
     qDebug()<<"openFile"<<fname;
     auto curDT=QDateTime::currentDateTimeUtc();
     Log* ll;
-    QList<QObject*> loglines;
+    QList<LogLine*> loglines;
 
     QFile inputFile(fname);
     QRegExp lineRe("(^\\d\\d:\\d\\d:\\d\\d\\.\\d*)\\s(\\[\\w{0,3}\\])(.*)");
@@ -48,7 +48,7 @@ Log* Log::openFile(const QString&fname, QObject *parent){
     return ll;
 }
 
-Log::Log(const QString&name, const QList<QObject*>&lines, QObject *parent):QObject(parent){
+Log::Log(const QString&name, const QList<LogLine*>&lines, QObject *parent):QAbstractListModel(parent){
     qDebug()<<"load "<<name<<" lines:"<<lines.count();
     m_name=name;
     m_lines=lines;
@@ -56,7 +56,7 @@ Log::Log(const QString&name, const QList<QObject*>&lines, QObject *parent):QObje
 }
 
 
-QList<QObject*> Log::lines()const{
+QList<LogLine*> Log::lines()const{
     return m_lines;
 }
 
@@ -73,4 +73,26 @@ void Log::update(){
     m_lines.clear();
     emit countChanged(m_lines.size());
     emit linesChanged();
+}
+
+
+int Log::rowCount(const QModelIndex & parent) const {
+    Q_UNUSED(parent);
+    return count();
+}
+
+QHash<int, QByteArray> Log::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[MessageRole] = "message";
+    return roles;
+}
+
+QVariant Log::data(const QModelIndex & index, int role) const {
+    if (index.row() < 0 || index.row() >= count())
+        return QVariant();
+
+    auto res = m_lines[index.row()];
+    if (role == MessageRole)
+        return res->message();
+    return QVariant();
 }

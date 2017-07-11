@@ -22,7 +22,7 @@ Item {
         Item {
             width: 180; height: 40
             Row {
-                Text { text: modelData.message }
+                Text { text: modelData }
             }
         }
     }
@@ -38,7 +38,7 @@ Item {
             Layout.fillHeight: true
             Layout.fillWidth: true
 
-            model:logModel.lines
+            model:logModel
 
             delegate: contactDelegate
         }
