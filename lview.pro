@@ -3,7 +3,6 @@ QT += qml quick
 CONFIG += c++11
 
 SOURCES += main.cpp \
-    logline.cpp \
     log.cpp \
     windowcontroller.cpp
 
@@ -32,6 +31,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 HEADERS += \
-    logline.h \
     log.h \
     windowcontroller.h

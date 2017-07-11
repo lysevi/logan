@@ -19,10 +19,16 @@ Item {
 
     Component {
         id: contactDelegate
-        Item {
-            width: 180; height: 40
-            Row {
-                Text { text: modelData }
+
+        Rectangle {
+            id: wrapper
+            height: lineHeight
+            radius: 5
+            Text { text: modelData
+                MouseArea {
+                    anchors.fill: parent
+                    onClicked: tableView.currentIndex = index
+                }
             }
         }
     }
@@ -39,8 +45,16 @@ Item {
             Layout.fillWidth: true
 
             model:logModel
+            highlightFollowsCurrentItem: false
+            orientation: Qt.Vertical
 
             delegate: contactDelegate
+            highlight: Rectangle {
+                width: tableView.width;  height: lineHeight
+                color: "#FFFF88"
+                y: tableView.currentItem.y;
+            }
+
         }
     }
 

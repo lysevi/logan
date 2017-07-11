@@ -7,26 +7,6 @@
 #include "log.h"
 #include "windowcontroller.h"
 
-Log* createLogMock(QTime curDT, const QString&name){
-    Log* ll;
-    QList<LogLine*> loglines;
-    for(int i=0;i<1000;++i){
-        loglines.append(new LogLine(curDT.toString()+ "null!"+name+ "m1"+QString::number(i)));
-        loglines.append(new LogLine(curDT.addSecs(10).toString()+"null!"+name+ "m2"+QString::number(i)));
-        curDT=curDT.addSecs(i*60);
-    }
-    ll=new Log(name,loglines);
-    return ll;
-}
-
-QList<Log*> createLogs(int count){
-    QList<Log*> logs;
-    auto curDT=QTime::currentTime();
-    for(int i=0;i<count;++i){
-        logs<<createLogMock(curDT, "mockLokg" + QString::number(i));
-    }
-    return logs;
-}
 
 int main(int argc, char *argv[])
 {
@@ -47,10 +27,6 @@ int main(int argc, char *argv[])
                      wc,  SLOT(updateAllSlot(QString)));
     QObject::connect(rootObject, SIGNAL(openFileSignal(QString)),
                      wc,  SLOT(openFileSlot(QString)));
-
-    auto logs=createLogs(5);
-
-    wc->addLogs(logs);
 
     return app.exec();
 }
