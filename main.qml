@@ -20,6 +20,14 @@ ApplicationWindow {
     signal addHighlightedTextSignal(string str)
     signal clearHighlightedTextSignal()
 
+    property var selectedTextEdit: null
+    function addHighlightedText(str){
+        if(str!==null && str!==""){
+            console.log("addHighlightedText: ",str)
+            addHighlightedTextSignal(str);
+        }
+    }
+
     FileDialog {
         id: openFileDialog
         title: "Please choose a file"
@@ -39,17 +47,18 @@ ApplicationWindow {
     }
 
     toolBar:ToolBar {
-        RowLayout {
+        height: 30
+        Row {
+
             anchors.fill: parent
             spacing: 2
-            ToolButton {
+            Button {
                 id: updateBtn
                 height: parent.height
                 width: parent.height
                 Image {
                     source: "qrc:/icons/update.svg"
                     anchors.fill: parent
-                    anchors.margins: 4
                 }
                 onClicked: {
                     console.log("on update all")
@@ -57,15 +66,13 @@ ApplicationWindow {
                 }
             }
 
-            ToolButton {
+            Button {
                 height: parent.height
                 width: parent.height
-                anchors.left: updateBtn.right
 
                 Image {
                     source: "qrc:/icons/open.svg"
                     anchors.fill: parent
-                    anchors.margins: 4
                 }
                 onClicked: {
                     console.log("open log")
@@ -74,23 +81,36 @@ ApplicationWindow {
                 }
             }
 
-            //            ToolButton {
-            //                height: parent.height
-            //                width: parent.height
-            //                anchors.left: updateBtn.right
+            Button {
+                tooltip: qsTr("addHighlightedText")
+                height: parent.height
+                width: parent.height
+                Image {
+                    source: "qrc:/icons/felt.svg"
+                    anchors.fill: parent
+                }
 
-            //                Image {
-            //                    source: "qrc:/icons/merge.svg"
-            //                    anchors.fill: parent
-            //                    anchors.margins: 4
-            //                }
-            //                onClicked: {
-            //                    console.log("show merge window")
-            //                    var component = Qt.createComponent("qrc:/MergeWindow.qml");
-            //                    var mergeWindow = component.createObject(rootWindow, {logsMap:logsMap});
-            //                    mergeWindow.show()
-            //                }
-            //            }
+                onClicked: {
+                    if(selectedTextEdit!==null){
+                        addHighlightedText(selectedTextEdit.selectedText)
+                    }
+
+                }
+            }
+            Button {
+                tooltip: qsTr("clearHighlightedText")
+                height: parent.height
+                width: parent.height
+                Image {
+                    source: "qrc:/icons/clear.svg"
+                    anchors.fill: parent
+                }
+
+                onClicked: {
+                    console.log("clearHighlightedTextSignal: ")
+                    clearHighlightedTextSignal()
+                }
+            }
         }
     }
 

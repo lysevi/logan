@@ -121,7 +121,7 @@ void Log::clearHeightlight(){
     }
 }
 
-QString Log::heighlightStr(const QString&str,const QSet<QString>&sl ){
+QString Log::heighlightStr(const QString&str,const QSet<QString>&sl){
     auto result=str;
     for(auto&hWord:sl){
         if(result.contains(hWord)){

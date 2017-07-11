@@ -17,13 +17,8 @@ Item {
     }
 
     property var lineHeight: fontMetrics.lineSpacing
-    property var selectedTextEdit: null
-    function addHighlightedText(str){
-        if(str!==null && str!==""){
-            console.log("addHighlightedText: ",str)
-            rootWindow.addHighlightedTextSignal(str);
-        }
-    }
+
+
     Component {
         id: contactDelegate
 
@@ -41,7 +36,7 @@ Item {
                 //persistentSelection:true
                 onActiveFocusChanged: {
                     if(activeFocus){
-                        selectedTextEdit=te
+                        rootWindow.selectedTextEdit=te
                     }
                     font.italic = activeFocus
                     tableView.currentIndex = index
@@ -52,48 +47,6 @@ Item {
 
     ColumnLayout{
         anchors.fill: parent
-        ToolBar{
-
-            height: 20
-            Layout.alignment: Qt.AlignTop
-            Layout.fillHeight: false
-            Layout.fillWidth: true
-            Row{
-                anchors.fill: parent
-                Button {
-                    tooltip: qsTr("addHighlightedText")
-                    height: parent.height
-                    width: parent.height
-                    Image {
-                        source: "qrc:/icons/felt.svg"
-                        anchors.fill: parent
-                    }
-
-                    onClicked: {
-                        if(selectedTextEdit!==null){
-                            addHighlightedText(selectedTextEdit.selectedText)
-                        }
-
-                    }
-                }
-                Button {
-                    tooltip: qsTr("clearHighlightedText")
-                    height: parent.height
-                    width: parent.height
-                    Image {
-                        source: "qrc:/icons/clear.svg"
-                        anchors.fill: parent
-                    }
-
-                    onClicked: {
-                        console.log("clearHighlightedTextSignal: ")
-                        rootWindow.clearHighlightedTextSignal()
-                    }
-                }
-            }
-
-
-        }
 
         ScrollView{
             Layout.alignment: Qt.AlignBottom
