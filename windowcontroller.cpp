@@ -19,6 +19,9 @@ void WindowController::updateAllSlot(const QString &/*msg*/) {
 
 
 void WindowController::openFileSlot(const QString &fname){
+    if(m_logs.contains(fname)){
+        return;
+    }
     auto log=Log::openFile(fname);
     log->heighlightWords(m_heightlight);
     m_logs[fname]=log;

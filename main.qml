@@ -139,41 +139,35 @@ ApplicationWindow {
         var obj=viewTemplate.createObject(tab.item,{logModel:model,rootWindow:rootWindow})
     }
 
-    TabView{
-        id: tabView
+    Item{
         anchors.fill: parent
-        style: TabViewStyle {
-            frameOverlap: 1
-            tab: Rectangle {
-                color: styleData.selected ? "steelblue" :"lightsteelblue"
-                border.color:  "steelblue"
-                implicitWidth: Math.max(text.width + 4+img.width, 80)
-                implicitHeight: 20
-                radius: 2
-                Row{
 
-                    Text {
-                        id: text
-                        text: styleData.title
-                        color: styleData.selected ? "white" : "black"
-                    }
-                    Image{
-                        id: img
-                        width: 10; height:  10
-                        source: "qrc:/icons/close.svg"
-                        MouseArea{
-                            anchors.fill: parent
-                            onClicked: {
-                                console.log("clin on: close ",styleData.title )
-                                tabView.removeTab(styleData.index)
-                                var model=logsMap[styleData.title]
-                                closeFileSignal(model.filename)
-                            }
-                        }
-                    }
-                }
+        Keys.onPressed: {
+            console.log("Keys.onPressed",event.key);
+            if (event.key === Qt.Key_W && event.modifiers === Qt.ControlModifier) {
+                console.log("close");
+                event.accepted = true;
+                var curTab=tabView.getTab(tabView.currentIndex)
+                tabView.removeTab(tabView.currentIndex)
+                var model=logsMap[curTab.title]
+                closeFileSignal(model.filename)
             }
-            //frame: Rectangle { color: "steelblue" }
+            if (event.key === Qt.Key_O && event.modifiers === Qt.ControlModifier) {
+                console.log("open");
+                event.accepted = true;
+                openFileDialog.open()
+            }
+            if (event.key === Qt.Key_L && event.modifiers === Qt.ControlModifier) {
+                console.log("highlight");
+                event.accepted = true;
+                addHighlightedText(selectedTextEdit.selectedText)
+            }
+        }
+
+
+        TabView{
+            id: tabView
+            anchors.fill: parent
         }
     }
 }
