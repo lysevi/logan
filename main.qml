@@ -18,6 +18,7 @@ ApplicationWindow {
     signal openFileSignal(string fname)
     signal closeFileSignal(string fname)
     signal addHighlightedTextSignal(string str)
+    signal clearHighlightedTextSignal()
 
     FileDialog {
         id: openFileDialog

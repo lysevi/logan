@@ -47,3 +47,11 @@ void WindowController::addHighlightedTextSlot(const QString &s){
         kv->heighlightWords(m_heightlight);
     }
 }
+
+void WindowController::clearHighlightedTextSlot(){
+    qDebug()<<"clearHighlightedTextSlot";
+    m_heightlight.clear();
+    for(auto&kv:m_logs){
+        kv->clearHeightlight();
+    }
+}

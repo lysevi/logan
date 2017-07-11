@@ -58,22 +58,40 @@ Item {
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: false
             Layout.fillWidth: true
-            Button {
-                tooltip: qsTr("addHighlightedText")
-                height: parent.height
-                width: parent.height
-                Image {
-                    source: "qrc:/icons/felt.svg"
-                    anchors.fill: parent
-                }
-
-                onClicked: {
-                    if(selectedTextEdit!==null){
-                        addHighlightedText(selectedTextEdit.selectedText)
+            Row{
+                anchors.fill: parent
+                Button {
+                    tooltip: qsTr("addHighlightedText")
+                    height: parent.height
+                    width: parent.height
+                    Image {
+                        source: "qrc:/icons/felt.svg"
+                        anchors.fill: parent
                     }
 
+                    onClicked: {
+                        if(selectedTextEdit!==null){
+                            addHighlightedText(selectedTextEdit.selectedText)
+                        }
+
+                    }
+                }
+                Button {
+                    tooltip: qsTr("clearHighlightedText")
+                    height: parent.height
+                    width: parent.height
+                    Image {
+                        source: "qrc:/icons/clear.svg"
+                        anchors.fill: parent
+                    }
+
+                    onClicked: {
+                        console.log("clearHighlightedTextSignal: ")
+                        rootWindow.clearHighlightedTextSignal()
+                    }
                 }
             }
+
 
         }
 

@@ -35,6 +35,7 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
+    void clearHeightlight();
     void heighlightWords(const QSet<QString>&sl);
     void updateHeighlights();
     static QString heighlightStr(const QString&str,const QSet<QString>&sl );

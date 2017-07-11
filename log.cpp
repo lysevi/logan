@@ -110,6 +110,17 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     return QVariant();
 }
 
+void Log::clearHeightlight(){
+    m_heighlight_patterns.clear();
+    auto keys=m_line_cache.keys();
+    for(auto&k:keys){
+        auto cs=m_line_cache[k];
+        cs.Value=cs.rawValue;
+        m_line_cache.insert(k,cs);
+        dataChanged(cs.mi, cs.mi);
+    }
+}
+
 QString Log::heighlightStr(const QString&str,const QSet<QString>&sl ){
     auto result=str;
     for(auto&hWord:sl){
@@ -141,3 +152,4 @@ void Log::heighlightWords(const QSet<QString>&sl){
     m_heighlight_patterns=sl;
     updateHeighlights();
 }
+
