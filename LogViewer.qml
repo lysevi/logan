@@ -46,10 +46,11 @@ Item {
         }
     }
 
-    ColumnLayout{
+    Column{
         anchors.fill: parent
 
         ToolBar {
+            id: logTlbr
             height: 30
             Layout.alignment: Qt.AlignTop
             Layout.fillHeight: false
@@ -73,6 +74,7 @@ Item {
 
                     }
                 }
+
                 Button {
                     tooltip: qsTr("clearHighlightedText")
                     height: parent.height
@@ -90,9 +92,8 @@ Item {
             }
         }
         ScrollView{
-            Layout.alignment: Qt.AlignBottom
-            Layout.fillHeight: true
-            Layout.fillWidth: true
+            width: parent.width
+            height: parent.height - logTlbr.height
             ListView {
                 id: tableView
                 anchors.fill: parent
