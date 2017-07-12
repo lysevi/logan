@@ -49,6 +49,46 @@ Item {
     ColumnLayout{
         anchors.fill: parent
 
+        ToolBar {
+            height: 30
+            Layout.alignment: Qt.AlignTop
+            Layout.fillHeight: false
+            Layout.fillWidth: true
+            Row {
+
+                anchors.fill: parent
+                spacing: 2
+
+                Button {
+                    tooltip: qsTr("addHighlightedText")
+                    height: parent.height
+                    width: parent.height
+                    Image {
+                        source: "qrc:/icons/felt.svg"
+                        anchors.fill: parent
+                    }
+
+                    onClicked: {
+                        logModel.addHeighlightPatter(rootWindow.selectedTextEdit.selectedText)
+
+                    }
+                }
+                Button {
+                    tooltip: qsTr("clearHighlightedText")
+                    height: parent.height
+                    width: parent.height
+                    Image {
+                        source: "qrc:/icons/clear.svg"
+                        anchors.fill: parent
+                    }
+
+                    onClicked: {
+                        console.log("clearHighlightedTextSignal: ")
+                        logModel.clearHeightlight();
+                    }
+                }
+            }
+        }
         ScrollView{
             Layout.alignment: Qt.AlignBottom
             Layout.fillHeight: true

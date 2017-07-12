@@ -129,13 +129,10 @@ ApplicationWindow {
         }
     }
 
-    property var logsMap: ({})
-
     function addTab(tabTitle, model){
         console.log("add tab", tabTitle, "model", model)
         var tab=tabView.addTab(tabTitle,tabTemplate)
         tab.active=true
-        logsMap[tabTitle]=model
         var obj=viewTemplate.createObject(tab.item,{logModel:model,rootWindow:rootWindow})
     }
 

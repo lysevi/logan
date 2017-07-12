@@ -22,7 +22,7 @@ QList<QPair<int,int>> allLinePos(const QByteArray&bts){
     return result;
 }
 
-Log* Log::openFile(const QString&fname, QObject *parent){
+Log* Log::openFile(HighlightPatterns *global_highlight, const QString&fname, QObject *parent){
     qDebug()<<"openFile"<<fname;
     auto curDT=QDateTime::currentDateTimeUtc();
     Log* ll;
@@ -36,19 +36,25 @@ Log* Log::openFile(const QString&fname, QObject *parent){
 
 
         QFileInfo fileInfo(fname);
-        ll=new Log(fileInfo.fileName(), fname,all_bts, allLinePositions, parent);
+        ll=new Log(fileInfo.fileName(), fname,all_bts, allLinePositions, global_highlight, parent);
         qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
         return ll;
     }
     throw std::logic_error("file not exists!");
 }
 
-Log::Log(const QString&name,const QString&filename, const QByteArray&bts,const LinePositionList&lines, QObject *parent):QAbstractListModel(parent){
+Log::Log(const QString&name,
+         const QString&filename,
+         const QByteArray&bts,
+         const LinePositionList&lines,
+         HighlightPatterns *global_highlight,
+         QObject *parent):QAbstractListModel(parent){
     qDebug()<<"load "<<name<<" lines:"<<lines.count();
     m_name=name;
     m_lines=lines;
     m_bts=bts;
     m_fname=filename;
+    m_global_highlight=global_highlight;
     qDebug()<<"load "<<name<<" loaded";
 }
 
@@ -101,7 +107,8 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         }
         CachedString cs;
         cs.rawValue=line;
-        cs.Value=heighlightStr(line, m_heighlight_patterns);
+        cs.Value=line;
+        heighlightStr(cs.Value, m_heighlight_patterns+*m_global_highlight);
         cs.mi=index;
         m_line_cache.insert(index.row(), cs);
 
@@ -112,44 +119,40 @@ QVariant Log::data(const QModelIndex & index, int role) const {
 
 void Log::clearHeightlight(){
     m_heighlight_patterns.clear();
-    auto keys=m_line_cache.keys();
-    for(auto&k:keys){
-        auto cs=m_line_cache[k];
-        cs.Value=cs.rawValue;
-        m_line_cache.insert(k,cs);
-        dataChanged(cs.mi, cs.mi);
-    }
+    updateHeighlights();
 }
 
-QString Log::heighlightStr(const QString&str,const QSet<QString>&sl){
-    auto result=str;
+bool Log::heighlightStr(QString&str,const HighlightPatterns&sl){
+    bool result=false;
     for(auto&hWord:sl){
-        if(result.contains(hWord)){
+        if(str.contains(hWord)){
             qDebug()<<"H+"<<str;
-            result.replace(QRegExp(hWord),"<b>"+hWord+"</b>");
+            str.replace(QRegExp(hWord),"<b>"+hWord+"</b>");
+            result=true;
         }
     }
     return result;
 }
 
 void Log::updateHeighlights(){
+    HighlightPatterns superSet(m_heighlight_patterns);
+    superSet+=*m_global_highlight;
     auto keys=m_line_cache.keys();
     for(auto&k:keys){
         auto cs=m_line_cache[k];
-        auto str=cs.rawValue;
-        str=heighlightStr(str, m_heighlight_patterns);
-        bool updated=str!=cs.rawValue;
-        if(updated){
-            cs.Value=str;
-            m_line_cache.insert(k,cs);
 
-            dataChanged(cs.mi, cs.mi);
-        }
+        auto str=cs.rawValue;
+        heighlightStr(str, superSet);
+
+        cs.Value=str;
+        m_line_cache.insert(k,cs);
+        dataChanged(cs.mi, cs.mi);
+
     }
 }
 
-void Log::heighlightWords(const QSet<QString>&sl){
-    m_heighlight_patterns=sl;
+void Log::addHeighlightPatter(const QString&sl){
+    m_heighlight_patterns<<sl;
     updateHeighlights();
 }
 

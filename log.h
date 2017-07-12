@@ -4,11 +4,13 @@
 #include <QAbstractListModel>
 #include <QSet>
 
+using HighlightPatterns= QSet<QString>;
+
 //TODO array!
 using LinePositionList = QList<QPair<int,int>>;
 struct CachedString{
     QString rawValue;
-    QString Value;
+    QString Value; //TODO pointer to string!
     QModelIndex mi;
 };
 
@@ -24,9 +26,14 @@ public:
     };
 
     explicit Log(QObject *parent = nullptr);
-    Log(const QString&name,const QString&filename,const QByteArray&bts,const LinePositionList&lines, QObject *parent = nullptr);
+    Log(const QString&name,
+        const QString&filename,
+        const QByteArray&bts,
+        const LinePositionList&lines,
+        HighlightPatterns *global_highlight,
+        QObject *parent = nullptr);
 
-    static Log* openFile(const QString&fname, QObject *parent = nullptr);
+    static Log* openFile(HighlightPatterns *global_highlight, const QString&fname, QObject *parent = nullptr);
 
     QString name()const;
     QString filename()const;
@@ -35,10 +42,10 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
-    void clearHeightlight();
-    void heighlightWords(const QSet<QString>&sl);
+    Q_INVOKABLE void clearHeightlight();
+    Q_INVOKABLE void addHeighlightPatter(const QString&sl);
     void updateHeighlights();
-    static QString heighlightStr(const QString&str,const QSet<QString>&sl );
+    static bool heighlightStr(QString&str,const HighlightPatterns&sl );
 signals:
     void linesChanged();
     void countChanged(int);
@@ -54,7 +61,8 @@ protected:
     QString m_fname;
 
     mutable QHash<int, CachedString> m_line_cache;
-    QSet<QString> m_heighlight_patterns;
+    HighlightPatterns m_heighlight_patterns;
+    HighlightPatterns *m_global_highlight;
 };
 
 #endif // LOG_H

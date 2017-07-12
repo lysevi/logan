@@ -22,8 +22,8 @@ void WindowController::openFileSlot(const QString &fname){
     if(m_logs.contains(fname)){
         return;
     }
-    auto log=Log::openFile(fname);
-    log->heighlightWords(m_heightlight);
+    auto log=Log::openFile(&m_global_highlight, fname);
+    //log->heighlightWords(m_heightlight);
     m_logs[fname]=log;
     addTab(fname, log);
 }
@@ -45,16 +45,16 @@ void WindowController::closeFileSlot(const QString &fname){
 
 void WindowController::addHighlightedTextSlot(const QString &s){
     qDebug()<<"addHighlightedTextSlot "<<s;
-    m_heightlight<<s;
+    m_global_highlight<<s;
     for(auto&kv:m_logs){
-        kv->heighlightWords(m_heightlight);
+        kv->updateHeighlights();
     }
 }
 
 void WindowController::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
-    m_heightlight.clear();
+    m_global_highlight.clear();
     for(auto&kv:m_logs){
-        kv->clearHeightlight();
+         kv->updateHeighlights();
     }
 }

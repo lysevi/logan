@@ -26,6 +26,8 @@ public slots:
     void closeFileSlot(const QString &fname);
     void addHighlightedTextSlot(const QString &s);
     void clearHighlightedTextSlot();
+private:
+    HighlightPatterns m_global_highlight;
 };
 
 #endif // WINDOWCONTROLLER_H
