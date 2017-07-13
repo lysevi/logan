@@ -27,8 +27,6 @@ public:
     explicit Log(QObject *parent = nullptr);
     Log(const QString&name,
         const QString&filename,
-        const QByteArray&bts,
-        const LinePositionList&lines,
         HighlightPatterns *global_highlight,
         QObject *parent = nullptr);
 
@@ -53,6 +51,7 @@ signals:
 public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
+    void loadFile();
 protected:
     QByteArray m_bts; //file as bytearray
     LinePositionList m_lines;

@@ -24,38 +24,21 @@ QList<QPair<int,int>> allLinePos(const QByteArray&bts){
 
 Log* Log::openFile(HighlightPatterns *global_highlight, const QString&fname, QObject *parent){
     qDebug()<<"openFile"<<fname;
-    auto curDT=QDateTime::currentDateTimeUtc();
-    Log* ll;
-    QFile inputFile(fname);
-    //QRegExp lineRe("(^\\d\\d:\\d\\d:\\d\\d\\.\\d*)\\s(\\[\\w{0,3}\\])(.*)");
-    if (inputFile.open(QIODevice::ReadOnly))
-    {
-        auto all_bts=inputFile.readAll();
-        auto allLinePositions=allLinePos(all_bts);
-        inputFile.close();
-
-
-        QFileInfo fileInfo(fname);
-        ll=new Log(fileInfo.fileName(), fname,all_bts, allLinePositions, global_highlight, parent);
-        qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
-        return ll;
-    }
-    throw std::logic_error("file not exists!");
+    QFileInfo fileInfo(fname);
+    auto ll=new Log(fileInfo.fileName(), fname, global_highlight, parent);
+    return ll;
 }
 
 Log::Log(const QString&name,
          const QString&filename,
-         const QByteArray&bts,
-         const LinePositionList&lines,
          HighlightPatterns *global_highlight,
          QObject *parent):QAbstractListModel(parent){
-    qDebug()<<"load "<<name<<" lines:"<<lines.count();
+
     m_name=name;
-    m_lines=lines;
-    m_bts=bts;
     m_fname=filename;
     m_global_highlight=global_highlight;
-    qDebug()<<"load "<<name<<" loaded";
+    loadFile();
+    qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.count();
 }
 
 
@@ -67,11 +50,26 @@ QString Log::filename()const{
     return m_fname;
 }
 
+void Log::loadFile(){
+    qDebug()<<"loadFile "<<m_fname;
+    auto curDT=QDateTime::currentDateTimeUtc();
+    QFile inputFile(m_fname);
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        m_bts=inputFile.readAll();
+        m_lines=allLinePos(m_bts);
+        inputFile.close();
+    }else{
+        throw std::logic_error("file not exists!");
+    }
+}
+
 void Log::update(){
     qDebug()<<"update "<<m_name;
     this->beginResetModel();
     m_line_cache.clear();
     m_lines.clear();
+    loadFile();
 
     emit countChanged(m_lines.size());
     emit linesChanged();
