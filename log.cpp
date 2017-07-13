@@ -93,7 +93,7 @@ QVariant Log::data(const QModelIndex & index, int role) const {
 
     auto it=m_line_cache.find(index.row());
     if(it!=m_line_cache.end()){
-        return it->Value;
+        return *it->Value;
     }
     auto pos = m_lines[index.row()];
     if (role == MessageRole){
@@ -106,13 +106,13 @@ QVariant Log::data(const QModelIndex & index, int role) const {
             line[insertPos++]=m_bts[pos];
         }
         CachedString cs;
-        cs.rawValue=line;
-        cs.Value=line;
-        heighlightStr(cs.Value, m_heighlight_patterns+*m_global_highlight);
+        cs.rawValue=std::make_shared<QString>(line);
+        cs.Value=std::make_shared<QString>(line);
+        heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
         cs.mi=index;
         m_line_cache.insert(index.row(), cs);
 
-        return cs.Value;
+        return *cs.Value;
     }
     return QVariant();
 }
@@ -122,12 +122,12 @@ void Log::clearHeightlight(){
     updateHeighlights();
 }
 
-bool Log::heighlightStr(QString&str,const HighlightPatterns&sl){
+bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
     bool result=false;
     for(auto&hWord:sl){
-        if(str.contains(hWord)){
-            qDebug()<<"H+"<<str;
-            str.replace(QRegExp(hWord),"<b>"+hWord+"</b>");
+        if(str->contains(hWord)){
+            qDebug()<<"H+"<<*str;
+            str->replace(QRegExp(hWord),"<b>"+hWord+"</b>");
             result=true;
         }
     }
@@ -141,10 +141,14 @@ void Log::updateHeighlights(){
     for(auto&k:keys){
         auto cs=m_line_cache[k];
 
-        auto str=cs.rawValue;
-        heighlightStr(str, superSet);
+        auto res=std::make_shared<QString>(*cs.rawValue.get());
+        heighlightStr(res.get(), superSet);
 
-        cs.Value=str;
+        if(res!=cs.rawValue){
+            cs.Value=res;
+        }else{
+            cs.Value=cs.rawValue;
+        }
         m_line_cache.insert(k,cs);
         dataChanged(cs.mi, cs.mi);
 

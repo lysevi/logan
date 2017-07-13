@@ -3,14 +3,14 @@
 
 #include <QAbstractListModel>
 #include <QSet>
-
+#include <memory>
 using HighlightPatterns= QSet<QString>;
 
 //TODO array!
 using LinePositionList = QList<QPair<int,int>>;
 struct CachedString{
-    QString rawValue;
-    QString Value; //TODO pointer to string!
+    std::shared_ptr<QString> rawValue;
+    std::shared_ptr<QString> Value; //TODO pointer to string!
     QModelIndex mi;
 };
 
@@ -45,7 +45,7 @@ public:
     Q_INVOKABLE void clearHeightlight();
     Q_INVOKABLE void addHeighlightPatter(const QString&sl);
     void updateHeighlights();
-    static bool heighlightStr(QString&str,const HighlightPatterns&sl );
+    static bool heighlightStr(QString* str,const HighlightPatterns&sl );
 signals:
     void linesChanged();
     void countChanged(int);
