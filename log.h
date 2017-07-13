@@ -11,7 +11,6 @@ using LinePositionList = QList<QPair<int,int>>;
 struct CachedString{
     std::shared_ptr<QString> rawValue;
     std::shared_ptr<QString> Value; //TODO pointer to string!
-    QModelIndex mi;
 };
 
 class Log : public QAbstractListModel

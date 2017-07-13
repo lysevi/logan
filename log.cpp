@@ -69,14 +69,18 @@ QString Log::filename()const{
 
 void Log::update(){
     qDebug()<<"update "<<m_name;
+    this->beginResetModel();
     m_line_cache.clear();
     m_lines.clear();
+
     emit countChanged(m_lines.size());
     emit linesChanged();
+    this->endResetModel();
 }
 
 
 int Log::rowCount(const QModelIndex & parent) const {
+    qDebug()<<"rowCount";
     Q_UNUSED(parent);
     return m_lines.count();
 }
@@ -109,7 +113,6 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         cs.rawValue=std::make_shared<QString>(line);
         cs.Value=std::make_shared<QString>(line);
         heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-        cs.mi=index;
         m_line_cache.insert(index.row(), cs);
 
         return *cs.Value;
@@ -150,7 +153,8 @@ void Log::updateHeighlights(){
             cs.Value=cs.rawValue;
         }
         m_line_cache.insert(k,cs);
-        dataChanged(cs.mi, cs.mi);
+        auto mi=this->createIndex(k,0);
+        dataChanged(mi, mi);
 
     }
 }
