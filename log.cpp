@@ -5,6 +5,9 @@
 #include <QPair>
 #include <QDateTime>
 #include <QFileInfo>
+
+const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
+
 Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
@@ -112,7 +115,6 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         cs.Value=std::make_shared<QString>(line);
         heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
         m_line_cache.insert(index.row(), cs);
-
         return *cs.Value;
     }
     return QVariant();
