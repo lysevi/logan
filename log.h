@@ -13,6 +13,8 @@ struct CachedString{
     std::shared_ptr<QString> Value; //TODO pointer to string!
 };
 
+const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
+
 class Log : public QAbstractListModel
 {
     Q_OBJECT

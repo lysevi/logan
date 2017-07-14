@@ -2,6 +2,7 @@
 
 WindowController::WindowController(QObject* rootObject,QObject*parent):QObject(parent){
     m_rootObject=rootObject;
+    clearHighlightedTextSlot();
 }
 
 void WindowController::addTab(const QString&title, Log*v){
@@ -23,7 +24,6 @@ void WindowController::openFileSlot(const QString &fname){
         return;
     }
     auto log=Log::openFile(&m_global_highlight, fname);
-    //log->heighlightWords(m_heightlight);
     m_logs[fname]=log;
     addTab(fname, log);
 }
@@ -57,4 +57,5 @@ void WindowController::clearHighlightedTextSlot(){
     for(auto&kv:m_logs){
          kv->updateHeighlights();
     }
+    m_global_highlight.insert(dateRe);
 }

@@ -128,9 +128,14 @@ void Log::clearHeightlight(){
 bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
     bool result=false;
     for(auto&hWord:sl){
-        if(str->contains(hWord)){
+        QRegExp re(hWord);
+        if(re.indexIn(*str)!= -1){
             qDebug()<<"H+"<<*str;
-            str->replace(QRegExp(hWord),"<b>"+hWord+"</b>");
+            auto ct=re.capturedTexts();
+            for(auto&&captured_str:ct){
+                qDebug()<<"cs"<<captured_str;
+                str->replace(re,"<b>"+captured_str+"</b>");
+            }
             result=true;
         }
     }
