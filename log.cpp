@@ -6,14 +6,22 @@
 #include <QDateTime>
 #include <QFileInfo>
 
+
 const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 
 Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
-QList<QPair<int,int>> allLinePos(const QByteArray&bts){
+LinePositionList allLinePos(const QByteArray&bts){
     auto curDT=QDateTime::currentDateTimeUtc();
-    QList<QPair<int,int>> result;
+    LinePositionList result;
+    int count=0;
+    for(int i=0;i<bts.size();++i){
+        if(bts[i]=='\n'){
+            count++;
+        }
+    }
+    result.reserve(count);
     int start=0;
     for(int i=0;i<bts.size();++i){
         if(bts[i]=='\n'){
@@ -59,10 +67,10 @@ void Log::loadFile(){
     QFile inputFile(m_fname);
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        m_bts=inputFile.readAll();
-        auto lines=allLinePos(m_bts);
+        auto bts=inputFile.readAll();
+        auto lines=allLinePos(bts);
         inputFile.close();
-        initBuffer(lines);
+        initBuffer(bts, lines);
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -92,25 +100,57 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-void Log::initBuffer(const LinePositionList&lines){
-    int index=0;
-    m_buffer.resize(lines.size());
-    for(const auto&pos:lines){
-        int start=pos.first;
-        int i=pos.second;
+void Log::readStrings(int begin, int end,const LinePositionList&lines, const QByteArray&bts){
+    auto diff=end-begin;
+    if(diff<=500000){
+        int index=begin;
+        for(auto read_pos=begin;read_pos!=end;++read_pos){
+            auto it=lines[read_pos];
+            int start=it.first;
+            int i=it.second;
 
-        QString line(int(i-start));
-        int insertPos=0;
-        for(int pos=start;pos<i;++pos){
-            line[insertPos++]=m_bts[pos];
+            QString line(int(i-start));
+            int insertPos=0;
+            for(int pos=start;pos<i;++pos){
+                line[insertPos++]=bts[pos];
+            }
+            CachedString cs;
+            cs.rawValue=std::make_shared<QString>(line);
+            cs.Value=std::make_shared<QString>(line);
+            heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
+            m_buffer[index]=cs;
+            ++index;
         }
-        CachedString cs;
-        cs.rawValue=std::make_shared<QString>(line);
-        cs.Value=std::make_shared<QString>(line);
-        heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-        m_buffer[index]=cs;
-        ++index;
+        return;
     }
+
+    auto mid=begin+diff/2;
+    auto handle1= std::async(std::launch::async,Log::readStrings,this, begin, mid,lines, bts);
+    auto handle2= std::async(std::launch::async,Log::readStrings,this, mid, end,lines,bts);
+
+    handle1.wait();
+    handle2.wait();
+}
+
+void Log::initBuffer(const QByteArray&bts, const LinePositionList&lines){
+    m_buffer.resize(lines.size());
+    readStrings(0, lines.size(), lines, bts);
+    //    for(const auto&pos:lines){
+    //        int start=pos.first;
+    //        int i=pos.second;
+
+    //        QString line(int(i-start));
+    //        int insertPos=0;
+    //        for(int pos=start;pos<i;++pos){
+    //            line[insertPos++]=bts[pos];
+    //        }
+    //        CachedString cs;
+    //        cs.rawValue=std::make_shared<QString>(line);
+    //        cs.Value=std::make_shared<QString>(line);
+    //        heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
+    //        m_buffer[index]=cs;
+    //        ++index;
+    //    }
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {

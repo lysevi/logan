@@ -3,11 +3,12 @@
 
 #include <QAbstractListModel>
 #include <QSet>
+#include <future>
 #include <memory>
 using HighlightPatterns= QSet<QString>;
 
 //TODO array!
-using LinePositionList = QList<QPair<int,int>>;
+using LinePositionList = QVector<QPair<int,int>>;
 struct CachedString{
     std::shared_ptr<QString> rawValue;
     std::shared_ptr<QString> Value; //TODO pointer to string!
@@ -54,9 +55,9 @@ public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
     void loadFile();
-    void initBuffer(const LinePositionList&lines);
+    void initBuffer(const QByteArray&bts, const LinePositionList&lines);
+    void readStrings(int begin, int end,const LinePositionList&lines, const QByteArray&bts);
 protected:
-    QByteArray m_bts; //file as bytearray
     QString m_name;
     QString m_fname;
 
