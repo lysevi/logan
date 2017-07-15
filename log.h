@@ -54,6 +54,7 @@ public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
     void loadFile();
+    void initCache();
 protected:
     QByteArray m_bts; //file as bytearray
     LinePositionList m_lines;

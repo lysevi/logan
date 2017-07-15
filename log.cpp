@@ -62,6 +62,7 @@ void Log::loadFile(){
         m_bts=inputFile.readAll();
         m_lines=allLinePos(m_bts);
         inputFile.close();
+        initCache();
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -81,7 +82,7 @@ void Log::update(){
 
 
 int Log::rowCount(const QModelIndex & parent) const {
-    qDebug()<<"rowCount";
+    //qDebug()<<"rowCount";
     Q_UNUSED(parent);
     return m_lines.count();
 }
@@ -92,16 +93,9 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-QVariant Log::data(const QModelIndex & index, int role) const {
-    if (index.row() < 0 || index.row() >= m_lines.count())
-        return QVariant();
-
-    auto it=m_line_cache.find(index.row());
-    if(it!=m_line_cache.end()){
-        return *it->Value;
-    }
-    auto pos = m_lines[index.row()];
-    if (role == MessageRole){
+void Log::initCache(){
+    int index=0;
+    for(const auto&pos:m_lines){
         int start=pos.first;
         int i=pos.second;
 
@@ -114,8 +108,21 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         cs.rawValue=std::make_shared<QString>(line);
         cs.Value=std::make_shared<QString>(line);
         heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-        m_line_cache.insert(index.row(), cs);
-        return *cs.Value;
+        m_line_cache.insert(index, cs);
+        ++index;
+    }
+}
+
+QVariant Log::data(const QModelIndex & index, int role) const {
+    if (index.row() < 0 || index.row() >= m_lines.count())
+        return QVariant();
+    if (role == MessageRole){
+        auto it=m_line_cache.find(index.row());
+        if(it!=m_line_cache.end()){
+            return *it->Value;
+        }else{
+            throw std::logic_error("cache error!");
+        }
     }
     return QVariant();
 }
@@ -130,10 +137,10 @@ bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
     for(auto&hWord:sl){
         QRegExp re(hWord);
         if(re.indexIn(*str)!= -1){
-            qDebug()<<"H+"<<*str;
+            //qDebug()<<"H+"<<*str;
             auto ct=re.capturedTexts();
             for(auto&&captured_str:ct){
-                qDebug()<<"cs"<<captured_str;
+                //qDebug()<<"cs"<<captured_str;
                 str->replace(re,"<b>"+captured_str+"</b>");
             }
             result=true;
