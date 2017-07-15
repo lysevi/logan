@@ -54,13 +54,13 @@ public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
     void loadFile();
-    void initCache(const LinePositionList&lines);
+    void initBuffer(const LinePositionList&lines);
 protected:
     QByteArray m_bts; //file as bytearray
     QString m_name;
     QString m_fname;
 
-    QVector<CachedString> m_line_cache;
+    QVector<CachedString> m_buffer;
     HighlightPatterns m_heighlight_patterns;
     HighlightPatterns *m_global_highlight;
 };
