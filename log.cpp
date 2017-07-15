@@ -13,7 +13,7 @@ Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
 LinePositionList allLinePos(const QByteArray&bts){
-    auto curDT=QDateTime::currentDateTimeUtc();
+
     LinePositionList result;
     int count=0;
     for(int i=0;i<bts.size();++i){
@@ -29,7 +29,6 @@ LinePositionList allLinePos(const QByteArray&bts){
             start=i+1;
         }
     }
-    qDebug()<<"allLinePos elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
     return result;
 }
 
@@ -74,6 +73,7 @@ void Log::loadFile(){
     }else{
         throw std::logic_error("file not exists!");
     }
+    qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void Log::update(){
@@ -101,8 +101,9 @@ QHash<int, QByteArray> Log::roleNames() const {
 }
 
 void Log::readStrings(int begin, int end,const LinePositionList&lines, const QByteArray&bts){
+    qDebug()<<"readStrings: begin="<<begin<<"end="<<end;
     auto diff=end-begin;
-    if(diff<=500000){
+    if(diff<=100000){
         int index=begin;
         for(auto read_pos=begin;read_pos!=end;++read_pos){
             auto it=lines[read_pos];
