@@ -41,7 +41,7 @@ Log::Log(const QString&name,
     m_fname=filename;
     m_global_highlight=global_highlight;
     loadFile();
-    qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.count();
+    qDebug()<<"loaded "<<m_name<<" lines:"<<m_line_cache.count();
 }
 
 
@@ -60,9 +60,9 @@ void Log::loadFile(){
     if (inputFile.open(QIODevice::ReadOnly))
     {
         m_bts=inputFile.readAll();
-        m_lines=allLinePos(m_bts);
+        auto lines=allLinePos(m_bts);
         inputFile.close();
-        initCache();
+        initCache(lines);
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -72,10 +72,9 @@ void Log::update(){
     qDebug()<<"update "<<m_name;
     this->beginResetModel();
     m_line_cache.clear();
-    m_lines.clear();
     loadFile();
 
-    emit countChanged(m_lines.size());
+    emit countChanged(m_line_cache.size());
     emit linesChanged();
     this->endResetModel();
 }
@@ -84,7 +83,7 @@ void Log::update(){
 int Log::rowCount(const QModelIndex & parent) const {
     //qDebug()<<"rowCount";
     Q_UNUSED(parent);
-    return m_lines.count();
+    return m_line_cache.count();
 }
 
 QHash<int, QByteArray> Log::roleNames() const {
@@ -93,9 +92,10 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-void Log::initCache(){
+void Log::initCache(const LinePositionList&lines){
     int index=0;
-    for(const auto&pos:m_lines){
+    m_line_cache.resize(lines.size());
+    for(const auto&pos:lines){
         int start=pos.first;
         int i=pos.second;
 
@@ -108,21 +108,16 @@ void Log::initCache(){
         cs.rawValue=std::make_shared<QString>(line);
         cs.Value=std::make_shared<QString>(line);
         heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-        m_line_cache.insert(index, cs);
+        m_line_cache[index]=cs;
         ++index;
     }
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {
-    if (index.row() < 0 || index.row() >= m_lines.count())
+    if (index.row() < 0 || index.row() >= m_line_cache.count())
         return QVariant();
     if (role == MessageRole){
-        auto it=m_line_cache.find(index.row());
-        if(it!=m_line_cache.end()){
-            return *it->Value;
-        }else{
-            throw std::logic_error("cache error!");
-        }
+        return *(m_line_cache[index.row()].Value);
     }
     return QVariant();
 }
@@ -152,8 +147,8 @@ bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
 void Log::updateHeighlights(){
     HighlightPatterns superSet(m_heighlight_patterns);
     superSet+=*m_global_highlight;
-    auto keys=m_line_cache.keys();
-    for(auto&k:keys){
+
+    for(int k=0;k<m_line_cache.size();++k){
         auto cs=m_line_cache[k];
 
         auto res=std::make_shared<QString>(*cs.rawValue.get());
