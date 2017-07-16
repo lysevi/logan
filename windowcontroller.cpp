@@ -1,5 +1,6 @@
 #include "windowcontroller.h"
-
+#include <QtConcurrent>
+#include <QDateTime>
 WindowController::WindowController(QObject* rootObject,QObject*parent):QObject(parent){
     m_rootObject=rootObject;
     clearHighlightedTextSlot();
@@ -45,17 +46,15 @@ void WindowController::closeFileSlot(const QString &fname){
 
 void WindowController::addHighlightedTextSlot(const QString &s){
     qDebug()<<"addHighlightedTextSlot "<<s;
+    auto curDT=QDateTime::currentDateTimeUtc();
     m_global_highlight<<s;
-    for(auto&kv:m_logs){
-        kv->updateHeighlights();
-    }
+    QtConcurrent::blockingMap(m_logs,[](auto v){v->updateHeighlights();});
+    qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void WindowController::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
     m_global_highlight.clear();
-    for(auto&kv:m_logs){
-         kv->updateHeighlights();
-    }
     m_global_highlight.insert(dateRe);
+    QtConcurrent::blockingMap(m_logs,[](auto v){v->updateHeighlights();});
 }

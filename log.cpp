@@ -5,7 +5,7 @@
 #include <QPair>
 #include <QDateTime>
 #include <QFileInfo>
-
+#include <QtConcurrent>
 
 const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 
@@ -13,7 +13,6 @@ Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
 LinePositionList allLinePos(const QByteArray&bts){
-
     LinePositionList result;
     int count=0;
     for(int i=0;i<bts.size();++i){
@@ -23,9 +22,14 @@ LinePositionList allLinePos(const QByteArray&bts){
     }
     result.reserve(count);
     int start=0;
+    int index=0;
     for(int i=0;i<bts.size();++i){
         if(bts[i]=='\n'){
-            result.append(QPair<int,int>(start,i));
+            LinePosition lp;
+            lp.first=start;
+            lp.second=i;
+            lp.index=index++;
+            result.append(lp);
             start=i+1;
         }
     }
@@ -100,58 +104,24 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-void Log::readStrings(int begin, int end,const LinePositionList&lines, const QByteArray&bts){
-    qDebug()<<"readStrings: begin="<<begin<<"end="<<end;
-    auto diff=end-begin;
-    if(diff<=100000){
-        int index=begin;
-        for(auto read_pos=begin;read_pos!=end;++read_pos){
-            auto it=lines[read_pos];
-            int start=it.first;
-            int i=it.second;
-
-            QString line(int(i-start));
-            int insertPos=0;
-            for(int pos=start;pos<i;++pos){
-                line[insertPos++]=bts[pos];
-            }
-            CachedString cs;
-            cs.rawValue=std::make_shared<QString>(line);
-            cs.Value=std::make_shared<QString>(line);
-            heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-            m_buffer[index]=cs;
-            ++index;
-        }
-        return;
-    }
-
-    auto mid=begin+diff/2;
-    auto handle1= std::async(std::launch::async,Log::readStrings,this, begin, mid,lines, bts);
-    auto handle2= std::async(std::launch::async,Log::readStrings,this, mid, end,lines,bts);
-
-    handle1.wait();
-    handle2.wait();
-}
-
 void Log::initBuffer(const QByteArray&bts, const LinePositionList&lines){
     m_buffer.resize(lines.size());
-    readStrings(0, lines.size(), lines, bts);
-    //    for(const auto&pos:lines){
-    //        int start=pos.first;
-    //        int i=pos.second;
+    QtConcurrent::blockingMap(lines,[this,&bts](const LinePosition&it){
+        int start=it.first;
+        int i=it.second;
 
-    //        QString line(int(i-start));
-    //        int insertPos=0;
-    //        for(int pos=start;pos<i;++pos){
-    //            line[insertPos++]=bts[pos];
-    //        }
-    //        CachedString cs;
-    //        cs.rawValue=std::make_shared<QString>(line);
-    //        cs.Value=std::make_shared<QString>(line);
-    //        heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
-    //        m_buffer[index]=cs;
-    //        ++index;
-    //    }
+        QString line(int(i-start));
+        int insertPos=0;
+        for(int pos=start;pos<i;++pos){
+            line[insertPos++]=bts[pos];
+        }
+        CachedString cs;
+        cs.index=it.index;
+        cs.rawValue=std::make_shared<QString>(line);
+        cs.Value=std::make_shared<QString>(line);
+        heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
+        m_buffer[it.index]=cs;
+    });
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {
@@ -170,6 +140,7 @@ void Log::clearHeightlight(){
 
 bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
     bool result=false;
+
     for(auto&hWord:sl){
         QRegExp re(hWord);
         if(re.indexIn(*str)!= -1){
@@ -187,11 +158,10 @@ bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
 
 void Log::updateHeighlights(){
     HighlightPatterns superSet(m_heighlight_patterns);
+    auto curDT=QDateTime::currentDateTimeUtc();
     superSet+=*m_global_highlight;
 
-    for(int k=0;k<m_buffer.size();++k){
-        auto cs=m_buffer[k];
-
+    QtConcurrent::blockingMap(m_buffer,[this, &superSet](CachedString&cs){
         auto res=std::make_shared<QString>(*cs.rawValue.get());
         heighlightStr(res.get(), superSet);
 
@@ -200,11 +170,12 @@ void Log::updateHeighlights(){
         }else{
             cs.Value=cs.rawValue;
         }
-        m_buffer.insert(k,cs);
+    });
+    for(int k=0;k<m_buffer.size();++k){
         auto mi=this->createIndex(k,0);
         dataChanged(mi, mi);
-
     }
+    qDebug()<<m_fname<<"updateHeighlights elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void Log::addHeighlightPatter(const QString&sl){

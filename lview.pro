@@ -1,6 +1,6 @@
-QT += qml quick
+QT += qml quick concurrent
 
-CONFIG += c++11
+CONFIG += c++14
 
 SOURCES += main.cpp \
     log.cpp \
