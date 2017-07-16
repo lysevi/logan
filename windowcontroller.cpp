@@ -1,7 +1,11 @@
 #include "windowcontroller.h"
 #include <QtConcurrent>
 #include <QDateTime>
+
 WindowController::WindowController(QObject* rootObject,QObject*parent):QObject(parent){
+    auto threads=QThreadPool::globalInstance()->maxThreadCount();
+    //QThreadPool::globalInstance()->setMaxThreadCount(threads);
+    qDebug()<<"maxThreadCount"<<threads;
     m_rootObject=rootObject;
     clearHighlightedTextSlot();
 }

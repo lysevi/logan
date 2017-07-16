@@ -144,10 +144,8 @@ bool Log::heighlightStr(QString* str,const HighlightPatterns&sl){
     for(auto&hWord:sl){
         QRegExp re(hWord);
         if(re.indexIn(*str)!= -1){
-            //qDebug()<<"H+"<<*str;
             auto ct=re.capturedTexts();
             for(auto&&captured_str:ct){
-                //qDebug()<<"cs"<<captured_str;
                 str->replace(re,"<b>"+captured_str+"</b>");
             }
             result=true;
@@ -163,9 +161,9 @@ void Log::updateHeighlights(){
 
     QtConcurrent::blockingMap(m_buffer,[this, &superSet](CachedString&cs){
         auto res=std::make_shared<QString>(*cs.rawValue.get());
-        heighlightStr(res.get(), superSet);
+        auto updated=heighlightStr(res.get(), superSet);
 
-        if(res!=cs.rawValue){
+        if(updated){
             cs.Value=res;
         }else{
             cs.Value=cs.rawValue;
