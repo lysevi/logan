@@ -64,8 +64,9 @@ public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
     void loadFile();
-    void initBuffer(const QByteArray&bts, const LinePositionList&lines);
+    void initBuffer(const uchar*bts, const LinePositionList&lines);
 protected:
+    bool m_load_complete=false;
     QString m_name;
     QString m_fname;
 

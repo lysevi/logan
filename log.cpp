@@ -12,24 +12,24 @@ const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
-LinePositionList allLinePos(const QByteArray&bts){
-    LinePositionList result;
+LinePositionList allLinePos(const uchar*bts, qint64 size){
+
     int count=0;
-    for(int i=0;i<bts.size();++i){
+    for(int i=0;i<size;++i){
         if(bts[i]=='\n'){
             count++;
         }
     }
-    result.reserve(count);
+    LinePositionList result(count);
     int start=0;
     int index=0;
-    for(int i=0;i<bts.size();++i){
+    for(int i=0;i<size;++i){
         if(bts[i]=='\n'){
             LinePosition lp;
             lp.first=start;
             lp.second=i;
             lp.index=index++;
-            result.append(lp);
+            result[lp.index]=lp;
             start=i+1;
         }
     }
@@ -70,10 +70,11 @@ void Log::loadFile(){
     QFile inputFile(m_fname);
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        auto bts=inputFile.readAll();
-        auto lines=allLinePos(bts);
+        auto bts=inputFile.map(0, inputFile.size());
+        auto lines=allLinePos(bts, inputFile.size());
         inputFile.close();
         initBuffer(bts, lines);
+        inputFile.unmap(bts);
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -95,6 +96,9 @@ void Log::update(){
 int Log::rowCount(const QModelIndex & parent) const {
     //qDebug()<<"rowCount";
     Q_UNUSED(parent);
+    if(!m_load_complete){
+        return 0;
+    }
     return m_buffer.count();
 }
 
@@ -104,9 +108,9 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-void Log::initBuffer(const QByteArray&bts, const LinePositionList&lines){
+void Log::initBuffer(const uchar*bts, const LinePositionList&lines){
     m_buffer.resize(lines.size());
-    QtConcurrent::blockingMap(lines,[this,&bts](const LinePosition&it){
+    auto res=QtConcurrent::map(lines,[this,bts](const LinePosition&it){
         int start=it.first;
         int i=it.second;
 
@@ -122,10 +126,12 @@ void Log::initBuffer(const QByteArray&bts, const LinePositionList&lines){
         heighlightStr(cs.Value.get(), m_heighlight_patterns+*m_global_highlight);
         m_buffer[it.index]=cs;
     });
+    res.waitForFinished();
+    m_load_complete=true;
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {
-    if (index.row() < 0 || index.row() >= m_buffer.count())
+    if (!m_load_complete || index.row() < 0 || index.row() >= m_buffer.count())
         return QVariant();
     if (role == MessageRole){
         return *(m_buffer[index.row()].Value);
