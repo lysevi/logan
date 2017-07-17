@@ -45,10 +45,12 @@ Item {
                 activeFocusOnPress: true
                 selectByMouse: true
                 textFormat: TextEdit.RichText
+                persistentSelection:false
                 onActiveFocusChanged: {
                     if(activeFocus){
                         rootWindow.selectedTextEdit=te
                         tableView.currentIndex = index
+                        te.select(0,0)
                     }
                     font.italic = activeFocus
 
@@ -83,7 +85,9 @@ Item {
                     }
 
                     onClicked: {
-                        logModel.addHeighlightPattern(rootWindow.selectedTextEdit.selectedText)
+                        if(rootWindow.selectedTextEdit!==null){
+                            logModel.addHeighlightPattern(rootWindow.selectedTextEdit.selectedText)
+                        }
 
                     }
                 }

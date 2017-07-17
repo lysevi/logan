@@ -58,7 +58,7 @@ ApplicationWindow {
     }
 
     toolBar:ToolBar {
-        height: 30
+        height: 50
         Row {
             anchors.fill: parent
             spacing: 2

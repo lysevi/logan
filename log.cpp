@@ -162,6 +162,9 @@ void Log::clearHeightlight(){
 }
 
 bool Log::heighlightStr(QString* str,const QString&pattern){
+    if(pattern.size()==0){
+        return false;
+    }
     bool result=false;
 
     QRegExp re(pattern);
@@ -177,6 +180,9 @@ bool Log::heighlightStr(QString* str,const QString&pattern){
 }
 
 void Log::updateHeighlights(const QString&pattern){
+    if(pattern.size()==0){
+        return;
+    }
     auto curDT=QDateTime::currentDateTimeUtc();
 
     QtConcurrent::blockingMap(m_buffer,[this,&pattern](CachedString&cs){
@@ -191,6 +197,9 @@ void Log::updateHeighlights(const QString&pattern){
 }
 
 void Log::addHeighlightPattern(const QString&pattern){
+    if(pattern.size()==0){
+        return;
+    }
     updateHeighlights(pattern);
 }
 
