@@ -33,11 +33,13 @@ ApplicationWindow {
         title: "Please choose a file"
         folder: shortcuts.home
         onAccepted: {
-            var path = openFileDialog.fileUrl.toString();
+            var url=openFileDialog.fileUrl
+            var path = url.toString();
             // remove prefixed "file:///"
-            path= path.replace(/^(file:\/{3})|(qrc:\/{2})|(http:\/{2})/,"");
+            path= path.replace(/^(file:\/{3})|(file:)|(qrc:\/{2})|(http:\/{2})/,"");
             // unescape html codes like '%23' for '#'
             var cleanPath = decodeURIComponent(path);
+            console.log("cleanPath:", cleanPath)
             openFileSignal(cleanPath)
         }
         onRejected: {
