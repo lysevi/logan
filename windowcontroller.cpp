@@ -17,9 +17,15 @@ void WindowController::addTab(const QString&title, Log*v){
                               Q_ARG(QVariant, title), Q_ARG(QVariant, QVariant::fromValue(v)));
 }
 
-void WindowController::updateAllSlot(const QString &/*msg*/) {
+void WindowController::updateAllSlot(const QString &msg) {
     for(auto&v:m_logs){
-        v->update();
+        if(msg=="null"){
+            v->update();
+        }else{
+            if(msg!="null" && msg==v->filename()){
+                v->update();
+            }
+        }
     }
 }
 

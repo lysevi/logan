@@ -62,7 +62,7 @@ ApplicationWindow {
                 }
                 onClicked: {
                     console.log("on update all")
-                    rootWindow.updateAllSignal("qml")
+                    rootWindow.updateAllSignal("null")
                 }
             }
 
@@ -158,6 +158,13 @@ ApplicationWindow {
                 console.log("highlight");
                 event.accepted = true;
                 addHighlightedText(selectedTextEdit.selectedText)
+            }
+
+            if (event.key === Qt.Key_F2) {
+                console.log("update current");
+                event.accepted = true;
+                var curTab=tabView.getTab(tabView.currentIndex)
+                updateAllSignal(curTab.title);
             }
         }
 
