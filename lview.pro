@@ -1,3 +1,5 @@
+DEFINES += LVIEW_VERSION=\\\"0.1.0\\\"
+DEFINES += GIT_VERSION=\\\"$$system(git describe --always)\\\"
 QT += qml quick concurrent
 
 CONFIG += c++14

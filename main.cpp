@@ -10,6 +10,10 @@
 
 int main(int argc, char *argv[])
 {
+    auto v1=QString(LVIEW_VERSION);
+    auto v2=QString(GIT_VERSION);
+    auto lview_version=v1+"-"+v2;
+
     QGuiApplication app(argc, argv);
 
 
@@ -20,9 +24,15 @@ int main(int argc, char *argv[])
     if (engine.rootObjects().isEmpty())
         return -1;
 
+    auto ctx=engine.rootContext();
+    ctx->setContextProperty("lview_version", QVariant::fromValue(lview_version));
+    engine.load(QUrl(QLatin1String("qrc:/main.qml")));
+
+
     QObject* rootObject=engine.rootObjects().first();
     qDebug()<<"rootObject:"<<rootObject->objectName();
     WindowController *wc=new WindowController(rootObject);
+
     QObject::connect(rootObject, SIGNAL(updateAllSignal(QString)),
                      wc,  SLOT(updateAllSlot(QString)));
     QObject::connect(rootObject, SIGNAL(openFileSignal(QString)),

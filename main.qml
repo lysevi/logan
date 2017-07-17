@@ -11,7 +11,7 @@ ApplicationWindow {
     visible: true
     width: 640
     height: 480
-    title: qsTr("LView")
+    title: qsTr("LView: ")+lview_version
     objectName:  "RootWindow"
 
     signal updateAllSignal(string msg)
