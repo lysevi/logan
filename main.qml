@@ -46,12 +46,23 @@ ApplicationWindow {
         Component.onCompleted: visible = false
     }
 
+    Timer {
+        id: updateTimer
+        interval: timerSlider.value*1000;
+        running: timerEnableCheckbox.checked;
+        repeat: true
+        onTriggered: {
+            console.log("update timer");
+            updateAllSignal("null")
+        }
+    }
+
     toolBar:ToolBar {
         height: 30
         Row {
-
             anchors.fill: parent
             spacing: 2
+
             Button {
                 id: updateBtn
                 height: parent.height
@@ -111,6 +122,42 @@ ApplicationWindow {
                     clearHighlightedTextSignal()
                 }
             }
+
+
+            CheckBox{
+                id: timerEnableCheckbox
+                anchors.verticalCenter: parent.verticalCenter
+                text: qsTr("Update timeout")
+                checked: false
+                onCheckedChanged: {
+                    timerSlider.enabled=timerEnableCheckbox.checked
+                }
+            }
+
+            Text {
+                id: timerText
+                text: timerSlider.value + " sec."
+                width: 40
+                anchors.verticalCenter: parent.verticalCenter
+            }
+
+            Slider{
+                id: timerSlider
+                anchors.verticalCenter: parent.verticalCenter
+                minimumValue: 1
+                maximumValue: 60
+                enabled:false
+                stepSize:1
+                style: SliderStyle {
+                    groove: Rectangle {
+                        implicitWidth: 200
+                        implicitHeight: 8
+                        color:  timerSlider.enabled? "lightblue" : "gray"
+                        radius: 8
+                    }
+                }
+            }
+
         }
     }
 
