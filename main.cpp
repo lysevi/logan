@@ -26,7 +26,6 @@ int main(int argc, char *argv[])
 
     auto ctx=engine.rootContext();
     ctx->setContextProperty("lview_version", QVariant::fromValue(lview_version));
-    engine.load(QUrl(QLatin1String("qrc:/main.qml")));
 
 
     QObject* rootObject=engine.rootObjects().first();
