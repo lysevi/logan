@@ -70,7 +70,7 @@ Item {
                     }
 
                     onClicked: {
-                        logModel.addHeighlightPatter(rootWindow.selectedTextEdit.selectedText)
+                        logModel.addHeighlightPattern(rootWindow.selectedTextEdit.selectedText)
 
                     }
                 }

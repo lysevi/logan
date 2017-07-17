@@ -4,7 +4,6 @@
 #include <QObject>
 #include <QDebug>
 #include <QList>
-
 #include "log.h"
 
 class WindowController : public QObject

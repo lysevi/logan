@@ -28,7 +28,7 @@ void WindowController::openFileSlot(const QString &fname){
     if(m_logs.contains(fname)){
         return;
     }
-    auto log=Log::openFile(&m_global_highlight, fname);
+    auto log=Log::openFile(fname, &m_global_highlight);
     m_logs[fname]=log;
     addTab(fname, log);
 }
@@ -52,7 +52,7 @@ void WindowController::addHighlightedTextSlot(const QString &s){
     qDebug()<<"addHighlightedTextSlot "<<s;
     auto curDT=QDateTime::currentDateTimeUtc();
     m_global_highlight<<s;
-    QtConcurrent::blockingMap(m_logs,[](auto v){v->updateHeighlights();});
+    QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
@@ -60,5 +60,7 @@ void WindowController::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
     m_global_highlight.clear();
     m_global_highlight.insert(dateRe);
-    QtConcurrent::blockingMap(m_logs,[](auto v){v->updateHeighlights();});
+    for(auto log:m_logs){
+        log->clearHeightlight();
+    }
 }
