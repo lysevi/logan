@@ -53,6 +53,8 @@ public:
     Q_INVOKABLE void addHeighlightPattern(const QString&pattern);
     void updateHeighlights(const QString&pattern);
     static bool heighlightStr(QString* str,const QString&pattern );
+
+    Q_INVOKABLE void setQmlObject(QObject *object);
 signals:
     void linesChanged();
     void countChanged(int);
@@ -70,6 +72,8 @@ protected:
 
     QVector<CachedString> m_buffer;
     const HighlightPatterns *m_global_highlight;
+
+    QObject *m_qml_object;
 };
 
 #endif // LOG_H

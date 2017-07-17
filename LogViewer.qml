@@ -10,6 +10,13 @@ Item {
     property string fontFace: "Monospace"
     property var editorFont: fontSize + "pt \"" + fontFace + "\"" + ", monospace"
 
+    onLogModelChanged: {
+        console.log("onLogModelChanged");
+        if(logModel!=null){
+            logModel.setQmlObject(viewerRoot)
+        }
+    }
+
     FontMetrics {
         id: fontMetrics
         font.family: viewerRoot.fontFace
@@ -18,6 +25,10 @@ Item {
 
     property var lineHeight: fontMetrics.lineSpacing
 
+    function scrollDown(){
+        console.log("scroll down");
+        scrollId.flickableItem.contentY=scrollId.flickableItem.contentHeight - tableView.height;
+    }
 
     Component {
         id: contactDelegate
@@ -64,9 +75,11 @@ Item {
                     tooltip: qsTr("addHighlightedText")
                     height: parent.height
                     width: parent.height
+
                     Image {
                         source: "qrc:/icons/felt.svg"
                         anchors.fill: parent
+                        antialiasing: true
                     }
 
                     onClicked: {
@@ -89,9 +102,25 @@ Item {
                         logModel.clearHeightlight();
                     }
                 }
+
+                Button {
+                    tooltip: qsTr("scroll down")
+                    height: parent.height
+                    width: parent.height
+                    Image {
+                        source: "qrc:/icons/down.svg"
+                        anchors.fill: parent
+                    }
+
+                    onClicked: {
+                        scrollDown();
+                    }
+                }
             }
         }
+
         ScrollView{
+            id: scrollId
             width: parent.width
             height: parent.height - logTlbr.height
             ListView {

@@ -96,6 +96,10 @@ void Log::update(){
     emit countChanged(m_buffer.size());
     emit linesChanged();
     this->endResetModel();
+
+    QVariant returnedValue;
+    QMetaObject::invokeMethod(m_qml_object, "scrollDown",
+            Q_RETURN_ARG(QVariant, returnedValue));
 }
 
 
@@ -190,3 +194,6 @@ void Log::addHeighlightPattern(const QString&pattern){
     updateHeighlights(pattern);
 }
 
+void Log::setQmlObject(QObject *object){
+    m_qml_object=object;
+}

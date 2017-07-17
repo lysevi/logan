@@ -11,5 +11,6 @@
         <file>icons/close.svg</file>
         <file>icons/felt.svg</file>
         <file>icons/clear.svg</file>
+        <file>icons/down.svg</file>
     </qresource>
 </RCC>
