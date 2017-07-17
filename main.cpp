@@ -16,6 +16,7 @@ int main(int argc, char *argv[])
 
     QGuiApplication app(argc, argv);
 
+    QtWebEngine::initialize();
 
     QQmlApplicationEngine engine;
     //    auto ctx=engine.rootContext();

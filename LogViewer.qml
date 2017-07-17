@@ -1,6 +1,7 @@
 import QtQuick 2.5
 import QtQuick.Controls 1.2
 import QtQuick.Layouts 1.3
+import QtWebEngine 1.5
 
 Item {
     id: viewerRoot
