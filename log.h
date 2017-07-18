@@ -3,6 +3,8 @@
 
 #include <QAbstractListModel>
 #include <QSet>
+#include <QFileInfo>
+#include <QDateTime>
 #include <future>
 #include <memory>
 
@@ -36,7 +38,7 @@ public:
     };
 
     explicit Log(QObject *parent = nullptr);
-    Log(const QString&name,
+    Log(const QFileInfo& fileInfo,
         const QString&filename,
         const HighlightPatterns *global_highlight,
         QObject *parent = nullptr);
@@ -52,6 +54,9 @@ public:
 
     Q_INVOKABLE void clearHightlight();
     Q_INVOKABLE void localHightlightPattern(const QString&pattern);
+    void updateHeighlights(QVector<CachedString>::iterator begin,
+                           QVector<CachedString>::iterator end,
+                           const QString&pattern);
     void updateHeighlights(const QString&pattern);
     static bool heighlightStr(QString* str,const QString&pattern );
 
@@ -75,6 +80,8 @@ protected:
     const HighlightPatterns *m_global_highlight;
 
     QObject *m_qml_object;
+    QFileInfo m_fileInfo;
+    QDateTime m_lastModifed;
 };
 
 #endif // LOG_H

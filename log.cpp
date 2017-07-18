@@ -39,7 +39,7 @@ LinePositionList allLinePos(const uchar*bts, qint64 size){
 Log* Log::openFile(const QString&fname, const HighlightPatterns *global_highlight,QObject *parent){
     qDebug()<<"openFile"<<fname;
     QFileInfo fileInfo(fname);
-    auto ll=new Log(fileInfo.fileName(), fname, global_highlight, parent);
+    auto ll=new Log(fileInfo, fname, global_highlight, parent);
     return ll;
 }
 
@@ -67,12 +67,14 @@ void Log::loadFile(){
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-Log::Log(const QString&name,
+Log::Log(const QFileInfo& fileInfo,
          const QString&filename,
          const HighlightPatterns *global_highlight,
          QObject *parent):QAbstractListModel(parent){
 
-    m_name=name;
+    m_fileInfo=fileInfo;
+    m_lastModifed=m_fileInfo.lastModified();
+    m_name=m_fileInfo.fileName();
     m_fname=filename;
     m_global_highlight=global_highlight;
     loadFile();
@@ -91,7 +93,14 @@ QString Log::filename()const{
 
 
 void Log::update(){
-    qDebug()<<"update "<<m_name;
+    qDebug()<<"update "<<m_name<<"=>"<<m_fname;
+    QFileInfo fileInfo(m_fname);
+
+//    if(fileInfo.lastModified()<=m_lastModifed){
+//        qDebug()<<"nothing to read: curDt:"<<fileInfo.lastModified()<<" myDt:"<<m_fileInfo.lastModified();
+//        return;
+//    }
+//    m_lastModifed=fileInfo.lastModified();
     this->beginResetModel();
 
     qDebug()<<"loadFile "<<m_fname;
@@ -107,6 +116,14 @@ void Log::update(){
                        lines.size(),
                        lines.begin()+lines.size()-diff-1,
                        lines.end());
+
+            if(m_global_highlight==nullptr){
+                throw std::logic_error("m_global_highlight==nullptr");
+            }
+            auto bufferBegin=m_buffer.begin()+m_buffer.size()-diff-1;
+            for(auto&pattern:*m_global_highlight){
+                updateHeighlights(bufferBegin, m_buffer.end(),pattern);
+            }
         }
 
         inputFile.unmap(bts);
@@ -115,12 +132,6 @@ void Log::update(){
         throw std::logic_error("file not exists!");
     }
 
-    if(m_global_highlight==nullptr){
-        throw std::logic_error("m_global_highlight==nullptr");
-    }
-    for(auto&pattern:*m_global_highlight){
-        updateHeighlights(pattern);
-    }
     qDebug()<<"update elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 
     emit countChanged(m_buffer.size());
@@ -238,13 +249,13 @@ bool Log::heighlightStr(QString* str,const QString&pattern){
     return result;
 }
 
-void Log::updateHeighlights(const QString&pattern){
+void Log::updateHeighlights(QVector<CachedString>::iterator begin, QVector<CachedString>::iterator end,const QString&pattern){
     if(pattern.size()==0){
         return;
     }
     auto curDT=QDateTime::currentDateTimeUtc();
 
-    QtConcurrent::blockingMap(m_buffer,[this,&pattern](CachedString&cs){
+    QtConcurrent::blockingMap(begin, end,[this,&pattern](CachedString&cs){
         QString str(*cs.Value);
         auto is_updated=heighlightStr(&str, pattern);
         if(is_updated){
@@ -256,6 +267,10 @@ void Log::updateHeighlights(const QString&pattern){
         dataChanged(mi, mi);
     }
     qDebug()<<m_fname<<"updateHeighlights elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
+}
+
+void Log::updateHeighlights(const QString&pattern){
+    updateHeighlights(m_buffer.begin(), m_buffer.end(), pattern);
 }
 
 void Log::localHightlightPattern(const QString&pattern){
