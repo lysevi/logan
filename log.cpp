@@ -52,7 +52,7 @@ void Log::loadFile(){
         auto bts=inputFile.map(0, inputFile.size());
         auto lines=allLinePos(bts, inputFile.size());
 
-        initBuffer(bts, lines);
+        initBuffer(bts, lines.size(), lines.begin(), lines.end());
         inputFile.unmap(bts);
         inputFile.close();
     }else{
@@ -103,44 +103,10 @@ void Log::update(){
         auto lines=allLinePos(bts, inputFile.size());
         auto diff=lines.size()-m_buffer.size();
         if(diff>0){
-            m_buffer.resize(lines.size());
-            auto startIt=lines.begin()+lines.size()-diff-1;
-            auto res=QtConcurrent::map(startIt,
-                                       lines.end(),
-                                       [this,bts](const LinePosition&it){
-                int start=it.first;
-                int i=it.second;
-
-                CachedString cs;
-                cs.index=it.index;
-                //TODO make as option
-#ifdef WIN32
-                QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
-#else
-                QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
-#endif
-                int stringSize=int(i-start);
-                QByteArray localStr(stringSize, '0');
-                cs.Value=std::make_shared<QString>(stringSize, QChar('0'));
-
-                int insertPos=0;
-                for(int pos=start;pos<i;++pos){
-                    localStr[insertPos++]=bts[pos];
-                }
-
-                (*cs.Value)=codec->toUnicode(localStr);
-
-                if(m_global_highlight==nullptr){
-                    throw std::logic_error("m_global_highlight==nullptr");
-                }
-                for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
-                    heighlightStr(cs.Value.get(), *it);
-                }
-                cs.originValue=cs.Value;
-                m_buffer[it.index]=cs;
-            });
-            res.waitForFinished();
-            m_load_complete=true;
+            initBuffer(bts,
+                       lines.size(),
+                       lines.begin()+lines.size()-diff-1,
+                       lines.end());
         }
 
         inputFile.unmap(bts);
@@ -148,6 +114,7 @@ void Log::update(){
     }else{
         throw std::logic_error("file not exists!");
     }
+
     if(m_global_highlight==nullptr){
         throw std::logic_error("m_global_highlight==nullptr");
     }
@@ -181,9 +148,16 @@ QHash<int, QByteArray> Log::roleNames() const {
     return roles;
 }
 
-void Log::initBuffer(const uchar*bts, const LinePositionList&lines){
-    m_buffer.resize(lines.size());
-    auto res=QtConcurrent::map(lines,[this,bts](const LinePosition&it){
+void Log::initBuffer(const uchar*bts,
+                     int newLinesCount,
+                     LinePositionList::ConstIterator begin,
+                     LinePositionList::ConstIterator end){
+    if(m_buffer.size()>newLinesCount){
+        qDebug()<<"init_buffer: m_buffer.size()>newLinesCount";
+        throw std::logic_error("init_buffer: m_buffer.size()>newLinesCount");
+    }
+    m_buffer.resize(newLinesCount);
+    auto res=QtConcurrent::map(begin, end,[this,bts](const LinePosition&it){
         int start=it.first;
         int i=it.second;
 
