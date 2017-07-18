@@ -94,7 +94,67 @@ void Log::update(){
     qDebug()<<"update "<<m_name;
     this->beginResetModel();
     m_buffer.clear();
-    loadFile();
+    qDebug()<<"loadFile "<<m_fname;
+    auto curDT=QDateTime::currentDateTimeUtc();
+    QFile inputFile(m_fname);
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        auto bts=inputFile.map(0, inputFile.size());
+        auto lines=allLinePos(bts, inputFile.size());
+        auto diff=lines.size()-m_buffer.size();
+        if(diff>0){
+            m_buffer.resize(lines.size());
+            auto startIt=lines.begin()+lines.size()-diff-1;
+            auto res=QtConcurrent::map(startIt,
+                                       lines.end(),
+                                       [this,bts](const LinePosition&it){
+                int start=it.first;
+                int i=it.second;
+
+                CachedString cs;
+                cs.index=it.index;
+                //TODO make as option
+#ifdef WIN32
+                QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
+#else
+                QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
+#endif
+                int stringSize=int(i-start);
+                QByteArray localStr(stringSize, '0');
+                cs.Value=std::make_shared<QString>(stringSize, QChar('0'));
+
+                int insertPos=0;
+                for(int pos=start;pos<i;++pos){
+                    localStr[insertPos++]=bts[pos];
+                }
+
+                (*cs.Value)=codec->toUnicode(localStr);
+
+                if(m_global_highlight==nullptr){
+                    throw std::logic_error("m_global_highlight==nullptr");
+                }
+                for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
+                    heighlightStr(cs.Value.get(), *it);
+                }
+                cs.originValue=cs.Value;
+                m_buffer[it.index]=cs;
+            });
+            res.waitForFinished();
+            m_load_complete=true;
+        }
+
+        inputFile.unmap(bts);
+        inputFile.close();
+    }else{
+        throw std::logic_error("file not exists!");
+    }
+    if(m_global_highlight==nullptr){
+        throw std::logic_error("m_global_highlight==nullptr");
+    }
+    for(auto&pattern:*m_global_highlight){
+        updateHeighlights(pattern);
+    }
+    qDebug()<<"update elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 
     emit countChanged(m_buffer.size());
     emit linesChanged();
@@ -102,7 +162,7 @@ void Log::update(){
 
     QVariant returnedValue;
     QMetaObject::invokeMethod(m_qml_object, "scrollDown",
-            Q_RETURN_ARG(QVariant, returnedValue));
+                              Q_RETURN_ARG(QVariant, returnedValue));
 }
 
 
