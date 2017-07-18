@@ -1,8 +1,8 @@
-#include "windowcontroller.h"
+#include "controller.h"
 #include <QtConcurrent>
 #include <QDateTime>
 
-WindowController::WindowController(QObject*parent):QObject(parent){
+Controller::Controller(QObject*parent):QObject(parent){
     auto threads=QThreadPool::globalInstance()->maxThreadCount();
     //QThreadPool::globalInstance()->setMaxThreadCount(threads);
     qDebug()<<"maxThreadCount"<<threads;
@@ -10,7 +10,7 @@ WindowController::WindowController(QObject*parent):QObject(parent){
 }
 
 
-void WindowController::updateAllSlot(const QString &msg) {
+void Controller::updateAllSlot(const QString &msg) {
     for(auto&v:m_logs){
         if(msg=="null"){
             v->update();
@@ -23,7 +23,7 @@ void WindowController::updateAllSlot(const QString &msg) {
 }
 
 
-Log* WindowController::openFile(const QString &fname){
+Log* Controller::openFile(const QString &fname){
     if(m_logs.contains(fname)){
         return nullptr;
     }
@@ -33,7 +33,7 @@ Log* WindowController::openFile(const QString &fname){
 }
 
 
-void WindowController::closeFileSlot(const QString &fname){
+void Controller::closeFileSlot(const QString &fname){
     auto it=m_logs.find(fname);
 
     if((*it)->filename()==fname){
@@ -47,7 +47,7 @@ void WindowController::closeFileSlot(const QString &fname){
 
 }
 
-void WindowController::addHighlightedTextSlot(const QString &s){
+void Controller::addHighlightedTextSlot(const QString &s){
     qDebug()<<"addHighlightedTextSlot "<<s;
     auto curDT=QDateTime::currentDateTimeUtc();
     m_global_highlight<<s;
@@ -55,7 +55,7 @@ void WindowController::addHighlightedTextSlot(const QString &s){
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-void WindowController::clearHighlightedTextSlot(){
+void Controller::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
     m_global_highlight.clear();
     m_global_highlight.insert(dateRe);

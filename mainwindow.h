@@ -5,7 +5,7 @@
 #include <QTabWidget>
 #include <QHBoxLayout>
 #include <QStringListModel>
-#include "WindowController.h"
+#include "controller.h"
 #include "listboxeditableitem.h"
 
 namespace Ui {
@@ -26,6 +26,6 @@ public slots:
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
-    WindowController* m_controller;
+    Controller* m_controller;
     ListboxEditableItem m_delegate;
 };

@@ -6,11 +6,11 @@
 #include <QList>
 #include "log.h"
 
-class WindowController : public QObject
+class Controller : public QObject
 {
     Q_OBJECT
 public:
-    WindowController(QObject*parent=nullptr);
+    Controller(QObject*parent=nullptr);
     Log* openFile(const QString &fname);
 protected:
     QHash<QString, Log*> m_logs;

@@ -18,7 +18,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setMouseTracking(true);
     setAutoFillBackground(true);
 
-    m_controller=new WindowController(this);
+    m_controller=new Controller(this);
     setWindowTitle("Logan - "+logan_version);
     m_tabbar=new QTabWidget(ui->centralWidget);
     m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
