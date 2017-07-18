@@ -6,6 +6,8 @@
 #include <QHBoxLayout>
 #include <QStringListModel>
 #include "WindowController.h"
+#include "listboxeditableitem.h"
+
 namespace Ui {
 class MainWindow;
 }
@@ -23,6 +25,7 @@ private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
     WindowController* m_controller;
+    ListboxEditableItem m_delegate;
 };
 
 #endif // MAINWINDOW_H

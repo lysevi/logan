@@ -206,7 +206,7 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     }
     if (index.row() < 0 || index.row() >= m_buffer.count())
         return QVariant();
-    if (role == Qt::DisplayRole){
+    if (role == Qt::DisplayRole || role == Qt::EditRole){
         return *(m_buffer[index.row()].Value);
     }
     return QVariant();

@@ -48,7 +48,16 @@ public:
     void update();
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
-
+    bool setData(const QModelIndex &index, const QVariant &value, int role){
+        Q_UNUSED(index)
+        Q_UNUSED(value)
+        Q_UNUSED(role)
+        return true;
+    }
+    Qt::ItemFlags flags(const QModelIndex &index) const{
+        Q_UNUSED(index)
+        return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    }
     Q_INVOKABLE void clearHightlight();
     Q_INVOKABLE void localHightlightPattern(const QString&pattern);
     void updateHeighlights(QVector<CachedString>::iterator begin,

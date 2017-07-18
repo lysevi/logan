@@ -5,7 +5,7 @@
 #include <QStringListModel>
 #include <QFileDialog>
 #include <QAbstractItemView>
-#include "listboxeditableitem.h"
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
@@ -42,9 +42,12 @@ void MainWindow::openFileSlot(){
         }
         auto lb=new QListView(m_tabbar);
         lb->setAlternatingRowColors(true);
-        lb->setEditTriggers(QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked );
+//        lb->setEditTriggers(QAbstractItemView::AnyKeyPressed|
+//                            QAbstractItemView::DoubleClicked );
         lb->setModel(log);
-        lb->setItemDelegate(new ListboxEditableItem(lb));
+        lb->setItemDelegate(&m_delegate);
+        lb->setSelectionMode(QAbstractItemView::SingleSelection);
+        lb->installEventFilter(this);
         m_tabbar->addTab(lb, v);
     }
 }
