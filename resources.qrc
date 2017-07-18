@@ -1,13 +1,8 @@
 <RCC>
     <qresource prefix="/">
-        <file>main.qml</file>
-        <file>qtquickcontrols2.conf</file>
-        <file>LogViewer.qml</file>
         <file>icons/update.svg</file>
-        <file>MergeWindow.qml</file>
         <file>icons/merge.svg</file>
         <file>icons/open.svg</file>
-        <file>MergeLog.qml</file>
         <file>icons/close.svg</file>
         <file>icons/felt.svg</file>
         <file>icons/clear.svg</file>
