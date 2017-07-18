@@ -93,7 +93,7 @@ QString Log::filename()const{
 void Log::update(){
     qDebug()<<"update "<<m_name;
     this->beginResetModel();
-    m_buffer.clear();
+
     qDebug()<<"loadFile "<<m_fname;
     auto curDT=QDateTime::currentDateTimeUtc();
     QFile inputFile(m_fname);
