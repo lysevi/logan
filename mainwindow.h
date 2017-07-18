@@ -5,7 +5,7 @@
 #include <QTabWidget>
 #include <QHBoxLayout>
 #include <QStringListModel>
-
+#include "WindowController.h"
 namespace Ui {
 class MainWindow;
 }
@@ -22,9 +22,7 @@ public slots:
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
-    QHBoxLayout *mainLayout;
-
-    int calls=0;
+    WindowController* m_controller;
 };
 
 #endif // MAINWINDOW_H

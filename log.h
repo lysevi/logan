@@ -33,9 +33,6 @@ class Log : public QAbstractListModel
     Q_PROPERTY(QString  name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString  filename READ filename NOTIFY filenameChanged)
 public:
-    enum LogRoles {
-        MessageRole = Qt::UserRole + 1,
-    };
 
     explicit Log(QObject *parent = nullptr);
     Log(const QFileInfo& fileInfo,
@@ -68,7 +65,6 @@ signals:
     void filenameChanged();
 public slots:
 protected:
-    QHash<int, QByteArray> roleNames() const;
     void loadFile();
     void initBuffer(const uchar*bts,int newLinesCount, LinePositionList::ConstIterator begin, LinePositionList::ConstIterator end);
 protected:

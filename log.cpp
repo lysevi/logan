@@ -153,11 +153,6 @@ int Log::rowCount(const QModelIndex & parent) const {
     return m_buffer.count();
 }
 
-QHash<int, QByteArray> Log::roleNames() const {
-    QHash<int, QByteArray> roles;
-    roles[MessageRole] = "message";
-    return roles;
-}
 
 void Log::initBuffer(const uchar*bts,
                      int newLinesCount,
@@ -211,7 +206,7 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     }
     if (index.row() < 0 || index.row() >= m_buffer.count())
         return QVariant();
-    if (role == MessageRole){
+    if (role == Qt::DisplayRole){
         return *(m_buffer[index.row()].Value);
     }
     return QVariant();

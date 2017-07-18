@@ -3,11 +3,17 @@
 #include <QDebug>
 #include <QListView>
 #include <QStringListModel>
+#include <QFileDialog>
+#include <QAbstractItemView>
+#include "listboxeditableitem.h"
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+    setMouseTracking(true);
+    setAutoFillBackground(true);
+    m_controller=new WindowController(this);
 
     m_tabbar=new QTabWidget(ui->centralWidget);
     m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
@@ -20,20 +26,31 @@ MainWindow::MainWindow(QWidget *parent) :
 
 void MainWindow::openFileSlot(){
     qDebug()<<"openFileSlot()";
-    calls++;
-    auto model=new QStringListModel(this);
-    QStringList list;
-    for(int i=0;i<calls;++i){
-        list << QString::number(i);
-    }
-    model->setStringList(list);
 
-    auto lb=new QListView(m_tabbar);
-    lb->setModel(model);
-    m_tabbar->addTab(lb, "empty tab");
+    QFileDialog dialog(this);
+    dialog.setFileMode(QFileDialog::AnyFile);
+    dialog.setViewMode(QFileDialog::Detail);
+    QStringList fileNames;
+    if (!dialog.exec()){
+        return;
+    }
+    fileNames = dialog.selectedFiles();
+    for(auto v: fileNames){
+        auto log=m_controller->openFile(v);
+        if(log==nullptr){
+            continue;
+        }
+        auto lb=new QListView(m_tabbar);
+        lb->setAlternatingRowColors(true);
+        lb->setEditTriggers(QAbstractItemView::AnyKeyPressed|QAbstractItemView::DoubleClicked );
+        lb->setModel(log);
+        lb->setItemDelegate(new ListboxEditableItem(lb));
+        m_tabbar->addTab(lb, v);
+    }
 }
 
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_controller;
 }

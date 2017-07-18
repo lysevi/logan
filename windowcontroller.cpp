@@ -2,20 +2,13 @@
 #include <QtConcurrent>
 #include <QDateTime>
 
-WindowController::WindowController(QObject* rootObject,QObject*parent):QObject(parent){
+WindowController::WindowController(QObject*parent):QObject(parent){
     auto threads=QThreadPool::globalInstance()->maxThreadCount();
     //QThreadPool::globalInstance()->setMaxThreadCount(threads);
     qDebug()<<"maxThreadCount"<<threads;
-    m_rootObject=rootObject;
     clearHighlightedTextSlot();
 }
 
-void WindowController::addTab(const QString&title, Log*v){
-    QVariant returnedValue;
-    QMetaObject::invokeMethod(m_rootObject, "addTab",
-                              Q_RETURN_ARG(QVariant, returnedValue),
-                              Q_ARG(QVariant, title), Q_ARG(QVariant, QVariant::fromValue(v)));
-}
 
 void WindowController::updateAllSlot(const QString &msg) {
     for(auto&v:m_logs){
@@ -30,13 +23,13 @@ void WindowController::updateAllSlot(const QString &msg) {
 }
 
 
-void WindowController::openFileSlot(const QString &fname){
+Log* WindowController::openFile(const QString &fname){
     if(m_logs.contains(fname)){
-        return;
+        return nullptr;
     }
-    auto log=Log::openFile(fname, &m_global_highlight);
+    auto log=Log::openFile(fname, &m_global_highlight, this);
     m_logs[fname]=log;
-    addTab(fname, log);
+    return log;
 }
 
 

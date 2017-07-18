@@ -29,12 +29,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     log.cpp \
-    windowcontroller.cpp
+    windowcontroller.cpp \
+    listboxeditableitem.cpp
 
 HEADERS += \
         mainwindow.h \
     log.h \
-    windowcontroller.h
+    windowcontroller.h \
+    listboxeditableitem.h
 
 FORMS += \
         mainwindow.ui
