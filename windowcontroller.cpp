@@ -67,6 +67,6 @@ void WindowController::clearHighlightedTextSlot(){
     m_global_highlight.clear();
     m_global_highlight.insert(dateRe);
     for(auto log:m_logs){
-        log->clearHeightlight();
+        log->clearHightlight();
     }
 }

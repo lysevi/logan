@@ -43,6 +43,29 @@ Log* Log::openFile(const QString&fname, const HighlightPatterns *global_highligh
     return ll;
 }
 
+void Log::loadFile(){
+    qDebug()<<"loadFile "<<m_fname;
+    auto curDT=QDateTime::currentDateTimeUtc();
+    QFile inputFile(m_fname);
+    if (inputFile.open(QIODevice::ReadOnly))
+    {
+        auto bts=inputFile.map(0, inputFile.size());
+        auto lines=allLinePos(bts, inputFile.size());
+        inputFile.close();
+        initBuffer(bts, lines);
+        inputFile.unmap(bts);
+    }else{
+        throw std::logic_error("file not exists!");
+    }
+    if(m_global_highlight==nullptr){
+        throw std::logic_error("m_global_highlight==nullptr");
+    }
+    for(auto&pattern:*m_global_highlight){
+        updateHeighlights(pattern);
+    }
+    qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
+}
+
 Log::Log(const QString&name,
          const QString&filename,
          const HighlightPatterns *global_highlight,
@@ -64,28 +87,7 @@ QString Log::filename()const{
     return m_fname;
 }
 
-void Log::loadFile(){
-    qDebug()<<"loadFile "<<m_fname;
-    auto curDT=QDateTime::currentDateTimeUtc();
-    QFile inputFile(m_fname);
-    if (inputFile.open(QIODevice::ReadOnly))
-    {
-        auto bts=inputFile.map(0, inputFile.size());
-        auto lines=allLinePos(bts, inputFile.size());
-        inputFile.close();
-        initBuffer(bts, lines);
-        inputFile.unmap(bts);
-    }else{
-        throw std::logic_error("file not exists!");
-    }
-    if(m_global_highlight==nullptr){
-        throw std::logic_error("m_global_highlight==nullptr");
-    }
-    for(auto&pattern:*m_global_highlight){
-        addHeighlightPattern(pattern);
-    }
-    qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
-}
+
 
 void Log::update(){
     qDebug()<<"update "<<m_name;
@@ -126,17 +128,19 @@ void Log::initBuffer(const uchar*bts, const LinePositionList&lines){
 
         CachedString cs;
         cs.index=it.index;
-        cs.Value.resize(int(i-start));
+        cs.Value=std::make_shared<QString>(int(i-start), QChar('0'));
         int insertPos=0;
         for(int pos=start;pos<i;++pos){
-            cs.Value[insertPos++]=bts[pos];
+            (*cs.Value)[insertPos++]=bts[pos];
         }
+
         if(m_global_highlight==nullptr){
             throw std::logic_error("m_global_highlight==nullptr");
         }
         for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
-            heighlightStr(&cs.Value, *it);
+            heighlightStr(cs.Value.get(), *it);
         }
+        cs.originValue=cs.Value;
         m_buffer[it.index]=cs;
     });
     res.waitForFinished();
@@ -151,14 +155,23 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     if (index.row() < 0 || index.row() >= m_buffer.count())
         return QVariant();
     if (role == MessageRole){
-        return (m_buffer[index.row()].Value);
+        return *(m_buffer[index.row()].Value);
     }
     return QVariant();
 }
 
-void Log::clearHeightlight(){
+void Log::clearHightlight(){
     m_load_complete=false;
-    update();
+    this->beginResetModel();
+    QtConcurrent::blockingMap(m_buffer,[](CachedString&cs){
+        cs.Value=cs.originValue;
+    });
+    for(int k=0;k<m_buffer.size();++k){
+        auto mi=this->createIndex(k,0);
+        dataChanged(mi, mi);
+    }
+    m_load_complete=true;
+    this->endResetModel();
 }
 
 bool Log::heighlightStr(QString* str,const QString&pattern){
@@ -186,8 +199,11 @@ void Log::updateHeighlights(const QString&pattern){
     auto curDT=QDateTime::currentDateTimeUtc();
 
     QtConcurrent::blockingMap(m_buffer,[this,&pattern](CachedString&cs){
-        heighlightStr(&cs.Value, pattern);
-
+        QString str(*cs.Value);
+        auto is_updated=heighlightStr(&str, pattern);
+        if(is_updated){
+            cs.Value=std::make_shared<QString>(str);
+        }
     });
     for(int k=0;k<m_buffer.size();++k){
         auto mi=this->createIndex(k,0);
@@ -196,7 +212,7 @@ void Log::updateHeighlights(const QString&pattern){
     qDebug()<<m_fname<<"updateHeighlights elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-void Log::addHeighlightPattern(const QString&pattern){
+void Log::localHightlightPattern(const QString&pattern){
     if(pattern.size()==0){
         return;
     }

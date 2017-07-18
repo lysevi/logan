@@ -86,7 +86,7 @@ Item {
 
                     onClicked: {
                         if(rootWindow.selectedTextEdit!==null){
-                            logModel.addHeighlightPattern(rootWindow.selectedTextEdit.selectedText)
+                            logModel.localHightlightPattern(rootWindow.selectedTextEdit.selectedText)
                         }
 
                     }
@@ -103,7 +103,7 @@ Item {
 
                     onClicked: {
                         console.log("clearHighlightedTextSignal: ")
-                        logModel.clearHeightlight();
+                        logModel.clearHightlight();
                     }
                 }
 

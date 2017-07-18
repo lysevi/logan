@@ -18,7 +18,8 @@ using LinePositionList = QVector<LinePosition>;
 
 struct CachedString{
     int index;
-    QString Value;
+    std::shared_ptr<QString> originValue;
+    std::shared_ptr<QString> Value;
 };
 
 const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
@@ -49,8 +50,8 @@ public:
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
     QVariant data(const QModelIndex & index, int role = Qt::DisplayRole) const;
 
-    Q_INVOKABLE void clearHeightlight();
-    Q_INVOKABLE void addHeighlightPattern(const QString&pattern);
+    Q_INVOKABLE void clearHightlight();
+    Q_INVOKABLE void localHightlightPattern(const QString&pattern);
     void updateHeighlights(const QString&pattern);
     static bool heighlightStr(QString* str,const QString&pattern );
 
