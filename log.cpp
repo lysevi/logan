@@ -51,9 +51,10 @@ void Log::loadFile(){
     {
         auto bts=inputFile.map(0, inputFile.size());
         auto lines=allLinePos(bts, inputFile.size());
-        inputFile.close();
+
         initBuffer(bts, lines);
         inputFile.unmap(bts);
+        inputFile.close();
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -128,11 +129,22 @@ void Log::initBuffer(const uchar*bts, const LinePositionList&lines){
 
         CachedString cs;
         cs.index=it.index;
-        cs.Value=std::make_shared<QString>(int(i-start), QChar('0'));
+        //TODO make as option
+#ifdef WIN32
+        QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
+#else
+        QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
+#endif
+        int stringSize=int(i-start);
+        QByteArray localStr(stringSize, '0');
+        cs.Value=std::make_shared<QString>(stringSize, QChar('0'));
+
         int insertPos=0;
         for(int pos=start;pos<i;++pos){
-            (*cs.Value)[insertPos++]=bts[pos];
+            localStr[insertPos++]=bts[pos];
         }
+
+        (*cs.Value)=codec->toUnicode(localStr);
 
         if(m_global_highlight==nullptr){
             throw std::logic_error("m_global_highlight==nullptr");
