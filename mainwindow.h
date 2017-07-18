@@ -1,5 +1,5 @@
-#ifndef MAINWINDOW_H
-#define MAINWINDOW_H
+#pragma once
+
 
 #include <QMainWindow>
 #include <QTabWidget>
@@ -22,11 +22,10 @@ public:
 public slots:
     void openFileSlot();
     void reloadCurentSlot();
+    void closeCurentSlot();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
     WindowController* m_controller;
     ListboxEditableItem m_delegate;
 };
-
-#endif // MAINWINDOW_H

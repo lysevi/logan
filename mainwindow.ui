@@ -43,6 +43,7 @@
    <addaction name="separator"/>
    <addaction name="actionreolad_current"/>
    <addaction name="actionOpen"/>
+   <addaction name="actionclose_current_tab"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -70,6 +71,21 @@
    </property>
    <property name="toolTip">
     <string>reolad current</string>
+   </property>
+   <property name="shortcut">
+    <string>F2</string>
+   </property>
+  </action>
+  <action name="actionclose_current_tab">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/close.svg</normaloff>:/icons/close.svg</iconset>
+   </property>
+   <property name="text">
+    <string>close current tab</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+W</string>
    </property>
   </action>
  </widget>
