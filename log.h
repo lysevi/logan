@@ -5,6 +5,7 @@
 #include <QSet>
 #include <QFileInfo>
 #include <QDateTime>
+#include <QListView>
 #include <future>
 #include <memory>
 
@@ -66,7 +67,7 @@ public:
     void updateHeighlights(const QString&pattern);
     static bool heighlightStr(QString* str,const QString&pattern );
 
-    Q_INVOKABLE void setQmlObject(QObject *object);
+    Q_INVOKABLE void setListVoxObject(QListView *object);
 signals:
     void linesChanged();
     void countChanged(int);
@@ -84,7 +85,7 @@ protected:
     QVector<CachedString> m_buffer;
     const HighlightPatterns *m_global_highlight;
 
-    QObject *m_qml_object;
+    QListView  *m_lv_object;
     QFileInfo m_fileInfo;
     QDateTime m_lastModifed;
 };

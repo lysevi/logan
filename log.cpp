@@ -138,9 +138,7 @@ void Log::update(){
     emit linesChanged();
     this->endResetModel();
 
-    QVariant returnedValue;
-    QMetaObject::invokeMethod(m_qml_object, "scrollDown",
-                              Q_RETURN_ARG(QVariant, returnedValue));
+    m_lv_object->scrollToBottom();
 }
 
 
@@ -275,6 +273,6 @@ void Log::localHightlightPattern(const QString&pattern){
     updateHeighlights(pattern);
 }
 
-void Log::setQmlObject(QObject *object){
-    m_qml_object=object;
+void Log::setListVoxObject(QListView *object){
+    m_lv_object=object;
 }

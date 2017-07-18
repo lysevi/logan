@@ -22,6 +22,7 @@ MainWindow::MainWindow(QWidget *parent) :
    //auto layout=(QGridLayout*)ui->centralWidget->layout();
     //layout->addWidget(m_tabbar, Qt::AlignCenter);
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
+    connect(ui->actionreolad_current, &QAction::triggered, this, &MainWindow::reloadCurentSlot);
 }
 
 void MainWindow::openFileSlot(){
@@ -42,14 +43,22 @@ void MainWindow::openFileSlot(){
         }
         auto lb=new QListView(m_tabbar);
         lb->setAlternatingRowColors(true);
-//        lb->setEditTriggers(QAbstractItemView::AnyKeyPressed|
-//                            QAbstractItemView::DoubleClicked );
         lb->setModel(log);
+        log->setListVoxObject(lb);
         lb->setItemDelegate(&m_delegate);
         lb->setSelectionMode(QAbstractItemView::SingleSelection);
         lb->installEventFilter(this);
         m_tabbar->addTab(lb, v);
     }
+}
+
+void MainWindow::reloadCurentSlot(){
+    qDebug()<<"reloadCurentSlot()";
+    int current=m_tabbar->currentIndex();
+    auto widget=m_tabbar->widget(current);
+    auto model=static_cast<QListView*>(widget)->model();
+    auto log=static_cast<Log*>(model);
+    m_controller->updateAllSlot(log->filename());
 }
 
 MainWindow::~MainWindow()

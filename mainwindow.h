@@ -21,6 +21,7 @@ public:
     ~MainWindow();
 public slots:
     void openFileSlot();
+    void reloadCurentSlot();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
