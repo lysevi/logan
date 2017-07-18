@@ -3,6 +3,8 @@
 # Project created by QtCreator 2017-07-18T13:45:17
 #
 #-------------------------------------------------
+DEFINES += LVIEW_VERSION=\\\"0.1.0\\\"
+DEFINES += GIT_VERSION=\\\"$$system(git describe --always)\\\"
 
 QT       += core gui concurrent
 

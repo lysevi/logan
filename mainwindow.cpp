@@ -10,11 +10,16 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow)
 {
+    auto v1=QString(LVIEW_VERSION);
+    auto v2=QString(GIT_VERSION);
+    auto logan_version=v1+"-"+v2;
+
     ui->setupUi(this);
     setMouseTracking(true);
     setAutoFillBackground(true);
-    m_controller=new WindowController(this);
 
+    m_controller=new WindowController(this);
+    setWindowTitle("Logan - "+logan_version);
     m_tabbar=new QTabWidget(ui->centralWidget);
     m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     ui->gridLayout->addWidget(m_tabbar);

@@ -23,16 +23,24 @@ public:
         QTextDocument doc;
         doc.setHtml(value);
 
-
         option.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);
 
         painter->translate(option.rect.left(), option.rect.top());
+
         QRect clip(0, 0, option.rect.width(), option.rect.height());
+
         doc.drawContents(painter, clip);
 
         painter->restore();
     }
 
+//    QSize sizeHint(const QStyleOptionViewItem &option,
+//                   const QModelIndex &index) const override{
+//        auto value = index.model()->data(index, Qt::DisplayRole).toString();
+//        QTextDocument doc;
+//        doc.setHtml(value);
+//        doc.size();
+//    }
     QWidget *createEditor(QWidget *parent, const QStyleOptionViewItem &option,
                           const QModelIndex &index) const override{
         Q_UNUSED(index);
