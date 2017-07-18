@@ -64,28 +64,17 @@ QString Log::filename()const{
     return m_fname;
 }
 
-QString Log::content()const{
-    return m_all;
-}
-
 void Log::loadFile(){
     qDebug()<<"loadFile "<<m_fname;
     auto curDT=QDateTime::currentDateTimeUtc();
     QFile inputFile(m_fname);
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        auto sz=inputFile.size();
-        auto bts=inputFile.map(0, sz);
-        m_all.resize(sz);
-        for(int i=0;i<sz;++i){
-            m_all[i]=bts[i];
-        }
-        qDebug()<<"file size:"<<m_all.size();
-        auto lines=allLinePos(bts, sz);
-
+        auto bts=inputFile.map(0, inputFile.size());
+        auto lines=allLinePos(bts, inputFile.size());
+        inputFile.close();
         initBuffer(bts, lines);
         inputFile.unmap(bts);
-        inputFile.close();
     }else{
         throw std::logic_error("file not exists!");
     }
@@ -131,7 +120,6 @@ QHash<int, QByteArray> Log::roleNames() const {
 
 void Log::initBuffer(const uchar*bts, const LinePositionList&lines){
     m_buffer.resize(lines.size());
-
     auto res=QtConcurrent::map(lines,[this,bts](const LinePosition&it){
         int start=it.first;
         int i=it.second;

@@ -29,7 +29,6 @@ class Log : public QAbstractListModel
 
     Q_PROPERTY(QString  name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString  filename READ filename NOTIFY filenameChanged)
-    Q_PROPERTY(QString  content READ content NOTIFY contentChanged)
 public:
     enum LogRoles {
         MessageRole = Qt::UserRole + 1,
@@ -45,7 +44,6 @@ public:
 
     QString name()const;
     QString filename()const;
-    QString content()const;
 
     void update();
     int rowCount(const QModelIndex & parent = QModelIndex()) const;
@@ -62,7 +60,6 @@ signals:
     void countChanged(int);
     void nameChanged();
     void filenameChanged();
-    void contentChanged();
 public slots:
 protected:
     QHash<int, QByteArray> roleNames() const;
@@ -77,7 +74,6 @@ protected:
     const HighlightPatterns *m_global_highlight;
 
     QObject *m_qml_object;
-    QString m_all; //TODO m_all => m_content
 };
 
 #endif // LOG_H
