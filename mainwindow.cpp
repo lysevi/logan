@@ -72,6 +72,9 @@ void MainWindow::reloadCurentSlot(){
     //TODO refact!
     qDebug()<<"reloadCurentSlot()";
     int current=m_tabbar->currentIndex();
+    if(current<0){
+        return;
+    }
     auto widget=m_tabbar->widget(current);
     auto model=static_cast<QListView*>(widget)->model();
     auto log=static_cast<Log*>(model);
@@ -82,6 +85,9 @@ void MainWindow::closeCurentSlot(){
     //TODO refact!
     qDebug()<<"closeCurentSlot()";
     int current=m_tabbar->currentIndex();
+    if(current<0){
+        return;
+    }
     auto widget=m_tabbar->widget(current);
     auto model=static_cast<QListView*>(widget)->model();
     auto log=static_cast<Log*>(model);

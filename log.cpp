@@ -118,9 +118,14 @@ void Log::update(){
 
             m_load_complete=true;
             //this->endResetModel();
-            m_lv_object->scrollToBottom();
+
             emit countChanged(m_lines.size());
             emit linesChanged();
+            auto idx=createIndex(-1,-1,nullptr);
+            while(canFetchMore(idx)){
+                fetchMore(idx);
+            }
+            m_lv_object->scrollToBottom();
         }
 
         inputFile.close();
@@ -129,9 +134,6 @@ void Log::update(){
     }
 
     qDebug()<<"update elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
-
-
-
 }
 
 
