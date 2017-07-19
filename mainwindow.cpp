@@ -1,6 +1,5 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "timerform.h"
 #include <QDebug>
 #include <QListView>
 #include <QStringListModel>
@@ -10,17 +9,20 @@
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
-    ui(new Ui::MainWindow)
+    ui(new Ui::MainWindow),
+    m_timer(new QTimer(this))
 {
+    m_timer->setInterval(0);
     auto v1=QString(LVIEW_VERSION);
     auto v2=QString(GIT_VERSION);
     auto logan_version=v1+"-"+v2;
 
     ui->setupUi(this);
 
-    auto timerForm=new TimerForm();
+    m_timer_widget=new TimerForm();
 
-    ui->mainToolBar->addWidget(timerForm);
+    ui->mainToolBar->addWidget(m_timer_widget);
+
     setMouseTracking(true);
     setAutoFillBackground(true);
 
@@ -33,6 +35,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
     connect(ui->actionreolad_current, &QAction::triggered, this, &MainWindow::reloadCurentSlot);
     connect(ui->actionclose_current_tab, &QAction::triggered, this, &MainWindow::closeCurentSlot);
+    connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
+    connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
+    connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
+    m_timer_widget->defaultState();
 }
 
 void MainWindow::openFileSlot(){
@@ -84,8 +90,30 @@ void MainWindow::closeCurentSlot(){
     m_controller->closeFileSlot(fname);
 }
 
+void MainWindow::timerIntervalChangedSlot(int v){
+    qDebug()<<"MainWindow::timerIntervalChangedSlot()"<<v;
+    m_timer->setInterval(v*1000);
+
+    qDebug()<<"interval: "<<m_timer->interval()<<"isActive:"<<m_timer->isActive();
+}
+
+void MainWindow::reloadAllSlot(){
+    qDebug()<<"MainWindow::reloadAllSlot()";
+    m_controller->updateAllSlot("null");
+}
+
+void MainWindow::timerIntervalEnabledSlot(bool b){
+    if(b){
+        m_timer->start();
+    }else{
+        m_timer->stop();
+    }
+}
+
 MainWindow::~MainWindow()
 {
     delete ui;
+    delete m_timer;
     delete m_controller;
+
 }
