@@ -86,7 +86,7 @@ protected:
 
     LinePositionList m_lines;
     QByteArray m_bts;
-    //std::map<int, CachedString> m_cache;
+    std::map<int, CachedString> m_cache;
     const HighlightPatterns *m_global_highlight;
 
     QListView  *m_lv_object;

@@ -12,9 +12,10 @@ const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 Log::Log(QObject *parent) : QAbstractListModel(parent)
 {}
 
-LinePositionList allLinePos(const uchar*bts, qint64 size){
+LinePositionList allLinePos(const QByteArray&bts){
 
     int count=0;
+    auto size=bts.size();
     for(int i=0;i<size;++i){
         if(bts[i]=='\n'){
             count++;
@@ -49,14 +50,9 @@ void Log::loadFile(){
     QFile inputFile(m_fname);
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        auto bts=inputFile.map(0, inputFile.size());
-        m_bts.resize(inputFile.size());
-        for(int i=0;i<m_bts.size();++i){
-            m_bts[i]=bts[i];
-        }
-        m_lines=allLinePos(bts, inputFile.size());
+        m_bts=std::move(inputFile.readAll());
+        m_lines=allLinePos(m_bts);
 
-        inputFile.unmap(bts);
         inputFile.close();
     }else{
         throw std::logic_error("file not exists!");
@@ -112,20 +108,14 @@ void Log::update(){
     QFile inputFile(m_fname);
     if (inputFile.open(QIODevice::ReadOnly))
     {
-        auto bts=inputFile.map(0, inputFile.size());
-        auto lines=allLinePos(bts, inputFile.size());
+        auto bts=inputFile.readAll();
+        auto lines=allLinePos(bts);
         auto diff=lines.size()-m_lines.size();
         if(diff>0){
             m_load_complete=false;
             //this->beginResetModel();
-            auto fsize=inputFile.size();
-            auto bts=inputFile.map(0, fsize);
-            int i=m_bts.size()-1;
-            m_bts.resize(fsize);
+            m_bts=std::move(bts);
 
-            for(;i<fsize;++i){
-                m_bts[i]=bts[i];
-            }
 
             m_lines=std::move(lines);
 
@@ -136,7 +126,6 @@ void Log::update(){
             emit linesChanged();
         }
 
-        inputFile.unmap(bts);
         inputFile.close();
     }else{
         throw std::logic_error("file not exists!");
@@ -193,9 +182,11 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     if(!m_load_complete ){
         return emptyString;
     }
+
     if (index.row() < 0 || index.row() >= m_lines.count())
         return QVariant();
     if (role == Qt::DisplayRole || role == Qt::EditRole){
+        qDebug()<<"data"<< index.row();
         return makeString(index.row());
     }
     return QVariant();
