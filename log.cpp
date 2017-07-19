@@ -1,5 +1,4 @@
 #include "log.h"
-#include "regexcache.h"
 #include <QDebug>
 #include <QRegExp>
 #include <QList>
@@ -222,11 +221,11 @@ bool Log::heighlightStr(QString* str,const QString&pattern){
     }
     bool result=false;
 
-    auto re=RegexCache::instance()->compile(pattern);
-    if(re->indexIn(*str)!= -1){
-        auto ct=re->capturedTexts();
+    QRegExp re(pattern);
+    if(re.indexIn(*str)!= -1){
+        auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
-            *str=str->replace(*re,"<b>"+captured_str+"</b>");
+            *str=str->replace(re,"<b>"+captured_str+"</b>");
         }
         result=true;
     }
