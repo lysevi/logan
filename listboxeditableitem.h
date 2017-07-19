@@ -1,13 +1,12 @@
-#ifndef LISTBOXEDITABLEITEM_H
-#define LISTBOXEDITABLEITEM_H
+#pragma once
 
-#include <QItemDelegate>
+#include <QStyledItemDelegate>
 #include <QObject>
 #include <QTextEdit>
 #include <QStyleOption>
 #include <QPainter>
 
-class ListboxEditableItem : public QItemDelegate
+class ListboxEditableItem : public QStyledItemDelegate
 {
 public:
     explicit  ListboxEditableItem(QObject  *parent=0);
@@ -67,4 +66,3 @@ public:
     }
 };
 
-#endif // LISTBOXEDITABLEITEM_H
