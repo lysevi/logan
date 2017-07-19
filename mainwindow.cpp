@@ -1,10 +1,12 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "timerform.h"
 #include <QDebug>
 #include <QListView>
 #include <QStringListModel>
 #include <QFileDialog>
 #include <QAbstractItemView>
+
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -15,6 +17,10 @@ MainWindow::MainWindow(QWidget *parent) :
     auto logan_version=v1+"-"+v2;
 
     ui->setupUi(this);
+
+    auto timerForm=new TimerForm();
+
+    ui->mainToolBar->addWidget(timerForm);
     setMouseTracking(true);
     setAutoFillBackground(true);
 

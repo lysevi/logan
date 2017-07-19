@@ -32,16 +32,20 @@ SOURCES += \
         mainwindow.cpp \
     log.cpp \
     listboxeditableitem.cpp \
-    controller.cpp
+    controller.cpp \
+    timerform.cpp
 
 HEADERS += \
         mainwindow.h \
     log.h \
     listboxeditableitem.h \
-    controller.h
+    controller.h \
+    timerform.h
+
 
 FORMS += \
-        mainwindow.ui
+        mainwindow.ui \
+    timer_setup.ui
 
 RESOURCES += \
     resources.qrc
