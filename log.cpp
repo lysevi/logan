@@ -96,12 +96,12 @@ void Log::update(){
     qDebug()<<"update "<<m_name<<"=>"<<m_fname;
     QFileInfo fileInfo(m_fname);
 
-//    if(fileInfo.lastModified()<=m_lastModifed){
-//        qDebug()<<"nothing to read: curDt:"<<fileInfo.lastModified()<<" myDt:"<<m_fileInfo.lastModified();
-//        return;
-//    }
-//    m_lastModifed=fileInfo.lastModified();
-    this->beginResetModel();
+    //    if(fileInfo.lastModified()<=m_lastModifed){
+    //        qDebug()<<"nothing to read: curDt:"<<fileInfo.lastModified()<<" myDt:"<<m_fileInfo.lastModified();
+    //        return;
+    //    }
+    //    m_lastModifed=fileInfo.lastModified();
+
 
     qDebug()<<"loadFile "<<m_fname;
     auto curDT=QDateTime::currentDateTimeUtc();
@@ -112,6 +112,7 @@ void Log::update(){
         auto lines=allLinePos(bts, inputFile.size());
         auto diff=lines.size()-m_buffer.size();
         if(diff>0){
+            this->beginResetModel();
             initBuffer(bts,
                        lines.size(),
                        lines.begin()+lines.size()-diff-1,
@@ -124,6 +125,11 @@ void Log::update(){
             for(auto&pattern:*m_global_highlight){
                 updateHeighlights(bufferBegin, m_buffer.end(),pattern);
             }
+            emit countChanged(m_buffer.size());
+            emit linesChanged();
+            this->endResetModel();
+
+            m_lv_object->scrollToBottom();
         }
 
         inputFile.unmap(bts);
@@ -134,11 +140,7 @@ void Log::update(){
 
     qDebug()<<"update elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 
-    emit countChanged(m_buffer.size());
-    emit linesChanged();
-    this->endResetModel();
 
-    m_lv_object->scrollToBottom();
 }
 
 
