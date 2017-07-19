@@ -24,14 +24,16 @@ SOURCES += \
         log.cpp \
         listboxeditableitem.cpp \
         controller.cpp \
-        timerform.cpp
+        timerform.cpp \
+    regexcache.cpp
 
 HEADERS += \
         mainwindow.h \
         log.h \
         listboxeditableitem.h \
         controller.h \
-        timerform.h
+        timerform.h \
+    regexcache.h
 
 
 FORMS += \
