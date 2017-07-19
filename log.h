@@ -6,6 +6,7 @@
 #include <QFileInfo>
 #include <QDateTime>
 #include <QListView>
+#include <map>
 #include <future>
 #include <memory>
 
@@ -14,9 +15,10 @@ using HighlightPatterns=QSet<QString>;
 struct LinePosition{
     int first;
     int second;
-    int index;
+    int index;//TODO remove
 };
 
+//TODO hashset?
 using LinePositionList = QVector<LinePosition>;
 
 struct CachedString{
@@ -76,13 +78,15 @@ signals:
 public slots:
 protected:
     void loadFile();
-    void initBuffer(const uchar*bts,int newLinesCount, LinePositionList::ConstIterator begin, LinePositionList::ConstIterator end);
+    QString makeString(int row)const;
 protected:
     bool m_load_complete=false;
     QString m_name;
     QString m_fname;
 
-    QVector<CachedString> m_buffer;
+    LinePositionList m_lines;
+    QByteArray m_bts;
+    //std::map<int, CachedString> m_cache;
     const HighlightPatterns *m_global_highlight;
 
     QListView  *m_lv_object;

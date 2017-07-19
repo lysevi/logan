@@ -50,9 +50,12 @@ void Log::loadFile(){
     if (inputFile.open(QIODevice::ReadOnly))
     {
         auto bts=inputFile.map(0, inputFile.size());
-        auto lines=allLinePos(bts, inputFile.size());
+        m_bts.resize(inputFile.size());
+        for(int i=0;i<m_bts.size();++i){ //TODO start not from 0.
+            m_bts[i]=bts[i];
+        }
+        m_lines=allLinePos(bts, inputFile.size());
 
-        initBuffer(bts, lines.size(), lines.begin(), lines.end());
         inputFile.unmap(bts);
         inputFile.close();
     }else{
@@ -65,6 +68,7 @@ void Log::loadFile(){
         updateHeighlights(pattern);
     }
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
+    m_load_complete=true;
 }
 
 Log::Log(const QFileInfo& fileInfo,
@@ -77,8 +81,9 @@ Log::Log(const QFileInfo& fileInfo,
     m_name=m_fileInfo.fileName();
     m_fname=filename;
     m_global_highlight=global_highlight;
+    m_load_complete=false;
     loadFile();
-    qDebug()<<"loaded "<<m_name<<" lines:"<<m_buffer.count();
+    qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.count();
 }
 
 
@@ -91,7 +96,6 @@ QString Log::filename()const{
 }
 
 
-
 void Log::update(){
     qDebug()<<"update "<<m_name<<"=>"<<m_fname;
     QFileInfo fileInfo(m_fname);
@@ -100,7 +104,7 @@ void Log::update(){
     //        qDebug()<<"nothing to read: curDt:"<<fileInfo.lastModified()<<" myDt:"<<m_fileInfo.lastModified();
     //        return;
     //    }
-    //    m_lastModifed=fileInfo.lastModified();
+    m_lastModifed=fileInfo.lastModified();
 
 
     qDebug()<<"loadFile "<<m_fname;
@@ -110,26 +114,23 @@ void Log::update(){
     {
         auto bts=inputFile.map(0, inputFile.size());
         auto lines=allLinePos(bts, inputFile.size());
-        auto diff=lines.size()-m_buffer.size();
+        auto diff=lines.size()-m_lines.size();
         if(diff>0){
+            m_load_complete=false;
             this->beginResetModel();
-            initBuffer(bts,
-                       lines.size(),
-                       lines.begin()+lines.size()-diff-1,
-                       lines.end());
+            auto bts=inputFile.map(0, inputFile.size());
+            m_bts.resize(inputFile.size());
+            for(int i=0;i<m_bts.size();++i){
+                m_bts[i]=bts[i];
+            }
 
-            if(m_global_highlight==nullptr){
-                throw std::logic_error("m_global_highlight==nullptr");
-            }
-            auto bufferBegin=m_buffer.begin()+m_buffer.size()-diff-1;
-            for(auto&pattern:*m_global_highlight){
-                updateHeighlights(bufferBegin, m_buffer.end(),pattern);
-            }
-            emit countChanged(m_buffer.size());
-            emit linesChanged();
+            m_lines=std::move(lines);
+
+            m_load_complete=true;
             this->endResetModel();
-
             m_lv_object->scrollToBottom();
+            emit countChanged(m_lines.size());
+            emit linesChanged();
         }
 
         inputFile.unmap(bts);
@@ -141,62 +142,46 @@ void Log::update(){
     qDebug()<<"update elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 
 
+
 }
 
 
 int Log::rowCount(const QModelIndex & parent) const {
-    //qDebug()<<"rowCount";
     Q_UNUSED(parent);
     if(!m_load_complete){
         return 0;
     }
-    return m_buffer.count();
+    return m_lines.count();
 }
 
 
-void Log::initBuffer(const uchar*bts,
-                     int newLinesCount,
-                     LinePositionList::ConstIterator begin,
-                     LinePositionList::ConstIterator end){
-    if(m_buffer.size()>newLinesCount){
-        qDebug()<<"init_buffer: m_buffer.size()>newLinesCount";
-        throw std::logic_error("init_buffer: m_buffer.size()>newLinesCount");
-    }
-    m_buffer.resize(newLinesCount);
-    auto res=QtConcurrent::map(begin, end,[this,bts](const LinePosition&it){
-        int start=it.first;
-        int i=it.second;
+QString Log::makeString(int row)const{
+    auto line_pos=m_lines[row];
+    int start=line_pos.first;
+    int i=line_pos.second;
 
-        CachedString cs;
-        cs.index=it.index;
-        //TODO make as option
 #ifdef WIN32
-        QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
+    QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
 #else
-        QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
+    QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
 #endif
-        int stringSize=int(i-start);
-        QByteArray localStr(stringSize, '0');
-        cs.Value=std::make_shared<QString>(stringSize, QChar('0'));
+    int stringSize=int(i-start);
+    QByteArray localStr(stringSize, '0');
 
-        int insertPos=0;
-        for(int pos=start;pos<i;++pos){
-            localStr[insertPos++]=bts[pos];
-        }
+    int insertPos=0;
+    for(int pos=start;pos<i;++pos){
+        localStr[insertPos++]=m_bts[pos];
+    }
 
-        (*cs.Value)=codec->toUnicode(localStr);
+    QString result=codec->toUnicode(localStr);
 
-        if(m_global_highlight==nullptr){
-            throw std::logic_error("m_global_highlight==nullptr");
-        }
-        for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
-            heighlightStr(cs.Value.get(), *it);
-        }
-        cs.originValue=cs.Value;
-        m_buffer[it.index]=cs;
-    });
-    res.waitForFinished();
-    m_load_complete=true;
+    if(m_global_highlight==nullptr){
+        throw std::logic_error("m_global_highlight==nullptr");
+    }
+    for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
+        heighlightStr(&result, *it);
+    }
+    return result;
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {
@@ -204,26 +189,26 @@ QVariant Log::data(const QModelIndex & index, int role) const {
     if(!m_load_complete ){
         return emptyString;
     }
-    if (index.row() < 0 || index.row() >= m_buffer.count())
+    if (index.row() < 0 || index.row() >= m_lines.count())
         return QVariant();
     if (role == Qt::DisplayRole || role == Qt::EditRole){
-        return *(m_buffer[index.row()].Value);
+        return makeString(index.row());
     }
     return QVariant();
 }
 
 void Log::clearHightlight(){
-    m_load_complete=false;
-    this->beginResetModel();
-    QtConcurrent::blockingMap(m_buffer,[](CachedString&cs){
-        cs.Value=cs.originValue;
-    });
-    for(int k=0;k<m_buffer.size();++k){
-        auto mi=this->createIndex(k,0);
-        dataChanged(mi, mi);
-    }
-    m_load_complete=true;
-    this->endResetModel();
+    //    m_load_complete=false;
+    //    this->beginResetModel();
+    //    QtConcurrent::blockingMap(m_buffer,[](CachedString&cs){
+    //        cs.Value=cs.originValue;
+    //    });
+    //    for(int k=0;k<m_buffer.size();++k){
+    //        auto mi=this->createIndex(k,0);
+    //        dataChanged(mi, mi);
+    //    }
+    //    m_load_complete=true;
+    //    this->endResetModel();
 }
 
 bool Log::heighlightStr(QString* str,const QString&pattern){
@@ -257,15 +242,15 @@ void Log::updateHeighlights(QVector<CachedString>::iterator begin, QVector<Cache
             cs.Value=std::make_shared<QString>(str);
         }
     });
-    for(int k=0;k<m_buffer.size();++k){
-        auto mi=this->createIndex(k,0);
-        dataChanged(mi, mi);
-    }
+    //    for(int k=0;k<m_buffer.size();++k){
+    //        auto mi=this->createIndex(k,0);
+    //        dataChanged(mi, mi);
+    //    }
     qDebug()<<m_fname<<"updateHeighlights elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void Log::updateHeighlights(const QString&pattern){
-    updateHeighlights(m_buffer.begin(), m_buffer.end(), pattern);
+    //updateHeighlights(m_buffer.begin(), m_buffer.end(), pattern);
 }
 
 void Log::localHightlightPattern(const QString&pattern){
