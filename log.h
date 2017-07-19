@@ -78,7 +78,7 @@ signals:
 public slots:
 protected:
     void loadFile();
-    QString makeString(int row)const;
+    std::shared_ptr<QString> makeString(int row)const;
 protected:
     bool m_load_complete=false;
     QString m_name;
@@ -86,7 +86,7 @@ protected:
 
     LinePositionList m_lines;
     QByteArray m_bts;
-    std::map<int, CachedString> m_cache;
+    mutable std::map<int, CachedString> m_cache;
     const HighlightPatterns *m_global_highlight;
 
     QListView  *m_lv_object;
