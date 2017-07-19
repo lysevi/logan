@@ -51,7 +51,7 @@ void Log::loadFile(){
     {
         auto bts=inputFile.map(0, inputFile.size());
         m_bts.resize(inputFile.size());
-        for(int i=0;i<m_bts.size();++i){ //TODO start not from 0.
+        for(int i=0;i<m_bts.size();++i){
             m_bts[i]=bts[i];
         }
         m_lines=allLinePos(bts, inputFile.size());
@@ -117,17 +117,20 @@ void Log::update(){
         auto diff=lines.size()-m_lines.size();
         if(diff>0){
             m_load_complete=false;
-            this->beginResetModel();
-            auto bts=inputFile.map(0, inputFile.size());
-            m_bts.resize(inputFile.size());
-            for(int i=0;i<m_bts.size();++i){
+            //this->beginResetModel();
+            auto fsize=inputFile.size();
+            auto bts=inputFile.map(0, fsize);
+            int i=m_bts.size()-1;
+            m_bts.resize(fsize);
+
+            for(;i<fsize;++i){
                 m_bts[i]=bts[i];
             }
 
             m_lines=std::move(lines);
 
             m_load_complete=true;
-            this->endResetModel();
+            //this->endResetModel();
             m_lv_object->scrollToBottom();
             emit countChanged(m_lines.size());
             emit linesChanged();
@@ -165,8 +168,8 @@ QString Log::makeString(int row)const{
 #else
     QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
 #endif
-    int stringSize=int(i-start);
-    QByteArray localStr(stringSize, '0');
+    int stringSize=int(i-start+1);
+    QByteArray localStr(stringSize, '\0');
 
     int insertPos=0;
     for(int pos=start;pos<i;++pos){
@@ -185,6 +188,7 @@ QString Log::makeString(int row)const{
 }
 
 QVariant Log::data(const QModelIndex & index, int role) const {
+
     const QString emptyString="EmptyString";
     if(!m_load_complete ){
         return emptyString;
@@ -221,7 +225,7 @@ bool Log::heighlightStr(QString* str,const QString&pattern){
     if(re.indexIn(*str)!= -1){
         auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
-            str->replace(re,"<b>"+captured_str+"</b>");
+            *str=str->replace(re,"<b>"+captured_str+"</b>");
         }
         result=true;
     }
