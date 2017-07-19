@@ -9,9 +9,6 @@
 
 const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 
-Log::Log(QObject *parent) : QAbstractListModel(parent)
-{}
-
 LinePositionList allLinePos(const QByteArray&bts){
 
     int count=0;
@@ -57,12 +54,12 @@ void Log::loadFile(){
     }else{
         throw std::logic_error("file not exists!");
     }
-//    if(m_global_highlight==nullptr){
-//        throw std::logic_error("m_global_highlight==nullptr");
-//    }
-//    for(auto&pattern:*m_global_highlight){
-//        updateHeighlights(pattern);
-//    }
+    //    if(m_global_highlight==nullptr){
+    //        throw std::logic_error("m_global_highlight==nullptr");
+    //    }
+    //    for(auto&pattern:*m_global_highlight){
+    //        updateHeighlights(pattern);
+    //    }
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
     m_load_complete=true;
 }
@@ -70,7 +67,7 @@ void Log::loadFile(){
 Log::Log(const QFileInfo& fileInfo,
          const QString&filename,
          const HighlightPatterns *global_highlight,
-         QObject *parent):QAbstractListModel(parent){
+         QObject *parent):QAbstractItemModel(parent){
 
     m_fileInfo=fileInfo;
     m_lastModifed=m_fileInfo.lastModified();
@@ -79,7 +76,7 @@ Log::Log(const QFileInfo& fileInfo,
     m_global_highlight=global_highlight;
     m_load_complete=false;
     loadFile();
-    qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.count();
+    qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.size();
 }
 
 
@@ -138,13 +135,6 @@ void Log::update(){
 }
 
 
-int Log::rowCount(const QModelIndex & parent) const {
-    Q_UNUSED(parent);
-    if(!m_load_complete){
-        return 0;
-    }
-    return m_lines.count();
-}
 
 
 std::shared_ptr<QString> Log::makeString(int row)const{
@@ -176,6 +166,16 @@ std::shared_ptr<QString> Log::makeString(int row)const{
     return result;
 }
 
+int Log::rowCount(const QModelIndex & parent) const {
+    Q_UNUSED(parent);
+    if(!m_load_complete){
+        return 0;
+    }
+    //return m_lines.count();
+    return m_cache.size();
+}
+
+
 QVariant Log::data(const QModelIndex & index, int role) const {
 
     const QString emptyString="EmptyString";
@@ -183,23 +183,49 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         return emptyString;
     }
 
-    if (index.row() < 0 || index.row() >= m_lines.count())
+    if (index.row() < 0 || index.row() >= int(m_lines.size()))
         return QVariant();
     if (role == Qt::DisplayRole || role == Qt::EditRole){
         auto it=m_cache.find(index.row());
         if(it!=m_cache.end()){
-            qDebug()<<"cdata"<< index.row();
             return *it->second.Value;
-        }else{
-            qDebug()<<"data"<< index.row();
-            CachedString cs;
-            cs.originValue=makeString(index.row());
-            cs.Value=cs.originValue;
-            m_cache.insert(std::make_pair(index.row(), cs));
-            return *cs.Value;
         }
     }
     return QVariant();
+}
+
+bool Log::canFetchMore(const QModelIndex &index) const {
+    if (m_lines.size()==m_cache.size()){
+        qDebug()<<"canFetchMore "<<index.row()<<"isvalid:"<<index.isValid()<<"false";
+        return false;
+    }else{
+        qDebug()<<"canFetchMore "<<index.row()<<"true";
+        return true;
+    }
+}
+
+void Log::fetchMore(const QModelIndex &index) {
+    qDebug()<<"fetchMore"<<index.row();
+
+    const int loadStep=1000;
+    int loaded=0;
+    std::map<int, CachedString> local_res;
+    for(int i=0;i<loadStep;++i){
+        if((m_cache.size()+local_res.size())==m_lines.size()){
+            break;
+        }
+        CachedString cs;
+        cs.originValue=makeString(m_cache.size()+i);
+        cs.Value=cs.originValue;
+        local_res.insert(std::make_pair(m_cache.size()+i, cs));
+        loaded++;
+    }
+    beginInsertRows(index, m_cache.size(), m_cache.size()+loaded);
+    for(auto&kv:local_res){
+        m_cache.insert(std::make_pair(kv.first, kv.second));
+    }
+    endInsertRows();
+
 }
 
 void Log::clearHightlight(){
@@ -234,19 +260,19 @@ bool Log::heighlightStr(QString* str,const QString&pattern){
     return result;
 }
 
-void Log::updateHeighlights(QVector<CachedString>::iterator begin, QVector<CachedString>::iterator end,const QString&pattern){
+void Log::updateHeighlights(QVector<CachedString>::iterator /*begin*/, QVector<CachedString>::iterator /*end*/,const QString&pattern){
     if(pattern.size()==0){
         return;
     }
     auto curDT=QDateTime::currentDateTimeUtc();
 
-//    QtConcurrent::blockingMap(begin, end,[this,&pattern](CachedString&cs){
-//        QString str(*cs.Value);
-//        auto is_updated=heighlightStr(&str, pattern);
-//        if(is_updated){
-//            cs.Value=std::make_shared<QString>(str);
-//        }
-//    });
+    //    QtConcurrent::blockingMap(begin, end,[this,&pattern](CachedString&cs){
+    //        QString str(*cs.Value);
+    //        auto is_updated=heighlightStr(&str, pattern);
+    //        if(is_updated){
+    //            cs.Value=std::make_shared<QString>(str);
+    //        }
+    //    });
     //    for(int k=0;k<m_buffer.size();++k){
     //        auto mi=this->createIndex(k,0);
     //        dataChanged(mi, mi);
@@ -254,7 +280,7 @@ void Log::updateHeighlights(QVector<CachedString>::iterator begin, QVector<Cache
     qDebug()<<m_fname<<"updateHeighlights elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-void Log::updateHeighlights(const QString&pattern){
+void Log::updateHeighlights(const QString&/*pattern*/){
     //updateHeighlights(m_buffer.begin(), m_buffer.end(), pattern);
 }
 

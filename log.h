@@ -1,12 +1,13 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include <QAbstractListModel>
+#include <QAbstractItemModel>
 #include <QSet>
 #include <QFileInfo>
 #include <QDateTime>
 #include <QListView>
 #include <map>
+#include <vector>
 #include <future>
 #include <memory>
 
@@ -19,7 +20,7 @@ struct LinePosition{
 };
 
 //TODO hashset?
-using LinePositionList = QVector<LinePosition>;
+using LinePositionList = std::vector<LinePosition>;
 
 struct CachedString{
     int index;
@@ -29,19 +30,14 @@ struct CachedString{
 
 const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
 
-class Log : public QAbstractListModel
+class Log : public QAbstractItemModel
 {
     Q_OBJECT
 
     Q_PROPERTY(QString  name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString  filename READ filename NOTIFY filenameChanged)
 public:
-
-    explicit Log(QObject *parent = nullptr);
-    Log(const QFileInfo& fileInfo,
-        const QString&filename,
-        const HighlightPatterns *global_highlight,
-        QObject *parent = nullptr);
+    Log(const QFileInfo& fileInfo, const QString&filename, const HighlightPatterns *global_highlight, QObject *parent = nullptr);
 
     static Log* openFile(const QString&fname, const HighlightPatterns *global_highlight, QObject *parent = nullptr);
 
@@ -57,10 +53,31 @@ public:
         Q_UNUSED(role)
         return true;
     }
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override{
+        Q_UNUSED(parent);
+        return 1;
+    }
     Qt::ItemFlags flags(const QModelIndex &index) const{
         Q_UNUSED(index)
         return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
     }
+
+    QModelIndex index(int row, int column, const QModelIndex &parent = QModelIndex())const override{
+        if (!hasIndex(row, column, parent)) {
+            return QModelIndex();
+        }
+
+
+        return createIndex(row, column, nullptr);
+    }
+
+    QModelIndex parent(const QModelIndex &/*child*/) const override{
+        return QModelIndex();
+    }
+
+    bool canFetchMore(const QModelIndex &parent) const override;
+    void fetchMore(const QModelIndex &parent) override;
+
     Q_INVOKABLE void clearHightlight();
     Q_INVOKABLE void localHightlightPattern(const QString&pattern);
     void updateHeighlights(QVector<CachedString>::iterator begin,
