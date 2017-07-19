@@ -64,6 +64,9 @@ void MainWindow::openFileSlot(){
         lb->setItemDelegate(&m_delegate);
         lb->setSelectionMode(QAbstractItemView::SingleSelection);
         lb->installEventFilter(this);
+        lb->setUniformItemSizes(true);
+        lb->setLayoutMode(QListView::LayoutMode::Batched);
+        lb->setSpacing(2);
         m_tabbar->addTab(lb, v);
     }
 }

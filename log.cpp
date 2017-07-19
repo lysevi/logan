@@ -54,12 +54,6 @@ void Log::loadFile(){
     }else{
         throw std::logic_error("file not exists!");
     }
-    //    if(m_global_highlight==nullptr){
-    //        throw std::logic_error("m_global_highlight==nullptr");
-    //    }
-    //    for(auto&pattern:*m_global_highlight){
-    //        updateHeighlights(pattern);
-    //    }
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
     m_load_complete=true;
 }
@@ -76,6 +70,10 @@ Log::Log(const QFileInfo& fileInfo,
     m_global_highlight=global_highlight;
     m_load_complete=false;
     loadFile();
+    auto idx=createIndex(-1,-1,nullptr);
+    while(canFetchMore(idx)){
+        fetchMore(idx);
+    }
     qDebug()<<"loaded "<<m_name<<" lines:"<<m_lines.size();
 }
 
@@ -121,10 +119,10 @@ void Log::update(){
 
             emit countChanged(m_lines.size());
             emit linesChanged();
-            auto idx=createIndex(-1,-1,nullptr);
-            while(canFetchMore(idx)){
-                fetchMore(idx);
-            }
+            //auto idx=createIndex(-1,-1,nullptr);
+//            while(canFetchMore(idx)){
+//                fetchMore(idx);
+//            }
             m_lv_object->scrollToBottom();
         }
 
@@ -173,7 +171,7 @@ int Log::rowCount(const QModelIndex & parent) const {
     if(!m_load_complete){
         return 0;
     }
-    //return m_lines.count();
+   //return m_lines.size();
     return m_cache.size();
 }
 
