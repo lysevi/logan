@@ -51,7 +51,6 @@
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionreolad_current"/>
-    <addaction name="actionautoscroll_enabled"/>
     <addaction name="actionclose_current_tab"/>
     <addaction name="separator"/>
     <addaction name="actionexit"/>
@@ -61,6 +60,7 @@
      <string>View</string>
     </property>
     <addaction name="actionshow_toolbar"/>
+    <addaction name="actionautoscroll_enabled"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu"/>

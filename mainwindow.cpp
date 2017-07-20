@@ -101,6 +101,12 @@ void MainWindow::openFileSlot(){
         lb->setAutoScroll(m_autoscroll_enabled);
         m_tabbar->addTab(lb, v);
     }
+    if(m_tabbar->count()==1)
+    {
+        m_tabbar->tabBar()->hide();
+    }else{
+        m_tabbar->tabBar()->setVisible(true);
+    }
 }
 
 void MainWindow::clearSettings(){
