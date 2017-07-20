@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "logviewer.h"
+#include "textcodecselectiondialog.h"
 #include <QDebug>
 #include <QListView>
 #include <QStringListModel>
@@ -8,9 +9,11 @@
 #include <QAbstractItemView>
 #include <QFontDialog>
 #include <QMessageBox>
+#include <QTextCodec>
 
 const QString fontKey="logFont";
 const QString showToolbarKey="showToolBar";
+const QString defaultEncodingKey="defaultEncoding";
 
 const QString v1=QString(LVIEW_VERSION);
 const QString v2=QString(GIT_VERSION);
@@ -23,7 +26,6 @@ MainWindow::MainWindow(QWidget *parent) :
     m_settings("lysevi", "logan")
 {
     m_timer->setInterval(0);
-
 
     ui->setupUi(this);
 
@@ -40,6 +42,13 @@ MainWindow::MainWindow(QWidget *parent) :
         bool value=m_settings.value(showToolbarKey).toBool();
         ui->mainToolBar->setVisible(value);
         ui->actionshow_toolbar->setChecked(value);
+    }
+
+    if(m_settings.contains(defaultEncodingKey))
+    {
+        auto value=m_settings.value(defaultEncodingKey).toString();
+        m_default_text_encoding=value;
+        qDebug()<<"default encoding:"<<m_default_text_encoding;
     }
 
     m_timer_widget=new TimerForm();
@@ -63,12 +72,23 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionfont_selection, &QAction::triggered, this, &MainWindow::openFontDlgSlot);
     connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettings);
     connect(ui->actionshow_toolbar, &QAction::triggered, this, &MainWindow::showToolbarSlot);
+    connect(ui->actionselect_text_encoding, &QAction::triggered, this, &MainWindow::selectTextEncodingSlot);
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
     connect(m_tabbar, &QTabWidget::currentChanged, this, &MainWindow::currentTabChanged);
     m_timer_widget->defaultState();
 }
+
+
+MainWindow::~MainWindow()
+{
+    delete ui;
+    delete m_timer;
+    delete m_controller;
+
+}
+
 
 void MainWindow::openFontDlgSlot(){
     qDebug()<<"openFontDlgSlot()";
@@ -85,7 +105,7 @@ void MainWindow::openFontDlgSlot(){
 
 void MainWindow::openFile(const QString&fname){
     qDebug()<<"openFile()"<<fname;
-    auto log=m_controller->openFile(fname);
+    auto log=m_controller->openFile(m_default_text_encoding, fname);
     if(log==nullptr){
         return;
     }
@@ -209,10 +229,15 @@ void MainWindow::currentTabChanged(){
     setWindowTitle(logan_version +": " + log->model()->filename());
 }
 
-MainWindow::~MainWindow()
-{
-    delete ui;
-    delete m_timer;
-    delete m_controller;
-
+void MainWindow::selectTextEncodingSlot(){
+    qDebug()<<"MainWindow::selectTextEncodingSlot()";
+    TextCodecSelectionDialog dlg(this);
+    int ret=dlg.exec();
+    qDebug()<<"ret:"<<ret;
+    if(ret){
+        auto encoding=dlg.selectedEncoding();
+        qDebug()<<"selected encoding:"<<encoding;
+        m_settings.setValue(defaultEncodingKey,encoding);
+        m_default_text_encoding=encoding; //TODO set to all log files.
+    }
 }

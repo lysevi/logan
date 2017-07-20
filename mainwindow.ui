@@ -61,6 +61,7 @@
     </property>
     <addaction name="actionshow_toolbar"/>
     <addaction name="actionautoscroll_enabled"/>
+    <addaction name="actionselect_text_encoding"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menu"/>
@@ -175,6 +176,11 @@
   <action name="actionexit">
    <property name="text">
     <string>exit</string>
+   </property>
+  </action>
+  <action name="actionselect_text_encoding">
+   <property name="text">
+    <string>select text encoding</string>
    </property>
   </action>
  </widget>

@@ -37,9 +37,9 @@ class Log : public QAbstractItemModel
     Q_PROPERTY(QString  name READ name NOTIFY nameChanged)
     Q_PROPERTY(QString  filename READ filename NOTIFY filenameChanged)
 public:
-    Log(const QFileInfo& fileInfo, const QString&filename, const HighlightPatterns *global_highlight, QObject *parent = nullptr);
+    Log(const QFileInfo& fileInfo, const QString&filename, const HighlightPatterns *global_highlight,const QString&default_encoding, QObject *parent = nullptr);
 
-    static Log* openFile(const QString&fname, const HighlightPatterns *global_highlight, QObject *parent = nullptr);
+    static Log* openFile(const QString&fname, const HighlightPatterns *global_highlight, const QString& defaul_encoding, QObject *parent = nullptr);
 
     QString name()const;
     QString filename()const;
@@ -108,9 +108,11 @@ protected:
     mutable std::map<int, CachedString> m_cache;
     const HighlightPatterns *m_global_highlight;
 
+    QTextCodec * m_codec;
     QListView  *m_lv_object;
     QFileInfo m_fileInfo;
     QDateTime m_lastModifed;
+    QString m_default_encoding;
 };
 
 #endif // LOG_H

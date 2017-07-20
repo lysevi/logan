@@ -23,11 +23,11 @@ void Controller::updateAllSlot(const QString &msg) {
 }
 
 
-Log* Controller::openFile(const QString &fname){
+Log* Controller::openFile(const QString&encoding,const QString &fname){
     if(m_logs.contains(fname)){
         return nullptr;
     }
-    auto log=Log::openFile(fname, &m_global_highlight, this);
+    auto log=Log::openFile(fname, &m_global_highlight,encoding, this);
     m_logs[fname]=log;
     return log;
 }

@@ -11,7 +11,7 @@ class Controller : public QObject
     Q_OBJECT
 public:
     Controller(QObject*parent=nullptr);
-    Log* openFile(const QString &fname);
+    Log* openFile(const QString&encoding,const QString &fname);
 protected:
     QHash<QString, Log*> m_logs;
     QSet<QString> m_heightlight;

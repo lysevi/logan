@@ -26,7 +26,8 @@ SOURCES += \
         listboxeditableitem.cpp \
         controller.cpp \
         timerform.cpp \
-    logviewer.cpp
+    logviewer.cpp \
+    textcodecselectiondialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -34,13 +35,15 @@ HEADERS += \
         listboxeditableitem.h \
         controller.h \
         timerform.h \
-    logviewer.h
+    logviewer.h \
+    textcodecselectiondialog.h
 
 
 FORMS += \
         mainwindow.ui \
         timer_setup.ui \
-    logviewer.ui
+    logviewer.ui \
+    textcodecselectiondialog.ui
 
 RESOURCES += \
     resources.qrc

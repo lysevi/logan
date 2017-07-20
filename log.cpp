@@ -36,10 +36,10 @@ LinePositionList allLinePos(const QByteArray&bts){
     return result;
 }
 
-Log* Log::openFile(const QString&fname, const HighlightPatterns *global_highlight,QObject *parent){
+Log* Log::openFile(const QString&fname, const HighlightPatterns *global_highlight, const QString& default_encoding,QObject *parent){
     qDebug()<<"openFile"<<fname;
     QFileInfo fileInfo(fname);
-    auto ll=new Log(fileInfo, fname, global_highlight, parent);
+    auto ll=new Log(fileInfo, fname, global_highlight, default_encoding, parent);
     return ll;
 }
 
@@ -63,14 +63,19 @@ void Log::loadFile(){
 Log::Log(const QFileInfo& fileInfo,
          const QString&filename,
          const HighlightPatterns *global_highlight,
+         const QString&default_encoding,
          QObject *parent):QAbstractItemModel(parent){
-
+    m_default_encoding=default_encoding;
     m_fileInfo=fileInfo;
     m_lastModifed=m_fileInfo.lastModified();
     m_name=m_fileInfo.fileName();
     m_fname=filename;
     m_global_highlight=global_highlight;
     m_load_complete=false;
+    m_codec = QTextCodec::codecForName( m_default_encoding.toStdString().c_str() );
+    if(m_codec==nullptr){
+        throw std::logic_error("m_codec==nullptr");
+    }
     loadFile();
     auto idx=createIndex(-1,-1,nullptr);
     while(canFetchMore(idx)){
@@ -155,11 +160,7 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
     int start=line_pos.first;
     int i=line_pos.second;
 
-#ifdef WIN32
-    QTextCodec * codec = QTextCodec::codecForName( "CP1251" );
-#else
-    QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
-#endif
+
     int stringSize=int(i-start+1);
     QByteArray localStr(stringSize, ' ');
 
@@ -168,7 +169,7 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
         localStr[insertPos++]=m_bts[pos];
     }
 
-    std::shared_ptr<QString> result=std::make_shared<QString>(codec->toUnicode(localStr));
+    std::shared_ptr<QString> result=std::make_shared<QString>(m_codec->toUnicode(localStr));
 
     if(!isPlain)
     {

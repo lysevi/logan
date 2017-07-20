@@ -32,6 +32,7 @@ public slots:
     void timerIntervalChangedSlot(int v);
     void timerIntervalEnabledSlot(bool b);
     void currentTabChanged();
+    void selectTextEncodingSlot();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
@@ -41,4 +42,5 @@ private:
     bool m_autoscroll_enabled;
     QSettings m_settings;
     QFont m_defaultFont;
+    QString m_default_text_encoding;
 };
