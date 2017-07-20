@@ -9,5 +9,7 @@
         <file>icons/down.svg</file>
         <file>icons/autoscroll.svg</file>
         <file>icons/fonts.svg</file>
+        <file>icons/logan.png</file>
+        <file>icons/logan.svg</file>
     </qresource>
 </RCC>

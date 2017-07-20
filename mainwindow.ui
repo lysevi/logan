@@ -109,7 +109,7 @@
      <normaloff>:/icons/update.svg</normaloff>:/icons/update.svg</iconset>
    </property>
    <property name="text">
-    <string>reolad all</string>
+    <string>Reload all</string>
    </property>
    <property name="toolTip">
     <string>reolad current</string>
@@ -124,7 +124,7 @@
      <normaloff>:/icons/close.svg</normaloff>:/icons/close.svg</iconset>
    </property>
    <property name="text">
-    <string>close current tab</string>
+    <string>Close current tab</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -142,7 +142,7 @@
      <normaloff>:/icons/autoscroll.svg</normaloff>:/icons/autoscroll.svg</iconset>
    </property>
    <property name="text">
-    <string>autoscroll enabled</string>
+    <string>Autoscroll enabled</string>
    </property>
    <property name="toolTip">
     <string>autoscroll</string>
@@ -154,12 +154,12 @@
      <normaloff>:/icons/fonts.svg</normaloff>:/icons/fonts.svg</iconset>
    </property>
    <property name="text">
-    <string>select font</string>
+    <string>Select font</string>
    </property>
   </action>
   <action name="actionclearSettings">
    <property name="text">
-    <string>clear settings</string>
+    <string>Clear settings</string>
    </property>
   </action>
   <action name="actionshow_toolbar">
@@ -170,17 +170,17 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>show toolbar</string>
+    <string>Show toolbar</string>
    </property>
   </action>
   <action name="actionexit">
    <property name="text">
-    <string>exit</string>
+    <string>Exit</string>
    </property>
   </action>
   <action name="actionselect_text_encoding">
    <property name="text">
-    <string>select text encoding</string>
+    <string>Select text encoding</string>
    </property>
   </action>
  </widget>

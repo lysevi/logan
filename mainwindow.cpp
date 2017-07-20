@@ -51,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug()<<"default encoding:"<<m_default_text_encoding;
     }
 
+    setWindowIcon(QIcon(":/icons/logan.svg"));
+
     m_timer_widget=new TimerForm();
 
     ui->mainToolBar->addWidget(m_timer_widget);
