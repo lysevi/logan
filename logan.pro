@@ -24,19 +24,22 @@ SOURCES += \
         log.cpp \
         listboxeditableitem.cpp \
         controller.cpp \
-        timerform.cpp
+        timerform.cpp \
+    logviewer.cpp
 
 HEADERS += \
         mainwindow.h \
         log.h \
         listboxeditableitem.h \
         controller.h \
-        timerform.h
+        timerform.h \
+    logviewer.h
 
 
 FORMS += \
         mainwindow.ui \
-        timer_setup.ui
+        timer_setup.ui \
+    logviewer.ui
 
 RESOURCES += \
     resources.qrc

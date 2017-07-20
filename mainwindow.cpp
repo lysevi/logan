@@ -1,5 +1,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
+#include "logviewer.h"
 #include <QDebug>
 #include <QListView>
 #include <QStringListModel>
@@ -57,16 +58,8 @@ void MainWindow::openFileSlot(){
         if(log==nullptr){
             continue;
         }
-        auto lb=new QListView(m_tabbar);
-        lb->setAlternatingRowColors(true);
+        auto lb=new LogViewer(m_tabbar);
         lb->setModel(log);
-        log->setListVoxObject(lb);
-        lb->setItemDelegate(&m_delegate);
-        lb->setSelectionMode(QAbstractItemView::SingleSelection);
-        lb->installEventFilter(this);
-        lb->setUniformItemSizes(true);
-        lb->setLayoutMode(QListView::LayoutMode::Batched);
-        lb->setSpacing(2);
         m_tabbar->addTab(lb, v);
     }
 }
@@ -79,8 +72,7 @@ void MainWindow::reloadCurentSlot(){
         return;
     }
     auto widget=m_tabbar->widget(current);
-    auto model=static_cast<QListView*>(widget)->model();
-    auto log=static_cast<Log*>(model);
+    auto log=dynamic_cast<LogViewer*>(widget)->model();
     m_controller->updateAllSlot(log->filename());
 }
 
@@ -92,8 +84,7 @@ void MainWindow::closeCurentSlot(){
         return;
     }
     auto widget=m_tabbar->widget(current);
-    auto model=static_cast<QListView*>(widget)->model();
-    auto log=static_cast<Log*>(model);
+    auto log=dynamic_cast<LogViewer*>(widget)->model();
     auto fname=log->filename();
     m_tabbar->removeTab(current);
     m_controller->closeFileSlot(fname);

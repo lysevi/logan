@@ -6,7 +6,6 @@
 #include <QTimer>
 #include "timerform.h"
 #include "controller.h"
-#include "listboxeditableitem.h"
 
 namespace Ui {
 class MainWindow;
@@ -30,7 +29,6 @@ private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
     Controller* m_controller;
-    ListboxEditableItem m_delegate;
     TimerForm *m_timer_widget;
     QTimer *m_timer;
 };
