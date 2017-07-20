@@ -87,6 +87,8 @@ public:
     static bool heighlightStr(QString* str,const QString&pattern );
 
     Q_INVOKABLE void setListVoxObject(QListView *object);
+
+    QString plainText(const QModelIndex & index)const;
 signals:
     void linesChanged();
     void countChanged(int);
@@ -95,7 +97,7 @@ signals:
 public slots:
 protected:
     void loadFile();
-    std::shared_ptr<QString> makeString(int row)const;
+    std::shared_ptr<QString> makeString(int row, bool isPlain=false)const;
 protected:
     bool m_load_complete=false;
     QString m_name;

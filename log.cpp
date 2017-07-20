@@ -150,7 +150,7 @@ void Log::update(){
 
 
 
-std::shared_ptr<QString> Log::makeString(int row)const{
+std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
     auto line_pos=m_lines[row];
     int start=line_pos.first;
     int i=line_pos.second;
@@ -170,11 +170,14 @@ std::shared_ptr<QString> Log::makeString(int row)const{
 
     std::shared_ptr<QString> result=std::make_shared<QString>(codec->toUnicode(localStr));
 
-    if(m_global_highlight==nullptr){
-        throw std::logic_error("m_global_highlight==nullptr");
-    }
-    for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
-        heighlightStr(result.get(), *it);
+    if(!isPlain)
+    {
+        if(m_global_highlight==nullptr){
+            throw std::logic_error("m_global_highlight==nullptr");
+        }
+        for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
+            heighlightStr(result.get(), *it);
+        }
     }
     return result;
 }
@@ -205,6 +208,12 @@ QVariant Log::data(const QModelIndex & index, int role) const {
         }
     }
     return QVariant();
+}
+
+QString Log::plainText(const QModelIndex & index)const{
+    if (index.row() < 0 || index.row() >= int(m_lines.size()))
+        return QString("error");
+    return *makeString(index.row(), true);
 }
 
 bool Log::canFetchMore(const QModelIndex &index) const {

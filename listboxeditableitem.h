@@ -5,6 +5,7 @@
 #include <QTextEdit>
 #include <QStyleOption>
 #include <QPainter>
+#include "log.h"
 
 class ListboxEditableItem : public QStyledItemDelegate
 {
@@ -51,8 +52,9 @@ public:
 
 
     void setEditorData(QWidget *editor, const QModelIndex &index) const override{
-        auto value = index.model()->data(index, Qt::EditRole).toString();
-        static_cast<QTextEdit*>(editor)->setText(value);
+        auto log=dynamic_cast<const Log*>(index.model());
+        auto value =  log->plainText(index);
+        static_cast<QTextEdit*>(editor)->setPlainText(value);
     }
     //    void setModelData(QWidget *editor, QAbstractItemModel *model,
     //                      const QModelIndex &index) const{
