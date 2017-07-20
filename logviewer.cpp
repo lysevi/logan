@@ -40,6 +40,8 @@ void LogViewer::setAutoScroll(bool value){
 }
 
 void LogViewer::onScrollRangeChanged(int min, int max){
+    Q_UNUSED(min);
+    Q_UNUSED(max);
     if(m_autoscroll){
         ui->listView->scrollToBottom();
     }

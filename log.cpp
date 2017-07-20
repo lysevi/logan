@@ -5,8 +5,9 @@
 #include <QPair>
 #include <QDateTime>
 #include <QFileInfo>
-#include <QtConcurrent>
+//#include <QtConcurrent>
 #include <QScrollBar>
+#include <QTextCodec>
 
 const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 

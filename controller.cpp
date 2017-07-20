@@ -1,11 +1,11 @@
 #include "controller.h"
-#include <QtConcurrent>
+//#include <QtConcurrent>
 #include <QDateTime>
 
 Controller::Controller(QObject*parent):QObject(parent){
-    auto threads=QThreadPool::globalInstance()->maxThreadCount();
+    //auto threads=QThreadPool::globalInstance()->maxThreadCount();
     //QThreadPool::globalInstance()->setMaxThreadCount(threads);
-    qDebug()<<"maxThreadCount"<<threads;
+    //qDebug()<<"maxThreadCount"<<threads;
     clearHighlightedTextSlot();
 }
 
@@ -51,7 +51,7 @@ void Controller::addHighlightedTextSlot(const QString &s){
     qDebug()<<"addHighlightedTextSlot "<<s;
     auto curDT=QDateTime::currentDateTimeUtc();
     m_global_highlight<<s;
-    QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
+    //QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
