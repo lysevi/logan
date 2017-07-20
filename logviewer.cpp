@@ -5,6 +5,7 @@
 #include <QMenu>
 #include <QApplication>
 #include <QClipboard>
+#include <QKeyEvent>
 
 LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     QWidget(parent),
@@ -23,6 +24,7 @@ LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     lb->setUniformItemSizes(true);
     lb->setLayoutMode(QListView::LayoutMode::Batched);
     lb->setSpacing(2);
+
 
     lb->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     connect(lb, SIGNAL(customContextMenuRequested ( const QPoint &)), this, SLOT(customContextMenu(const QPoint &)));
@@ -80,4 +82,16 @@ void LogViewer::customContextMenu(const QPoint &){
     QMenu menu;
     menu.addAction(this->ui->actioncopy);
     menu.exec(QCursor::pos());
+}
+
+bool LogViewer::eventFilter(QObject *object, QEvent *event)
+{
+    if (object == ui->listView && event->type() == QEvent::KeyPress) {
+        QKeyEvent *ke = static_cast<QKeyEvent *>(event);
+        if (ke->key() == Qt::Key_C && ke->modifiers() == Qt::KeyboardModifier::ControlModifier){
+            this->copySelectedSlot();
+            return true;
+        }
+    }
+    return false;
 }
