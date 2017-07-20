@@ -44,6 +44,7 @@ MainWindow::MainWindow(QWidget *parent) :
         ui->actionshow_toolbar->setChecked(value);
     }
 
+    m_default_text_encoding=defaultTextEncoding;
     if(m_settings.contains(defaultEncodingKey))
     {
         auto value=m_settings.value(defaultEncodingKey).toString();
