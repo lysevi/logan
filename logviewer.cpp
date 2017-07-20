@@ -2,6 +2,9 @@
 #include "ui_logviewer.h"
 #include <QScrollBar>
 #include <QDebug>
+#include <QMenu>
+#include <QApplication>
+#include <QClipboard>
 
 LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     QWidget(parent),
@@ -15,13 +18,16 @@ LogViewer::LogViewer(const QFont&font,QWidget *parent) :
 
     lb->setAlternatingRowColors(true);
     lb->setItemDelegate(&m_delegate);
-    lb->setSelectionMode(QAbstractItemView::SingleSelection);
+    lb->setSelectionMode(QAbstractItemView::SelectionMode::ExtendedSelection);
     lb->installEventFilter(this);
     lb->setUniformItemSizes(true);
     lb->setLayoutMode(QListView::LayoutMode::Batched);
     lb->setSpacing(2);
 
-    connect(lb->verticalScrollBar(), &QScrollBar::rangeChanged, this, LogViewer::onScrollRangeChanged);
+    lb->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
+    connect(lb, SIGNAL(customContextMenuRequested ( const QPoint &)), this, SLOT(customContextMenu(const QPoint &)));
+    connect(lb->verticalScrollBar(), &QScrollBar::rangeChanged, this, &LogViewer::onScrollRangeChanged);
+    connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
 }
 
 LogViewer::~LogViewer(){
@@ -29,11 +35,11 @@ LogViewer::~LogViewer(){
 }
 
 void LogViewer::setModel(Log*model_){
-  this->ui->listView->setModel(model_);
-  model_->setListVoxObject(this->ui->listView);
-  m_model=model_;
-  connect(model_, SIGNAL(rowsInserted(QModelIndex,int,int)),
-          this->ui->listView, SLOT(scrollToBottom()));
+    this->ui->listView->setModel(model_);
+    model_->setListVoxObject(this->ui->listView);
+    m_model=model_;
+    connect(model_, SIGNAL(rowsInserted(QModelIndex,int,int)),
+            this->ui->listView, SLOT(scrollToBottom()));
 }
 
 void LogViewer::setAutoScroll(bool value){
@@ -49,4 +55,29 @@ void LogViewer::onScrollRangeChanged(int min, int max){
     if(m_autoscroll){
         ui->listView->scrollToBottom();
     }
+}
+
+void LogViewer::copySelectedSlot(){
+    qDebug()<<"copySelectedSlot";
+    auto selectedIndexes=this->ui->listView->selectionModel()->selectedIndexes();
+    QClipboard *clipboard = QApplication::clipboard();
+    QStringList sl;
+    for(auto&i:selectedIndexes){
+        auto plainText=m_model->plainText(i);
+        plainText.remove("\u0000");
+        plainText.remove("\0");
+        plainText.remove('\r');
+        plainText.remove('\n');
+        sl.append(plainText);
+    }
+    auto cs=sl.join("\n");
+    qDebug()<<cs;
+    clipboard->setText(cs);
+}
+
+void LogViewer::customContextMenu(const QPoint &){
+    qDebug()<<"customContextMenu";
+    QMenu menu;
+    menu.addAction(this->ui->actioncopy);
+    menu.exec(QCursor::pos());
 }

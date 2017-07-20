@@ -40,6 +40,11 @@
     </widget>
    </item>
   </layout>
+  <action name="actioncopy">
+   <property name="text">
+    <string>copy</string>
+   </property>
+  </action>
  </widget>
  <resources/>
  <connections/>

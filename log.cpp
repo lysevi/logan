@@ -161,7 +161,7 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
     QTextCodec * codec = QTextCodec::codecForName( "UTF-8" );
 #endif
     int stringSize=int(i-start+1);
-    QByteArray localStr(stringSize, '\0');
+    QByteArray localStr(stringSize, ' ');
 
     int insertPos=0;
     for(int pos=start;pos<i;++pos){
