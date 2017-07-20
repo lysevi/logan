@@ -6,12 +6,16 @@
 #include <QStringListModel>
 #include <QFileDialog>
 #include <QAbstractItemView>
+#include <QFontDialog>
+#include <QMessageBox>
 
+const QString fontKey="logFont";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    m_timer(new QTimer(this))
+    m_timer(new QTimer(this)),
+    m_settings("lysevi", "logan")
 {
     m_timer->setInterval(0);
     auto v1=QString(LVIEW_VERSION);
@@ -20,6 +24,13 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    m_defaultFont=this->font();
+    if(m_settings.contains(fontKey))
+    {
+        QString fontName=m_settings.value(fontKey).toString();
+        m_defaultFont=QFont(fontName);
+        qDebug()<<"defaul font is "<<fontName;
+    }
     m_timer_widget=new TimerForm();
 
     ui->mainToolBar->addWidget(m_timer_widget);
@@ -38,10 +49,26 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionreolad_current, &QAction::triggered, this, &MainWindow::reloadCurentSlot);
     connect(ui->actionclose_current_tab, &QAction::triggered, this, &MainWindow::closeCurentSlot);
     connect(ui->actionautoscroll_enabled, &QAction::triggered, this, &MainWindow::autoscrollChangedSlot);
+    connect(ui->actionfont_selection, &QAction::triggered, this, &MainWindow::openFontDlgSlot);
+    connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettings);
+
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
     m_timer_widget->defaultState();
+}
+
+void MainWindow::openFontDlgSlot(){
+    qDebug()<<"openFontDlgSlot()";
+    QFontDialog fdlg(this);
+    if(!fdlg.exec()){
+        return;
+    }
+    else{
+        qDebug()<<"selected font: "<<fdlg.selectedFont().toString();
+        m_settings.setValue(fontKey, fdlg.selectedFont().toString());
+        setFont(QFont(fdlg.selectedFont().toString()));
+    }
 }
 
 void MainWindow::openFileSlot(){
@@ -60,10 +87,25 @@ void MainWindow::openFileSlot(){
         if(log==nullptr){
             continue;
         }
-        auto lb=new LogViewer(m_tabbar);
+        auto lb=new LogViewer(m_defaultFont, m_tabbar);
         lb->setModel(log);
         lb->setAutoScroll(m_autoscroll_enabled);
         m_tabbar->addTab(lb, v);
+    }
+}
+
+void MainWindow::clearSettings(){
+    qDebug()<<"clearSettings()";
+    QMessageBox msgBox;
+
+    msgBox.setInformativeText("Clear settings?");
+    msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::No);
+    int ret = msgBox.exec();
+    if(ret==QMessageBox::Yes)
+    {
+        qDebug()<<"clear settings...";
+        m_settings.clear();
     }
 }
 

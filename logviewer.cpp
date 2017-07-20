@@ -3,12 +3,16 @@
 #include <QScrollBar>
 #include <QDebug>
 
-LogViewer::LogViewer(QWidget *parent) :
+LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::LogViewer)
+    ui(new Ui::LogViewer),
+    m_default_font(font)
 {
     ui->setupUi(this);
     auto lb=ui->listView;
+
+    m_delegate.m_default_font=m_default_font;
+
     lb->setAlternatingRowColors(true);
     lb->setItemDelegate(&m_delegate);
     lb->setSelectionMode(QAbstractItemView::SingleSelection);

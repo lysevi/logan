@@ -38,6 +38,14 @@
      <height>21</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu">
+    <property name="title">
+     <string>Settings</string>
+    </property>
+    <addaction name="actionfont_selection"/>
+    <addaction name="actionclearSettings"/>
+   </widget>
+   <addaction name="menu"/>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">
@@ -51,6 +59,7 @@
    <addaction name="actionOpen"/>
    <addaction name="actionclose_current_tab"/>
    <addaction name="actionautoscroll_enabled"/>
+   <addaction name="actionfont_selection"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -111,6 +120,20 @@
    </property>
    <property name="toolTip">
     <string>autoscroll</string>
+   </property>
+  </action>
+  <action name="actionfont_selection">
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/fonts.svg</normaloff>:/icons/fonts.svg</iconset>
+   </property>
+   <property name="text">
+    <string>select font</string>
+   </property>
+  </action>
+  <action name="actionclearSettings">
+   <property name="text">
+    <string>clear settings</string>
    </property>
   </action>
  </widget>

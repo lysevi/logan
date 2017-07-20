@@ -8,5 +8,6 @@
         <file>icons/clear.svg</file>
         <file>icons/down.svg</file>
         <file>icons/autoscroll.svg</file>
+        <file>icons/fonts.svg</file>
     </qresource>
 </RCC>

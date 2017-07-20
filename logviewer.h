@@ -14,7 +14,7 @@ class LogViewer : public QWidget
     Q_OBJECT
 
 public:
-    explicit LogViewer(QWidget *parent = 0);
+    explicit LogViewer(const QFont&font, QWidget *parent = 0);
     ~LogViewer();
     void setModel(Log*model_);
     Log* model()const{
@@ -28,6 +28,7 @@ private:
     Log* m_model;
     ListboxEditableItem m_delegate;
     bool m_autoscroll;
+    QFont m_default_font;
 };
 
 #endif // LOGVIEWER_H
