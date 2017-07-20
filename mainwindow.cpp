@@ -10,6 +10,7 @@
 #include <QMessageBox>
 
 const QString fontKey="logFont";
+const QString showToolbarKey="showToolBar";
 
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
@@ -31,6 +32,14 @@ MainWindow::MainWindow(QWidget *parent) :
         m_defaultFont=QFont(fontName);
         qDebug()<<"defaul font is "<<fontName;
     }
+
+    if(m_settings.contains(showToolbarKey))
+    {
+        bool value=m_settings.value(showToolbarKey).toBool();
+        ui->mainToolBar->setVisible(value);
+        ui->actionshow_toolbar->setChecked(value);
+    }
+
     m_timer_widget=new TimerForm();
 
     ui->mainToolBar->addWidget(m_timer_widget);
@@ -51,7 +60,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionautoscroll_enabled, &QAction::triggered, this, &MainWindow::autoscrollChangedSlot);
     connect(ui->actionfont_selection, &QAction::triggered, this, &MainWindow::openFontDlgSlot);
     connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettings);
-
+    connect(ui->actionshow_toolbar, &QAction::triggered, this, &MainWindow::showToolbarSlot);
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
@@ -107,6 +116,13 @@ void MainWindow::clearSettings(){
         qDebug()<<"clear settings...";
         m_settings.clear();
     }
+}
+
+void MainWindow::showToolbarSlot(){
+    bool value=ui->actionshow_toolbar->isChecked();
+    qDebug()<<"showToolbarSlot()"<<value;
+    m_settings.setValue(showToolbarKey, value);
+    ui->mainToolBar->setVisible(value);
 }
 
 void MainWindow::reloadCurentSlot(){

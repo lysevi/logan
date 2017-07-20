@@ -13,6 +13,8 @@ public:
     void defaultState();
     ~TimerForm();
     Ui::TimerForm *ui;
+
+    void setTimerWidgetEnabled(bool value);
 signals:
     void timerParamChangedSignal(int);
     void timerIsEnabledSignal(bool);

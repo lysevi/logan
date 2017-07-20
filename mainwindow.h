@@ -27,6 +27,7 @@ public slots:
     void openFontDlgSlot();
     void clearSettings();
     void autoscrollChangedSlot();
+    void showToolbarSlot();
     void timerIntervalChangedSlot(int v);
     void timerIntervalEnabledSlot(bool b);
 private:

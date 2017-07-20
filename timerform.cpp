@@ -19,11 +19,15 @@ void TimerForm::defaultState(){
     ui->horizontalSlider->setValue(defaultTimerValue);
 
     ui->checkBox->setChecked(defaultTimerState);
-    ui->groupBox->setEnabled(defaultTimerState);
+    setTimerWidgetEnabled(defaultTimerState);
     ui->timerValueLabel->setText(QString::number(ui->horizontalSlider->value()));
 
     emit timerParamChangedSlot(defaultTimerValue);
     emit timerIsEnabledSignal(defaultTimerState);
+}
+
+void TimerForm::setTimerWidgetEnabled(bool value){
+    ui->horizontalSlider->setEnabled(value);
 }
 
 void TimerForm::timerParamChangedSlot(int v){
@@ -38,7 +42,7 @@ void TimerForm::checkBoxStatChangedSlot(int v){
     qDebug()<<"timer is :"<<isChecked;
 
     emit timerIsEnabledSignal(isChecked);
-    ui->groupBox->setEnabled(isChecked);
+    setTimerWidgetEnabled(isChecked);
     ui->timerValueLabel->setText(QString::number(ui->horizontalSlider->value()));
 
 }
