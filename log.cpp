@@ -6,6 +6,7 @@
 #include <QDateTime>
 #include <QFileInfo>
 #include <QtConcurrent>
+#include <QScrollBar>
 
 const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
 
@@ -122,25 +123,19 @@ void Log::update(){
 
            int loaded=0;
             std::map<int, CachedString> local_res;
-            for(int i=0;i<diff;++i){
+            for(size_t i=0;i<diff;++i){
                 CachedString cs;
                 cs.originValue=makeString(m_cache.size()+i);
                 cs.Value=cs.originValue;
                 local_res.insert(std::make_pair(m_cache.size()+i, cs));
                 loaded++;
             }
-            beginInsertRows(createIndex(0,0,nullptr), m_cache.size(), m_cache.size()+loaded);
+            beginInsertRows(createIndex(0,0,nullptr), m_cache.size(), m_cache.size()+loaded-1);
             for(auto&kv:local_res){
                 m_cache.insert(std::make_pair(kv.first, kv.second));
             }
             endInsertRows();
-
-//            auto idx=createIndex(-1,-1,nullptr);
-//            while(canFetchMore(idx)){
-//                fetchMore(idx);
-//            }
-            m_lv_object->setCurrentIndex(createIndex(m_cache.size(),0,nullptr));
-            m_lv_object->scrollToBottom();
+            emit m_lv_object->scrollToBottom();
         }
 
         inputFile.close();

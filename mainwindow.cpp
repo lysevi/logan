@@ -33,9 +33,11 @@ MainWindow::MainWindow(QWidget *parent) :
     m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     ui->gridLayout->addWidget(m_tabbar);
 
+    m_autoscroll_enabled=ui->actionautoscroll_enabled->isChecked();
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
     connect(ui->actionreolad_current, &QAction::triggered, this, &MainWindow::reloadCurentSlot);
     connect(ui->actionclose_current_tab, &QAction::triggered, this, &MainWindow::closeCurentSlot);
+    connect(ui->actionautoscroll_enabled, &QAction::triggered, this, &MainWindow::autoscrollChangedSlot);
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
@@ -60,6 +62,7 @@ void MainWindow::openFileSlot(){
         }
         auto lb=new LogViewer(m_tabbar);
         lb->setModel(log);
+        lb->setAutoScroll(m_autoscroll_enabled);
         m_tabbar->addTab(lb, v);
     }
 }
@@ -88,6 +91,17 @@ void MainWindow::closeCurentSlot(){
     auto fname=log->filename();
     m_tabbar->removeTab(current);
     m_controller->closeFileSlot(fname);
+}
+
+void MainWindow::autoscrollChangedSlot(){
+    qDebug()<<"autoscrollChangedSlot()"<<ui->actionautoscroll_enabled->isChecked();
+    m_autoscroll_enabled=ui->actionautoscroll_enabled->isChecked();
+
+    for(int i=0;i<m_tabbar->count();++i){
+        auto widget=m_tabbar->widget(i);
+        auto log=dynamic_cast<LogViewer*>(widget);
+        log->setAutoScroll(m_autoscroll_enabled);
+    }
 }
 
 void MainWindow::timerIntervalChangedSlot(int v){

@@ -68,7 +68,7 @@ public:
         }
 
 
-        return createIndex(row, column, nullptr);
+        return createIndex(row, column);
     }
 
     QModelIndex parent(const QModelIndex &/*child*/) const override{

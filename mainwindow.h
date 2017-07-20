@@ -23,6 +23,7 @@ public slots:
     void reloadCurentSlot();
     void reloadAllSlot();
     void closeCurentSlot();
+    void autoscrollChangedSlot();
     void timerIntervalChangedSlot(int v);
     void timerIntervalEnabledSlot(bool b);
 private:
@@ -31,4 +32,5 @@ private:
     Controller* m_controller;
     TimerForm *m_timer_widget;
     QTimer *m_timer;
+    bool m_autoscroll_enabled;
 };

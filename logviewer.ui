@@ -23,13 +23,13 @@
       <enum>QAbstractScrollArea::AdjustToContents</enum>
      </property>
      <property name="autoScroll">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
      <property name="selectionBehavior">
       <enum>QAbstractItemView::SelectRows</enum>
      </property>
      <property name="selectionRectVisible">
-      <bool>true</bool>
+      <bool>false</bool>
      </property>
     </widget>
    </item>

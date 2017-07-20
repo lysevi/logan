@@ -20,10 +20,14 @@ public:
     Log* model()const{
         return m_model;
     }
+    void setAutoScroll(bool value);
+private slots:
+    void onScrollRangeChanged(int min, int max);
 private:
     Ui::LogViewer *ui;
     Log* m_model;
     ListboxEditableItem m_delegate;
+    bool m_autoscroll;
 };
 
 #endif // LOGVIEWER_H

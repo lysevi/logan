@@ -50,6 +50,7 @@
    <addaction name="actionreolad_current"/>
    <addaction name="actionOpen"/>
    <addaction name="actionclose_current_tab"/>
+   <addaction name="actionautoscroll_enabled"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
@@ -92,6 +93,24 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
+   </property>
+  </action>
+  <action name="actionautoscroll_enabled">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="checked">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/autoscroll.svg</normaloff>:/icons/autoscroll.svg</iconset>
+   </property>
+   <property name="text">
+    <string>autoscroll enabled</string>
+   </property>
+   <property name="toolTip">
+    <string>autoscroll</string>
    </property>
   </action>
  </widget>
