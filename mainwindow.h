@@ -31,6 +31,7 @@ public slots:
     void showToolbarSlot();
     void timerIntervalChangedSlot(int v);
     void timerIntervalEnabledSlot(bool b);
+    void currentTabChanged();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;

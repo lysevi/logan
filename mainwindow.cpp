@@ -12,6 +12,10 @@
 const QString fontKey="logFont";
 const QString showToolbarKey="showToolBar";
 
+const QString v1=QString(LVIEW_VERSION);
+const QString v2=QString(GIT_VERSION);
+const QString logan_version="Logan - "+v1+"-"+v2;
+
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
@@ -19,9 +23,7 @@ MainWindow::MainWindow(QWidget *parent) :
     m_settings("lysevi", "logan")
 {
     m_timer->setInterval(0);
-    auto v1=QString(LVIEW_VERSION);
-    auto v2=QString(GIT_VERSION);
-    auto logan_version=v1+"-"+v2;
+
 
     ui->setupUi(this);
 
@@ -48,7 +50,7 @@ MainWindow::MainWindow(QWidget *parent) :
     setAutoFillBackground(true);
 
     m_controller=new Controller(this);
-    setWindowTitle("Logan - "+logan_version);
+    setWindowTitle(logan_version);
     m_tabbar=new QTabWidget(ui->centralWidget);
     m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding,QSizePolicy::Expanding));
     ui->gridLayout->addWidget(m_tabbar);
@@ -64,6 +66,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
+    connect(m_tabbar, &QTabWidget::currentChanged, this, &MainWindow::currentTabChanged);
     m_timer_widget->defaultState();
 }
 
@@ -193,6 +196,17 @@ void MainWindow::timerIntervalEnabledSlot(bool b){
     }else{
         m_timer->stop();
     }
+}
+
+void MainWindow::currentTabChanged(){
+    qDebug()<<"MainWindow::currentTabChanged()";
+    auto i=m_tabbar->currentIndex();
+    if(i<0){
+        return;
+    }
+    auto widget=m_tabbar->widget(i);
+    auto log=dynamic_cast<LogViewer*>(widget);
+    setWindowTitle(logan_version +": " + log->model()->filename());
 }
 
 MainWindow::~MainWindow()
