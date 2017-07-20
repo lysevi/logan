@@ -80,6 +80,25 @@ void MainWindow::openFontDlgSlot(){
     }
 }
 
+void MainWindow::openFile(const QString&fname){
+    qDebug()<<"openFile()"<<fname;
+    auto log=m_controller->openFile(fname);
+    if(log==nullptr){
+        return;
+    }
+    auto lb=new LogViewer(m_defaultFont, m_tabbar);
+    lb->setModel(log);
+    lb->setAutoScroll(m_autoscroll_enabled);
+    m_tabbar->addTab(lb, log->filename());
+
+    if(m_tabbar->count()==1)
+    {
+        m_tabbar->tabBar()->hide();
+    }else{
+        m_tabbar->tabBar()->setVisible(true);
+    }
+}
+
 void MainWindow::openFileSlot(){
     qDebug()<<"openFileSlot()";
 
@@ -92,21 +111,9 @@ void MainWindow::openFileSlot(){
     }
     fileNames = dialog.selectedFiles();
     for(auto v: fileNames){
-        auto log=m_controller->openFile(v);
-        if(log==nullptr){
-            continue;
-        }
-        auto lb=new LogViewer(m_defaultFont, m_tabbar);
-        lb->setModel(log);
-        lb->setAutoScroll(m_autoscroll_enabled);
-        m_tabbar->addTab(lb, v);
+        openFile(v);
     }
-    if(m_tabbar->count()==1)
-    {
-        m_tabbar->tabBar()->hide();
-    }else{
-        m_tabbar->tabBar()->setVisible(true);
-    }
+
 }
 
 void MainWindow::clearSettings(){
