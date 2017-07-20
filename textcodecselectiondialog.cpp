@@ -40,7 +40,7 @@ QString TextCodecSelectionDialog::selectedEncoding(){
     if(selected.empty()){
         return defaultTextEncoding;
     }else{
-        auto result=m_model.data(selected.front());
+        auto result=m_model.data(selected.front(), Qt::DisplayRole);
         return result.toString();
     }
 }
