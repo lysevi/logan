@@ -51,6 +51,9 @@ public slots:
     void searchPatternChangedSlot();
     void searchNextSlot();
     void searchEndSlot();
+
+    //highlights
+    void openHighlightDlg();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;

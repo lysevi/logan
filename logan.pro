@@ -27,7 +27,8 @@ SOURCES += \
         controller.cpp \
         timerform.cpp \
     logviewer.cpp \
-    textcodecselectiondialog.cpp
+    textcodecselectiondialog.cpp \
+    highlighteditdialog.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -36,14 +37,16 @@ HEADERS += \
         controller.h \
         timerform.h \
     logviewer.h \
-    textcodecselectiondialog.h
+    textcodecselectiondialog.h \
+    highlighteditdialog.h
 
 
 FORMS += \
         mainwindow.ui \
         timer_setup.ui \
     logviewer.ui \
-    textcodecselectiondialog.ui
+    textcodecselectiondialog.ui \
+    highlighteditdialog.ui
 
 RESOURCES += \
     resources.qrc

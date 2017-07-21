@@ -103,6 +103,8 @@
     </property>
     <addaction name="actionfont_selection"/>
     <addaction name="actionclearSettings"/>
+    <addaction name="separator"/>
+    <addaction name="actionHighlights"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -272,6 +274,11 @@
    </property>
    <property name="shortcut">
     <string>Esc</string>
+   </property>
+  </action>
+  <action name="actionHighlights">
+   <property name="text">
+    <string>Highlights</string>
    </property>
   </action>
  </widget>

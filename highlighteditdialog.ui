@@ -1,22 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>TextCodecSelectionDialog</class>
- <widget class="QDialog" name="TextCodecSelectionDialog">
+ <class>HighlightEditDialog</class>
+ <widget class="QDialog" name="HighlightEditDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>264</width>
-    <height>290</height>
+    <width>400</width>
+    <height>300</height>
    </rect>
   </property>
   <property name="windowTitle">
-   <string>Select text enconding</string>
+   <string>Highlight editor</string>
   </property>
   <layout class="QGridLayout" name="gridLayout">
-   <item row="0" column="0">
-    <widget class="QListView" name="listView"/>
-   </item>
    <item row="1" column="0">
     <widget class="QDialogButtonBox" name="buttonBox">
      <property name="orientation">
@@ -27,6 +24,9 @@
      </property>
     </widget>
    </item>
+   <item row="0" column="0">
+    <widget class="QTableView" name="tableView"/>
+   </item>
   </layout>
  </widget>
  <resources/>
@@ -34,7 +34,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>accepted()</signal>
-   <receiver>TextCodecSelectionDialog</receiver>
+   <receiver>HighlightEditDialog</receiver>
    <slot>accept()</slot>
    <hints>
     <hint type="sourcelabel">
@@ -50,7 +50,7 @@
   <connection>
    <sender>buttonBox</sender>
    <signal>rejected()</signal>
-   <receiver>TextCodecSelectionDialog</receiver>
+   <receiver>HighlightEditDialog</receiver>
    <slot>reject()</slot>
    <hints>
     <hint type="sourcelabel">

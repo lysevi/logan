@@ -47,18 +47,19 @@ void Controller::closeFileSlot(const QString &fname){
 
 }
 
-void Controller::addHighlightedTextSlot(const QString &s){
-    qDebug()<<"addHighlightedTextSlot "<<s;
+void Controller::addHighlightedTextSlot(const HighlightPattern &s){
+    qDebug()<<"addHighlightedTextSlot "<<s.pattern;
     auto curDT=QDateTime::currentDateTimeUtc();
-    m_global_highlight<<s;
+    m_global_highlight[s.pattern]=s;
     //QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 void Controller::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
+    const HighlightPattern datePattern{dateRe, "#ffffff"};
     m_global_highlight.clear();
-    m_global_highlight.insert(dateRe);
+    m_global_highlight[datePattern.pattern]=datePattern;
     for(auto log:m_logs){
         log->clearHightlight();
     }

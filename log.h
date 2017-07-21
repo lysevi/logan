@@ -11,7 +11,12 @@
 #include <future>
 #include <memory>
 
-using HighlightPatterns=QSet<QString>;
+struct HighlightPattern{
+    QString pattern;
+    QString rgb;
+};
+
+using HighlightPatterns=QMap<QString, HighlightPattern>;
 
 struct LinePosition{
     int first;
@@ -89,7 +94,7 @@ public:
                            QVector<CachedString>::iterator end,
                            const QString&pattern);
     void updateHeighlights(const QString&pattern);
-    static bool heighlightStr(QString* str,const QString&pattern );
+    static bool heighlightStr(QString* str,const HighlightPattern&pattern );
 
     Q_INVOKABLE void setListVoxObject(QListView *object);
 

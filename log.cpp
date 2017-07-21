@@ -269,17 +269,17 @@ void Log::clearHightlight(){
     //    this->endResetModel();
 }
 
-bool Log::heighlightStr(QString* str,const QString&pattern){
-    if(pattern.size()==0){
+bool Log::heighlightStr(QString* str,const HighlightPattern&pattern){
+    if(pattern.pattern.size()==0){
         return false;
     }
     bool result=false;
 
-    QRegExp re(pattern);
+    QRegExp re(pattern.pattern);
     if(re.indexIn(*str)!= -1){
         auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
-            str->replace(re,"<b>"+captured_str+"</b>");
+            str->replace(re,"<font color=#"+pattern.rgb+"><b>"+captured_str+"</b></font>");
         }
         result=true;
     }

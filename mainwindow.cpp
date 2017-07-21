@@ -12,6 +12,8 @@
 #include <QTextCodec>
 #include <QLineEdit>
 
+#include "highlighteditdialog.h"
+
 const QString fontKey="logFont";
 const QString showToolbarKey="showToolBar";
 const QString defaultEncodingKey="defaultEncoding";
@@ -85,6 +87,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionselect_text_encoding, &QAction::triggered, this, &MainWindow::selectTextEncodingSlot);
     connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
     connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
+    connect(ui->actionHighlights, &QAction::triggered, this, &MainWindow::openHighlightDlg);
 
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
@@ -329,6 +332,15 @@ void MainWindow::searchNextSlot(){
 }
 
 void MainWindow::searchEndSlot(){
-     qDebug()<<"MainWindow::searchEnd()";
-     ui->actionFind->trigger();
+    qDebug()<<"MainWindow::searchEnd()";
+    ui->actionFind->trigger();
+}
+
+
+void MainWindow::openHighlightDlg(){
+    qDebug()<<"MainWindow::searchEndSlot()";
+    HighlightEditDialog dlg(this);
+    if(dlg.exec()){
+
+    }
 }
