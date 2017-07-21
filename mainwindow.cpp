@@ -84,6 +84,7 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionshow_toolbar, &QAction::triggered, this, &MainWindow::showToolbarSlot);
     connect(ui->actionselect_text_encoding, &QAction::triggered, this, &MainWindow::selectTextEncodingSlot);
     connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
+    connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
 
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
@@ -325,4 +326,9 @@ void MainWindow::searchNextSlot(){
         auto log=getViewer(index);
         log->selectRow(m_search_index);
     }
+}
+
+void MainWindow::searchEndSlot(){
+     qDebug()<<"MainWindow::searchEnd()";
+     ui->actionFind->trigger();
 }

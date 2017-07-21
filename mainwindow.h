@@ -50,6 +50,7 @@ public slots:
     void showSearchPanelSlot();
     void searchPatternChangedSlot();
     void searchNextSlot();
+    void searchEndSlot();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;

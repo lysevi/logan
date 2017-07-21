@@ -127,6 +127,7 @@
      <string>Edit</string>
     </property>
     <addaction name="actionFind"/>
+    <addaction name="actionsearch_end"/>
    </widget>
    <addaction name="menuFile"/>
    <addaction name="menuEdit"/>
@@ -263,6 +264,14 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+F</string>
+   </property>
+  </action>
+  <action name="actionsearch_end">
+   <property name="text">
+    <string>search end</string>
+   </property>
+   <property name="shortcut">
+    <string>Esc</string>
    </property>
   </action>
  </widget>
