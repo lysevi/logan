@@ -179,7 +179,9 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
         for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
             heighlightStr(result.get(), *it);
         }
+        result->replace(" ","&nbsp;"); //html eats whaitespaces
     }
+
     return result;
 }
 
