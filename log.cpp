@@ -176,12 +176,12 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
         if(m_global_highlight==nullptr){
             throw std::logic_error("m_global_highlight==nullptr");
         }
+        result->replace('<', "&lt;");
+        result->replace('>', "&gt;");
         for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
             heighlightStr(result.get(), *it);
         }
         result->replace(' ',"&nbsp;"); //html eats white spaces
-        result->replace('<', "&lt;");
-        result->replace('>', "&gt;");
     }
 
     return result;

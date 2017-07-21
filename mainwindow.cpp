@@ -104,7 +104,6 @@ MainWindow::~MainWindow()
     delete ui;
     delete m_timer;
     delete m_controller;
-
 }
 
 Log* MainWindow::getLog(int index){
@@ -120,14 +119,16 @@ LogViewer*MainWindow::getViewer(int index){
 }
 
 void MainWindow::openFontDlgSlot(){
-    qDebug()<<"openFontDlgSlot()";
-    QFontDialog fdlg(this);
+    qDebug()<<"openFontDlgSlot() "<<m_defaultFont.toString();
+    QFontDialog fdlg(m_defaultFont, this);
+
     if(!fdlg.exec()){
         return;
     }
     else{
         qDebug()<<"selected font: "<<fdlg.selectedFont().toString();
         m_settings.setValue(fontKey, fdlg.selectedFont().toString());
+        m_defaultFont=fdlg.selectedFont();
         //setFont(QFont(fdlg.selectedFont().toString()));
     }
 }

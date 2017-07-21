@@ -12,6 +12,7 @@ LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     ui(new Ui::LogViewer),
     m_default_font(font)
 {
+    qDebug()<<"font: "<<font.toString();
     ui->setupUi(this);
     auto lb=ui->listView;
 
