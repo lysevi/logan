@@ -28,7 +28,8 @@ SOURCES += \
         timerform.cpp \
     logviewer.cpp \
     textcodecselectiondialog.cpp \
-    highlighteditdialog.cpp
+    highlighteditdialog.cpp \
+    highlightmodel.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -38,7 +39,8 @@ HEADERS += \
         timerform.h \
     logviewer.h \
     textcodecselectiondialog.h \
-    highlighteditdialog.h
+    highlighteditdialog.h \
+    highlightmodel.h
 
 
 FORMS += \

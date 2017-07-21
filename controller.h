@@ -12,6 +12,8 @@ class Controller : public QObject
 public:
     Controller(QObject*parent=nullptr);
     Log* openFile(const QString&encoding,const QString &fname);
+
+    HighlightPatterns m_global_highlight;
 protected:
     QHash<QString, Log*> m_logs;
     QSet<QString> m_heightlight;
@@ -23,8 +25,6 @@ public slots:
     void closeFileSlot(const QString &fname);
     void addHighlightedTextSlot(const HighlightPattern &s);
     void clearHighlightedTextSlot();
-private:
-    HighlightPatterns m_global_highlight;
 };
 
 #endif // WINDOWCONTROLLER_H
