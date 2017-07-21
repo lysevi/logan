@@ -50,7 +50,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QLineEdit" name="searchPatternEdit"/>
+        <widget class="QLineEdit" name="searchPatternEdit">
+         <property name="focusPolicy">
+          <enum>Qt::StrongFocus</enum>
+         </property>
+        </widget>
        </item>
        <item>
         <widget class="QPushButton" name="searchNextPushButton">

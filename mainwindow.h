@@ -23,6 +23,7 @@ public:
     void openFile(const QString&fname);
     Log* getLog(int index);
     LogViewer*getViewer(int index);
+    void endSearching();
 public slots:
     //open,close,update
     void openFileSlot();

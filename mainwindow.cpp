@@ -191,7 +191,6 @@ void MainWindow::showToolbarSlot(){
 }
 
 void MainWindow::reloadCurentSlot(){
-    //TODO refact!
     qDebug()<<"reloadCurentSlot()";
     int current=m_tabbar->currentIndex();
     if(current<0){
@@ -202,7 +201,6 @@ void MainWindow::reloadCurentSlot(){
 }
 
 void MainWindow::closeCurentSlot(){
-    //TODO refact!
     qDebug()<<"closeCurentSlot()";
     int current=m_tabbar->currentIndex();
     if(current<0){
@@ -212,6 +210,10 @@ void MainWindow::closeCurentSlot(){
     auto fname=log->filename();
     m_tabbar->removeTab(current);
     m_controller->closeFileSlot(fname);
+
+    if(ui->actionFind->isChecked()){
+        ui->actionFind->trigger();
+    }
 }
 
 void MainWindow::autoscrollChangedSlot(){
@@ -282,14 +284,17 @@ void MainWindow::showSearchPanelSlot(){
             auto log=getViewer(current);
             log->setAutoScroll(false);
         }
-
     }else
     {
-        int current=m_tabbar->currentIndex();
-        if(current>=0){
-            auto log=getViewer(current);
-            log->setAutoScroll(ui->actionautoscroll_enabled->isChecked());
-        }
+        endSearching();
+    }
+}
+
+void MainWindow::endSearching(){
+    int current=m_tabbar->currentIndex();
+    if(current>=0){
+        auto log=getViewer(current);
+        log->setAutoScroll(ui->actionautoscroll_enabled->isChecked());
     }
 }
 
