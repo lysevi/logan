@@ -30,6 +30,11 @@ struct CachedString{
 
 const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
 
+enum class SearchDirection{
+    Up, Down
+};
+
+
 class Log : public QAbstractItemModel
 {
     Q_OBJECT
@@ -89,6 +94,9 @@ public:
     Q_INVOKABLE void setListVoxObject(QListView *object);
 
     QString plainText(const QModelIndex & index)const;
+
+
+    QPair<int, QString> findFrom(const QString&pattern,int index, SearchDirection direction);
 signals:
     void linesChanged();
     void countChanged(int);

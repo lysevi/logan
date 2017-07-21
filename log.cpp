@@ -179,7 +179,9 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
         for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
             heighlightStr(result.get(), *it);
         }
-        result->replace(" ","&nbsp;"); //html eats whaitespaces
+        result->replace(' ',"&nbsp;"); //html eats white spaces
+        result->replace('<', "&lt;");
+        result->replace('>', "&gt;");
     }
 
     return result;
@@ -318,4 +320,34 @@ void Log::localHightlightPattern(const QString&pattern){
 
 void Log::setListVoxObject(QListView *object){
     m_lv_object=object;
+}
+
+QPair<int, QString> Log::findFrom(const QString&pattern,int index, SearchDirection direction){
+    //TODO make thread safety. m_cache can be brokent, when timer is active
+    if(size_t(index)==m_cache.size() || index<0){
+        return QPair<int,QString>(index, QString());
+    }
+
+    QRegExp re(pattern.toUpper());
+
+    int i=direction==SearchDirection::Down?index+1:index-1;
+
+    while(true){
+        QString str=plainText(createIndex(int(i),0,nullptr)).toUpper();
+        if(re.indexIn(str)!=-1){
+            return QPair<int,QString>(i, str);
+        }
+        if(direction==SearchDirection::Down){
+            i++;
+            if(size_t(i)==m_cache.size()){
+                break;
+            }
+        }else{
+            i--;
+            if(i<0){
+                break;
+            }
+        }
+    }
+    return QPair<int,QString>(index, "");
 }

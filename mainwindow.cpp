@@ -10,6 +10,7 @@
 #include <QFontDialog>
 #include <QMessageBox>
 #include <QTextCodec>
+#include <QLineEdit>
 
 const QString fontKey="logFont";
 const QString showToolbarKey="showToolBar";
@@ -29,6 +30,9 @@ MainWindow::MainWindow(QWidget *parent) :
 
     ui->setupUi(this);
 
+    ui->searchFrame->setVisible(false);
+
+    //read settings
     m_defaultFont=this->font();
     if(m_settings.contains(fontKey))
     {
@@ -52,6 +56,7 @@ MainWindow::MainWindow(QWidget *parent) :
         qDebug()<<"default encoding:"<<m_default_text_encoding;
     }
 
+    //ui settings
     setWindowIcon(QIcon(":/icons/logan.svg"));
 
     m_timer_widget=new TimerForm();
@@ -68,6 +73,8 @@ MainWindow::MainWindow(QWidget *parent) :
     ui->gridLayout->addWidget(m_tabbar);
 
     m_autoscroll_enabled=ui->actionautoscroll_enabled->isChecked();
+
+    //actions
     connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
     connect(ui->actionreolad_current, &QAction::triggered, this, &MainWindow::reloadCurentSlot);
     connect(ui->actionclose_current_tab, &QAction::triggered, this, &MainWindow::closeCurentSlot);
@@ -76,10 +83,18 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettingsSlot);
     connect(ui->actionshow_toolbar, &QAction::triggered, this, &MainWindow::showToolbarSlot);
     connect(ui->actionselect_text_encoding, &QAction::triggered, this, &MainWindow::selectTextEncodingSlot);
+    connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
+
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
+
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
     connect(m_tabbar, &QTabWidget::currentChanged, this, &MainWindow::currentTabChangedSlot);
+
+    connect(ui->searchPatternEdit, &QLineEdit::textChanged, this, &MainWindow::searchPatternChangedSlot);
+    connect(ui->searchNextPushButton, &QPushButton::clicked, this, &MainWindow::searchNextSlot);
+
+
     m_timer_widget->defaultState();
 }
 
@@ -92,6 +107,17 @@ MainWindow::~MainWindow()
 
 }
 
+Log* MainWindow::getLog(int index){
+    auto widget=m_tabbar->widget(index);
+    auto log=dynamic_cast<LogViewer*>(widget)->model();
+    return log;
+}
+
+LogViewer*MainWindow::getViewer(int index){
+    auto widget=m_tabbar->widget(index);
+    auto lv=dynamic_cast<LogViewer*>(widget);
+    return lv;
+}
 
 void MainWindow::openFontDlgSlot(){
     qDebug()<<"openFontDlgSlot()";
@@ -102,7 +128,7 @@ void MainWindow::openFontDlgSlot(){
     else{
         qDebug()<<"selected font: "<<fdlg.selectedFont().toString();
         m_settings.setValue(fontKey, fdlg.selectedFont().toString());
-        setFont(QFont(fdlg.selectedFont().toString()));
+        //setFont(QFont(fdlg.selectedFont().toString()));
     }
 }
 
@@ -171,8 +197,7 @@ void MainWindow::reloadCurentSlot(){
     if(current<0){
         return;
     }
-    auto widget=m_tabbar->widget(current);
-    auto log=dynamic_cast<LogViewer*>(widget)->model();
+    auto log=getLog(current);
     m_controller->updateAllSlot(log->filename());
 }
 
@@ -183,8 +208,7 @@ void MainWindow::closeCurentSlot(){
     if(current<0){
         return;
     }
-    auto widget=m_tabbar->widget(current);
-    auto log=dynamic_cast<LogViewer*>(widget)->model();
+    auto log=getLog(current);
     auto fname=log->filename();
     m_tabbar->removeTab(current);
     m_controller->closeFileSlot(fname);
@@ -195,8 +219,7 @@ void MainWindow::autoscrollChangedSlot(){
     m_autoscroll_enabled=ui->actionautoscroll_enabled->isChecked();
 
     for(int i=0;i<m_tabbar->count();++i){
-        auto widget=m_tabbar->widget(i);
-        auto log=dynamic_cast<LogViewer*>(widget);
+        auto log=getViewer(i);
         log->setAutoScroll(m_autoscroll_enabled);
     }
 }
@@ -227,9 +250,8 @@ void MainWindow::currentTabChangedSlot(){
     if(i<0){
         return;
     }
-    auto widget=m_tabbar->widget(i);
-    auto log=dynamic_cast<LogViewer*>(widget);
-    setWindowTitle(logan_version +": " + log->model()->filename());
+    auto log=getLog(i);
+    setWindowTitle(logan_version +": " + log->filename());
 }
 
 void MainWindow::selectTextEncodingSlot(){
@@ -242,5 +264,59 @@ void MainWindow::selectTextEncodingSlot(){
         qDebug()<<"selected encoding:"<<encoding;
         m_settings.setValue(defaultEncodingKey,encoding);
         m_default_text_encoding=encoding; //TODO set to all log files.
+    }
+}
+
+void MainWindow::showSearchPanelSlot(){
+    qDebug()<<"MainWindow::showSearchPanelSlot()";
+
+
+    bool is_visible=ui->actionFind->isChecked();
+    ui->searchFrame->setVisible(is_visible);
+    if(is_visible)
+    {
+        ui->searchPatternEdit->setFocus();
+        m_search_index=0;
+        int current=m_tabbar->currentIndex();
+        if(current>=0){
+            auto log=getViewer(current);
+            log->setAutoScroll(false);
+        }
+
+    }else
+    {
+        int current=m_tabbar->currentIndex();
+        if(current>=0){
+            auto log=getViewer(current);
+            log->setAutoScroll(ui->actionautoscroll_enabled->isChecked());
+        }
+    }
+}
+
+void MainWindow::searchPatternChangedSlot(){
+    auto pattern=ui->searchPatternEdit->text();
+    qDebug()<<"MainWindow::searchPatternChangedSlot() "<<pattern;
+    m_search_index=0;
+    searchNextSlot();
+}
+
+void MainWindow::searchNextSlot(){
+    auto pattern=ui->searchPatternEdit->text();
+
+    qDebug()<<"MainWindow::searchNextSlot() "<<pattern;
+
+    int index=m_tabbar->currentIndex();
+    if(index<0){
+        return;
+    }
+    SearchDirection direction=ui->searchDownRadioButton->isChecked()?SearchDirection::Down:SearchDirection::Up;
+
+    auto log=getLog(index);
+    auto searchResult=log->findFrom(pattern,m_search_index, direction);
+    qDebug()<<"result: "<<searchResult.first<<"=>"<<searchResult.second;
+    if(searchResult.second.size()!=0){
+        m_search_index=searchResult.first;
+        auto log=getViewer(index);
+        log->selectRow(m_search_index);
     }
 }

@@ -27,6 +27,61 @@
     <item row="0" column="0">
      <layout class="QGridLayout" name="gridLayout"/>
     </item>
+    <item row="1" column="0">
+     <widget class="QFrame" name="searchFrame">
+      <property name="sizePolicy">
+       <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+        <horstretch>0</horstretch>
+        <verstretch>0</verstretch>
+       </sizepolicy>
+      </property>
+      <property name="frameShape">
+       <enum>QFrame::Box</enum>
+      </property>
+      <property name="frameShadow">
+       <enum>QFrame::Raised</enum>
+      </property>
+      <layout class="QHBoxLayout" name="horizontalLayout">
+       <item>
+        <widget class="QLabel" name="label">
+         <property name="text">
+          <string>Find</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QLineEdit" name="searchPatternEdit"/>
+       </item>
+       <item>
+        <widget class="QPushButton" name="searchNextPushButton">
+         <property name="text">
+          <string>Next</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="searchUpRadioButton">
+         <property name="text">
+          <string>up</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QRadioButton" name="searchDownRadioButton">
+         <property name="text">
+          <string>down</string>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <property name="checked">
+          <bool>true</bool>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </widget>
+    </item>
    </layout>
   </widget>
   <widget class="QMenuBar" name="menuBar">
@@ -63,7 +118,14 @@
     <addaction name="actionautoscroll_enabled"/>
     <addaction name="actionselect_text_encoding"/>
    </widget>
+   <widget class="QMenu" name="menuEdit">
+    <property name="title">
+     <string>Edit</string>
+    </property>
+    <addaction name="actionFind"/>
+   </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuEdit"/>
    <addaction name="menu"/>
    <addaction name="menuView"/>
   </widget>
@@ -85,6 +147,7 @@
    <addaction name="actionOpen"/>
    <addaction name="actionclose_current_tab"/>
    <addaction name="actionautoscroll_enabled"/>
+   <addaction name="actionFind"/>
    <addaction name="actionfont_selection"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
@@ -183,6 +246,21 @@
     <string>Select text encoding</string>
    </property>
   </action>
+  <action name="actionFind">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="icon">
+    <iconset resource="resources.qrc">
+     <normaloff>:/icons/find.svg</normaloff>:/icons/find.svg</iconset>
+   </property>
+   <property name="text">
+    <string>Find</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+F</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <resources>
@@ -202,6 +280,22 @@
     <hint type="destinationlabel">
      <x>399</x>
      <y>299</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>searchPatternEdit</sender>
+   <signal>returnPressed()</signal>
+   <receiver>searchNextPushButton</receiver>
+   <slot>click()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>324</x>
+     <y>443</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>646</x>
+     <y>443</y>
     </hint>
    </hints>
   </connection>

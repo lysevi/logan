@@ -22,6 +22,7 @@ public:
     }
     void setAutoScroll(bool value);
     bool eventFilter(QObject *object, QEvent *event)override;
+    void selectRow(int row);
 private slots:
     void onScrollRangeChanged(int min, int max);
     void customContextMenu(const QPoint &);
