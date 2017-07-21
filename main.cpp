@@ -4,7 +4,7 @@
 
 int main(int argc, char *argv[])
 {
-    QApplication::setAttribute(Qt::ApplicationAttribute::AA_EnableHighDpiScaling);
+//    QApplication::setAttribute(Qt::ApplicationAttribute::AA_EnableHighDpiScaling);
     QApplication a(argc, argv);
     MainWindow w;
     w.show();
