@@ -95,3 +95,12 @@ bool LogViewer::eventFilter(QObject *object, QEvent *event)
     }
     return false;
 }
+
+void LogViewer::selectRow(int row){
+    ui->listView->selectionModel()->clearSelection();
+
+    auto index=m_model->index(row,0);
+
+    ui->listView->selectionModel()->select(index,QItemSelectionModel::SelectionFlag::Select);
+    ui->listView->scrollTo(index);
+}
