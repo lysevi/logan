@@ -279,7 +279,7 @@ bool Log::heighlightStr(QString* str,const HighlightPattern&pattern){
     if(re.indexIn(*str)!= -1){
         auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
-            str->replace(re,"<font color=#"+pattern.rgb+"><b>"+captured_str+"</b></font>");
+            str->replace(re,"<font color=\""+pattern.rgb.toUpper()+"\"><b>"+captured_str+"</b></font>");
         }
         result=true;
     }
