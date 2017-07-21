@@ -26,7 +26,6 @@ LogViewer::LogViewer(const QFont&font,QWidget *parent) :
     lb->setLayoutMode(QListView::LayoutMode::Batched);
     lb->setSpacing(2);
 
-
     lb->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
     connect(lb, SIGNAL(customContextMenuRequested ( const QPoint &)), this, SLOT(customContextMenu(const QPoint &)));
     connect(lb->verticalScrollBar(), &QScrollBar::rangeChanged, this, &LogViewer::onScrollRangeChanged);

@@ -41,6 +41,7 @@ public:
 
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &index) const override{
+        Q_UNUSED(option);
         auto value = index.model()->data(index, Qt::DisplayRole).toString();
         QTextDocument doc;
         doc.setHtml(value);
