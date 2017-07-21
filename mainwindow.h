@@ -22,17 +22,25 @@ public:
     void openFile(const QString&fname);
 public slots:
     void openFileSlot();
+
     void reloadCurentSlot();
     void reloadAllSlot();
+
     void closeCurentSlot();
+
     void openFontDlgSlot();
-    void clearSettings();
+    void selectTextEncodingSlot();
+    void clearSettingsSlot();
+
     void autoscrollChangedSlot();
+
     void showToolbarSlot();
+
     void timerIntervalChangedSlot(int v);
     void timerIntervalEnabledSlot(bool b);
-    void currentTabChanged();
-    void selectTextEncodingSlot();
+
+    void currentTabChangedSlot();
+
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;

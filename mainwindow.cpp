@@ -73,13 +73,13 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->actionclose_current_tab, &QAction::triggered, this, &MainWindow::closeCurentSlot);
     connect(ui->actionautoscroll_enabled, &QAction::triggered, this, &MainWindow::autoscrollChangedSlot);
     connect(ui->actionfont_selection, &QAction::triggered, this, &MainWindow::openFontDlgSlot);
-    connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettings);
+    connect(ui->actionclearSettings, &QAction::triggered, this, &MainWindow::clearSettingsSlot);
     connect(ui->actionshow_toolbar, &QAction::triggered, this, &MainWindow::showToolbarSlot);
     connect(ui->actionselect_text_encoding, &QAction::triggered, this, &MainWindow::selectTextEncodingSlot);
     connect(m_timer_widget, &TimerForm::timerParamChangedSignal,this, &MainWindow::timerIntervalChangedSlot);
     connect(m_timer_widget, &TimerForm::timerIsEnabledSignal,this, &MainWindow::timerIntervalEnabledSlot);
     connect(m_timer, &QTimer::timeout,this, &MainWindow::reloadAllSlot);
-    connect(m_tabbar, &QTabWidget::currentChanged, this, &MainWindow::currentTabChanged);
+    connect(m_tabbar, &QTabWidget::currentChanged, this, &MainWindow::currentTabChangedSlot);
     m_timer_widget->defaultState();
 }
 
@@ -115,10 +115,10 @@ void MainWindow::openFile(const QString&fname){
     auto lb=new LogViewer(m_defaultFont, m_tabbar);
     lb->setModel(log);
     lb->setAutoScroll(m_autoscroll_enabled);
-    m_tabbar->addTab(lb, log->filename());
+    auto index=m_tabbar->addTab(lb, log->filename());
+    m_tabbar->setCurrentIndex(index);
 
-    if(m_tabbar->count()==1)
-    {
+    if(m_tabbar->count()==1){
         m_tabbar->tabBar()->hide();
     }else{
         m_tabbar->tabBar()->setVisible(true);
@@ -142,7 +142,7 @@ void MainWindow::openFileSlot(){
 
 }
 
-void MainWindow::clearSettings(){
+void MainWindow::clearSettingsSlot(){
     qDebug()<<"clearSettings()";
     QMessageBox msgBox;
 
@@ -221,7 +221,7 @@ void MainWindow::timerIntervalEnabledSlot(bool b){
     }
 }
 
-void MainWindow::currentTabChanged(){
+void MainWindow::currentTabChangedSlot(){
     qDebug()<<"MainWindow::currentTabChanged()";
     auto i=m_tabbar->currentIndex();
     if(i<0){
