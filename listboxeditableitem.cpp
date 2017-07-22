@@ -15,6 +15,8 @@ void ListboxEditableItem::paint(QPainter *painter,
     //painter->setFont(m_default_font);
 
     auto value = index.model()->data(index, Qt::DisplayRole).toString();
+    qDebug()<<value;
+
     QTextDocument doc;
     QPalette::ColorGroup cg = option.state & QStyle::State_Enabled
                               ? QPalette::Normal : QPalette::Disabled;

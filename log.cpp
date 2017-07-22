@@ -178,10 +178,11 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain)const{
         }
         result->replace('<', "&lt;");
         result->replace('>', "&gt;");
+        result->replace(' ',"&nbsp;"); //html eats white spaces
         for(auto it=m_global_highlight->begin();it!=m_global_highlight->end();++it){
             heighlightStr(result.get(), *it);
         }
-        result->replace(' ',"&nbsp;"); //html eats white spaces
+
     }
 
     return result;
@@ -280,6 +281,7 @@ bool Log::heighlightStr(QString* str,const HighlightPattern&pattern){
         auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
             str->replace(re,"<font color=\""+pattern.rgb.toUpper()+"\"><b>"+captured_str+"</b></font>");
+            qDebug()<<">> "<<*str;
         }
         result=true;
     }
