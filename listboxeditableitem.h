@@ -24,7 +24,23 @@ public:
 
         auto value = index.model()->data(index, Qt::DisplayRole).toString();
         QTextDocument doc;
+        QPalette::ColorGroup cg = option.state & QStyle::State_Enabled
+                                  ? QPalette::Normal : QPalette::Disabled;
+        if (cg == QPalette::Normal && !(option.state & QStyle::State_Active)){
+            cg = QPalette::Inactive;
+        }
+        QColor textColor = option.palette.color(cg, QPalette::Text);
+        doc.setDefaultStyleSheet(QString("body { color: %1}").arg(textColor.name()));
+        doc.setDefaultFont(option.font);
+
+
+        // This is the actual code for word wrap.
+        QTextOption txtOption;
+        txtOption.setWrapMode(QTextOption::WrapAtWordBoundaryOrAnywhere);
+        doc.setDefaultTextOption(txtOption);
+        //doc.setTextWidth(rect.width());
         doc.setHtml(value);
+        doc.setDocumentMargin(1);
         doc.setDefaultFont(m_default_font);
 
         //qDebug()<<"font:"<<m_default_font.toString()<<" => "<<doc.defaultFont().toString();
