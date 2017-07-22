@@ -281,7 +281,6 @@ bool Log::heighlightStr(QString* str,const HighlightPattern&pattern){
         auto ct=re.capturedTexts();
         for(auto&&captured_str:ct){
             str->replace(re,"<font color=\""+pattern.rgb.toUpper()+"\"><b>"+captured_str+"</b></font>");
-            qDebug()<<">> "<<*str;
         }
         result=true;
     }

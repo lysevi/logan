@@ -15,7 +15,6 @@ void ListboxEditableItem::paint(QPainter *painter,
     //painter->setFont(m_default_font);
 
     auto value = index.model()->data(index, Qt::DisplayRole).toString();
-    qDebug()<<value;
 
     QTextDocument doc;
     QPalette::ColorGroup cg = option.state & QStyle::State_Enabled
@@ -44,12 +43,7 @@ void ListboxEditableItem::paint(QPainter *painter,
 
     QRect clip(0, 0, option.rect.width(), option.rect.height());
 
-    QPixmap pixmap(clip.width(), clip.height());
-    pixmap.fill( Qt::transparent );
-    QPainter px_painter(&pixmap);
-    doc.drawContents(&px_painter, pixmap.rect());
-    painter->drawPixmap(clip, pixmap);
-    //doc.drawContents(painter, clip);
+    doc.drawContents(painter, clip);
 
     painter->restore();
 }

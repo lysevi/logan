@@ -57,7 +57,7 @@ void Controller::addHighlightedTextSlot(const HighlightPattern &s){
 
 void Controller::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
-    const HighlightPattern datePattern{dateRe, "#ffffff"};
+    const HighlightPattern datePattern{dateRe, "#0000FF"};
     m_global_highlight.clear();
     m_global_highlight[datePattern.pattern]=datePattern;
     for(auto log:m_logs){
