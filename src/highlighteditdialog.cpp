@@ -4,7 +4,7 @@
 
 
 HighlightEditDialog::HighlightEditDialog(const HighlightPatterns &hl, QWidget *parent)
-    : QDialog(parent), ui(new Ui::HighlightEditDialog), m_model(hl, parent) {
+    : QDialog(parent), m_model(hl, parent), ui(new Ui::HighlightEditDialog) {
   ui->setupUi(this);
   ui->tableView->setModel(&m_model);
 
