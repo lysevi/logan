@@ -51,7 +51,7 @@ void Log::loadFile() {
   if (inputFile.open(QIODevice::ReadOnly)) {
     m_bts = std::move(inputFile.readAll());
     m_lines = allLinePos(m_bts);
-
+    m_cache.resize(m_lines.size());
     inputFile.close();
   } else {
     throw std::logic_error("file not exists!");
@@ -110,32 +110,33 @@ void Log::update() {
     auto lines = allLinePos(bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
+        auto old_size=m_lines.size();
       // m_load_complete=false;
       // this->beginResetModel();
       m_bts = std::move(bts);
 
       m_lines = std::move(lines);
-
+      m_cache.clear();
+      m_cache.resize(m_lines.size());
       m_load_complete = true;
       // this->endResetModel();
 
       emit countChanged(m_lines.size());
       emit linesChanged();
 
-      int loaded = 0;
-      std::map<int, CachedString> local_res;
-      for (size_t i = 0; i < diff; ++i) {
-        CachedString cs;
-        cs.originValue = makeString(m_cache.size() + i);
-        cs.Value = cs.originValue;
-        local_res.insert(std::make_pair(m_cache.size() + i, cs));
-        loaded++;
-      }
-      beginInsertRows(createIndex(0, 0, nullptr), m_cache.size(),
-                      m_cache.size() + loaded - 1);
-      for (auto &kv : local_res) {
-        m_cache.insert(std::make_pair(kv.first, kv.second));
-      }
+//      int loaded = 0;
+//      std::map<int, CachedString> local_res;
+//      for (size_t i = 0; i < diff; ++i) {
+//        CachedString cs;
+//        cs.originValue = makeString(m_cache.size() + i);
+//        cs.Value = cs.originValue;
+//        local_res.insert(std::make_pair(m_cache.size() + i, cs));
+//        loaded++;
+//      }
+      beginInsertRows(createIndex(0, 0, nullptr), old_size-1, old_size + diff);
+//      for (auto &kv : local_res) {
+//        m_cache.insert(std::make_pair(kv.first, kv.second));
+//      }
       endInsertRows();
       emit m_lv_object->scrollToBottom();
     }
@@ -184,8 +185,8 @@ int Log::rowCount(const QModelIndex &parent) const {
   if (!m_load_complete) {
     return 0;
   }
-  // return m_lines.size();
-  return m_cache.size();
+  return m_lines.size();
+  // return m_cache.size();
 }
 
 QVariant Log::data(const QModelIndex &index, int role) const {
@@ -198,9 +199,14 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    auto it = m_cache.find(index.row());
-    if (it != m_cache.end()) {
-      return *it->second.Value;
+    if(m_cache[index.row()].Value!=nullptr){
+      return *m_cache[index.row()].Value;
+    } else {
+      CachedString cs;
+      cs.originValue = makeString(index.row());
+      cs.Value = cs.originValue;
+      m_cache[index.row()] = cs;
+      return *cs.Value;
     }
   }
   return QVariant();
@@ -210,40 +216,6 @@ QString Log::plainText(const QModelIndex &index) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QString("error");
   return *makeString(index.row(), true);
-}
-
-bool Log::canFetchMore(const QModelIndex &index) const {
-  if (m_lines.size() == m_cache.size()) {
-    qDebug() << "canFetchMore " << index.row() << "isvalid:" << index.isValid()
-             << "false";
-    return false;
-  } else {
-    qDebug() << "canFetchMore " << index.row() << "true";
-    return true;
-  }
-}
-
-void Log::fetchMore(const QModelIndex &index) {
-  qDebug() << "fetchMore" << index.row();
-
-  const int loadStep = 1000;
-  int loaded = 0;
-  std::map<int, CachedString> local_res;
-  for (int i = 0; i < loadStep; ++i) {
-    if ((m_cache.size() + local_res.size()) == m_lines.size()) {
-      break;
-    }
-    CachedString cs;
-    cs.originValue = makeString(m_cache.size() + i);
-    cs.Value = cs.originValue;
-    local_res.insert(std::make_pair(m_cache.size() + i, cs));
-    loaded++;
-  }
-  beginInsertRows(index, m_cache.size(), m_cache.size() + loaded);
-  for (auto &kv : local_res) {
-    m_cache.insert(std::make_pair(kv.first, kv.second));
-  }
-  endInsertRows();
 }
 
 void Log::clearHightlight() {
@@ -321,7 +293,7 @@ void Log::setListVoxObject(QListView *object) {
 QPair<int, QString> Log::findFrom(const QString &pattern, int index,
                                   SearchDirection direction) {
   // TODO make thread safety. m_cache can be brokent, when timer is active
-  if (size_t(index) == m_cache.size() || index < 0) {
+  if (index == m_cache.size() || index < 0) {
     return QPair<int, QString>(index, QString());
   }
 
@@ -336,7 +308,7 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
     }
     if (direction == SearchDirection::Down) {
       i++;
-      if (size_t(i) == m_cache.size()) {
+      if (i == m_cache.size()) {
         break;
       }
     } else {

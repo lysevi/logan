@@ -76,9 +76,6 @@ public:
     return QModelIndex();
   }
 
-  bool canFetchMore(const QModelIndex &parent) const override;
-  void fetchMore(const QModelIndex &parent) override;
-
   Q_INVOKABLE void clearHightlight();
   Q_INVOKABLE void localHightlightPattern(const QString &pattern);
   void updateHeighlights(QVector<CachedString>::iterator begin,
@@ -109,7 +106,7 @@ protected:
 
   LinePositionList m_lines;
   QByteArray m_bts;
-  mutable std::map<int, CachedString> m_cache;
+  mutable QVector<CachedString> m_cache;
   const HighlightPatterns *m_global_highlight;
 
   QTextCodec *m_codec;
