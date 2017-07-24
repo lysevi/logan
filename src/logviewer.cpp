@@ -21,7 +21,7 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
   lb->installEventFilter(this);
   lb->setUniformItemSizes(true);
   lb->setLayoutMode(QListView::LayoutMode::Batched);
-  lb->setSpacing(2);
+  lb->setSpacing(0);
 
   lb->setContextMenuPolicy(Qt::ContextMenuPolicy::CustomContextMenu);
   connect(lb, SIGNAL(customContextMenuRequested(const QPoint &)), this,
