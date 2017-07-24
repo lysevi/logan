@@ -351,7 +351,9 @@ void MainWindow::searchNextSlot() {
 
 void MainWindow::searchEndSlot() {
   qDebug() << "MainWindow::searchEnd()";
-  ui->actionFind->trigger();
+  if(ui->searchFrame->isVisible()){
+      ui->actionFind->trigger();
+  }
 }
 
 void MainWindow::openHighlightDlg() {
