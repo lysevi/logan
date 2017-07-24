@@ -209,7 +209,9 @@ QVariant Log::data(const QModelIndex &index, int role) const {
       return *m_cache[index.row()].Value;
     } else {
       CachedString cs;
-      cs.originValue = makeString(index.row());
+      cs.originValue = makeRawString(index.row());
+      cs.index=index.row();
+      rawStringToValue(cs.originValue);
       cs.Value = cs.originValue;
       m_cache[index.row()] = cs;
       return *cs.Value;
@@ -221,7 +223,11 @@ QVariant Log::data(const QModelIndex &index, int role) const {
 QString Log::plainText(const QModelIndex &index) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QString("error");
-  return *makeRawString(index.row());
+  if(_fltr==nullptr){
+      return *makeRawString(index.row());
+  }else{
+      return *makeRawString(m_cache[index.row()].index);
+  }
 }
 
 void Log::clearHightlight() {
@@ -343,7 +349,7 @@ void Log::setFilter(const Filter_Ptr &fltr) {
       rawStringToValue(qs);
       auto cs = m_cache[count];
       cs.clear();
-      cs.index = count;
+      cs.index = i;
       cs.originValue = qs;
       cs.Value = cs.originValue;
       m_cache[count] = cs;

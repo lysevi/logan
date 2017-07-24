@@ -23,7 +23,7 @@ struct LinePosition {
 using LinePositionList = std::vector<LinePosition>;
 
 struct CachedString {
-  int index;
+  int index; //original string index in file.
   std::shared_ptr<QString> originValue;
   std::shared_ptr<QString> Value;
 

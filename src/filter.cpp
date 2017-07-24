@@ -4,7 +4,7 @@
 Filter::~Filter() {}
 
 StringFilter::StringFilter(const QString &pattern) : _pattern(pattern.toUpper()) {
-  _re = std::make_unique<QRegExp>(_pattern);
+  _re = std::unique_ptr<QRegExp>(new QRegExp(_pattern));
 }
 
 StringFilter::~StringFilter() {}
