@@ -21,6 +21,7 @@ const QString fontKey = "logFont";
 const QString showToolbarKey = "showToolBar";
 const QString defaultEncodingKey = "defaultEncoding";
 const QString highlightKey = "highlightKey";
+const QString recentFilesKey = "recentFilesKey";
 
 const QString v1 = QString(LVIEW_VERSION);
 const QString v2 = QString(GIT_VERSION);
@@ -28,7 +29,8 @@ const QString logan_version = "Logan - " + v1 + "-" + v2;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
-      m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights") {
+      m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
+      m_recent_files_settings("lysevi", "logan_highlights"), _recent_files() {
   m_timer->setInterval(0);
 
   ui->setupUi(this);
@@ -111,6 +113,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_timer_widget->defaultState();
 
+  loadRecent();
   // QTimer::singleShot(1000, this, SLOT(showMaximized()));
 }
 
@@ -146,7 +149,7 @@ void MainWindow::openFontDlgSlot() {
   }
 }
 
-void MainWindow::openFile(const QString &fname) {
+void MainWindow::openFile(const QString &fname, bool updateRecent) {
   qDebug() << "openFile()" << fname;
   auto log = m_controller->openFile(m_default_text_encoding, fname);
   if (log == nullptr) {
@@ -162,6 +165,15 @@ void MainWindow::openFile(const QString &fname) {
     m_tabbar->tabBar()->hide();
   } else {
     m_tabbar->tabBar()->setVisible(true);
+  }
+
+  if (updateRecent) {
+    _recent_files.append(fname);
+    if (_recent_files.size() > RecentFiles_Max) {
+      _recent_files.remove(0);
+    }
+    updateRecentFileMenu();
+    saveRecent();
   }
 }
 
@@ -346,6 +358,7 @@ void MainWindow::openHighlightDlg() {
   qDebug() << "MainWindow::searchEndSlot()";
   HighlightEditDialog dlg(m_controller->m_global_highlight, this);
   if (dlg.exec()) {
+    // TODO repoen all files after change(if changed).
     m_controller->m_global_highlight = dlg.m_model.result();
 
     for (auto v : m_controller->m_global_highlight) {
@@ -395,4 +408,78 @@ void MainWindow::loadHighlightFromSettings() {
   } else {
     m_controller->m_global_highlight = default_highlight_settings;
   }
+}
+
+void MainWindow::recentOpenSlot() {
+  QAction *action = qobject_cast<QAction *>(sender());
+  if (action) {
+    auto fname = action->data().toString();
+    qDebug() << "open:" << fname;
+    openFile(fname, false);
+  }
+}
+
+void MainWindow::updateRecentFileMenu() {
+  qDebug() << "MainWindow::updateRecentFileMenu()";
+
+  _recentFile_Menu.clear();
+  _recentFile_Menu.setTitle(tr("Recent files"));
+
+  QAction *delim = nullptr;
+  int index = 0;
+  for (auto act : ui->menuFile->actions()) {
+    qDebug() << act->text();
+    if (act->text() == "") {
+      index++;
+      if (index == 2) { // find second delim (before "exit")
+        delim = act;
+        break;
+      }
+    }
+  }
+  ui->menuFile->insertMenu(delim, &_recentFile_Menu);
+  _recentFile_Actions.clear();
+  _recentFile_Actions.resize(_recent_files.size());
+  int i = 0;
+  for (const auto &fname : _recent_files) {
+    if (fname != "") {
+      QString text = tr("&%1: %2").arg(i + 1).arg(fname);
+      _recentFile_Actions[i] = std::make_shared<QAction>(this);
+      _recentFile_Actions[i]->setText(text);
+      _recentFile_Actions[i]->setData(fname);
+      _recentFile_Actions[i]->setVisible(true);
+      _recentFile_Menu.addAction(_recentFile_Actions[i].get());
+      connect(_recentFile_Actions[i].get(), &QAction::triggered, this, &MainWindow::recentOpenSlot);
+      i++;
+    }
+  }
+}
+
+void MainWindow::saveRecent() {
+  qDebug() << "MainWindow::saveRecent()";
+  if (_recent_files.size() > 0) {
+    m_recent_files_settings.beginWriteArray(recentFilesKey);
+    for (int i = 0; i < _recent_files.size(); ++i) {
+      m_recent_files_settings.setArrayIndex(i);
+      m_recent_files_settings.setValue("file", _recent_files[i]);
+    }
+    m_recent_files_settings.endArray();
+  }
+}
+
+void MainWindow::loadRecent() {
+  qDebug() << "MainWindow::loadRecent()";
+  int sz = m_recent_files_settings.beginReadArray(recentFilesKey);
+  for (int i = 0; i < sz; ++i) {
+    m_recent_files_settings.setArrayIndex(i);
+    auto fname = m_recent_files_settings.value("file").toString();
+    QFileInfo check_file(fname);
+    if (check_file.exists() && check_file.isFile()) {
+      _recent_files.append(fname);
+    } else {
+      qDebug() << fname << "not exists or not a file";
+    }
+  }
+  m_recent_files_settings.endArray();
+  updateRecentFileMenu();
 }

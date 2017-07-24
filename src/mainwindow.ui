@@ -114,6 +114,7 @@
     <addaction name="actionreolad_current"/>
     <addaction name="actionclose_current_tab"/>
     <addaction name="separator"/>
+    <addaction name="separator"/>
     <addaction name="actionexit"/>
    </widget>
    <widget class="QMenu" name="menuView">
@@ -279,6 +280,11 @@
   <action name="actionHighlights">
    <property name="text">
     <string>Highlights</string>
+   </property>
+  </action>
+  <action name="action_2">
+   <property name="text">
+    <string>Recent files</string>
    </property>
   </action>
  </widget>
