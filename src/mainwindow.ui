@@ -23,11 +23,11 @@
    <property name="autoFillBackground">
     <bool>true</bool>
    </property>
-   <layout class="QGridLayout" name="gridLayout_2">
-    <item row="0" column="0">
+   <layout class="QVBoxLayout" name="verticalLayout_2">
+    <item>
      <layout class="QGridLayout" name="gridLayout"/>
     </item>
-    <item row="1" column="0">
+    <item>
      <widget class="QFrame" name="searchFrame">
       <property name="sizePolicy">
        <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
@@ -86,7 +86,7 @@
       </layout>
      </widget>
     </item>
-    <item row="2" column="0">
+    <item>
      <widget class="QFrame" name="fltrFrame">
       <property name="frameShape">
        <enum>QFrame::Box</enum>
@@ -94,39 +94,88 @@
       <property name="frameShadow">
        <enum>QFrame::Raised</enum>
       </property>
-      <layout class="QVBoxLayout" name="verticalLayout">
-       <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_2">
+      <layout class="QFormLayout" name="formLayout_2">
+       <item row="0" column="0">
+        <layout class="QVBoxLayout" name="verticalLayout">
          <item>
-          <widget class="QLineEdit" name="fltrEdit"/>
+          <layout class="QHBoxLayout" name="horizontalLayout_2">
+           <item>
+            <widget class="QLineEdit" name="fltrEdit"/>
+           </item>
+           <item>
+            <widget class="QPushButton" name="addFltrButton">
+             <property name="text">
+              <string>Add filter</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
          </item>
          <item>
-          <widget class="QPushButton" name="addFltrButton">
+          <widget class="QListView" name="filtrListView">
+           <property name="sizePolicy">
+            <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+             <horstretch>0</horstretch>
+             <verstretch>0</verstretch>
+            </sizepolicy>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="rmFltrButton">
            <property name="text">
-            <string>Add filter</string>
+            <string>Remove</string>
            </property>
           </widget>
          </item>
         </layout>
        </item>
-       <item>
-        <widget class="QListView" name="filtrListView">
+       <item row="0" column="1">
+        <widget class="QGroupBox" name="groupBox">
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Minimum">
+          <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
          </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QPushButton" name="rmFltrButton">
-         <property name="text">
-          <string>Remove</string>
+         <property name="title">
+          <string>Time range</string>
          </property>
+         <property name="flat">
+          <bool>true</bool>
+         </property>
+         <property name="checkable">
+          <bool>true</bool>
+         </property>
+         <layout class="QFormLayout" name="formLayout">
+          <item row="0" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>From:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QTimeEdit" name="rangeFrom"/>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>To:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QTimeEdit" name="rangeTo"/>
+          </item>
+         </layout>
         </widget>
        </item>
       </layout>
+      <zorder>rmFltrButton</zorder>
+      <zorder>groupBox</zorder>
+      <zorder>filtrListView</zorder>
+      <zorder>fltrEdit</zorder>
      </widget>
     </item>
    </layout>
