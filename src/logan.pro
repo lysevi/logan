@@ -30,7 +30,8 @@ SOURCES += \
     textcodecselectiondialog.cpp \
     highlighteditdialog.cpp \
     highlightmodel.cpp \
-    highlightpattern.cpp
+    highlightpattern.cpp \
+    filter.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -42,7 +43,8 @@ HEADERS += \
     textcodecselectiondialog.h \
     highlighteditdialog.h \
     highlightmodel.h \
-    highlightpattern.h
+    highlightpattern.h \
+    filter.h
 
 
 FORMS += \

@@ -57,3 +57,4 @@ void Controller::clearHighlightedTextSlot() {
     log->clearHightlight();
   }
 }
+

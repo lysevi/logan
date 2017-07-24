@@ -1,6 +1,7 @@
 #ifndef LOG_H
 #define LOG_H
 
+#include "filter.h"
 #include "highlightpattern.h"
 #include <QAbstractItemModel>
 #include <QDateTime>
@@ -25,6 +26,8 @@ struct CachedString {
   int index;
   std::shared_ptr<QString> originValue;
   std::shared_ptr<QString> Value;
+
+  void clear() { originValue = Value = nullptr; }
 };
 
 enum class SearchDirection { Up, Down };
@@ -89,6 +92,9 @@ public:
 
   QPair<int, QString> findFrom(const QString &pattern, int index,
                                SearchDirection direction);
+
+  void setFilter(const Filter_Ptr &fltr);
+  void clearFilter();
 signals:
   void linesChanged();
   void countChanged(int);
@@ -97,7 +103,9 @@ signals:
 public slots:
 protected:
   void loadFile();
-  std::shared_ptr<QString> makeString(int row, bool isPlain = false) const;
+  std::shared_ptr<QString> makeRawString(int row)const;
+  void rawStringToValue(std::shared_ptr<QString>&rawString)const;
+  std::shared_ptr<QString> makeString(int row) const;
 
 protected:
   bool m_load_complete = false;
@@ -114,6 +122,7 @@ protected:
   QFileInfo m_fileInfo;
   QDateTime m_lastModifed;
   QString m_default_encoding;
+  Filter_Ptr _fltr;
 };
 
 #endif // LOG_H

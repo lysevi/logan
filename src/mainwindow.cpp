@@ -155,11 +155,16 @@ void MainWindow::openFile(const QString &fname) {
   if (log == nullptr) {
     return;
   }
+
+  Filter_Ptr fltr=std::make_shared<StringFilter>("(ERR.*)");
+  log->setFilter(fltr);
+
   auto lb = new LogViewer(m_defaultFont, m_tabbar);
   lb->setModel(log);
   lb->setAutoScroll(m_autoscroll_enabled);
   auto index = m_tabbar->addTab(lb, log->filename());
   m_tabbar->setCurrentIndex(index);
+
 
   if (m_tabbar->count() == 1) {
     m_tabbar->tabBar()->hide();

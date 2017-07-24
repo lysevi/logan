@@ -9,8 +9,6 @@
 #include <QScrollBar>
 #include <QTextCodec>
 
-const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
-
 LinePositionList allLinePos(const QByteArray &bts) {
 
   int count = 0;
@@ -110,7 +108,7 @@ void Log::update() {
     auto lines = allLinePos(bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
-        auto old_size=m_lines.size();
+      auto old_size = m_lines.size();
       // m_load_complete=false;
       // this->beginResetModel();
       m_bts = std::move(bts);
@@ -124,19 +122,19 @@ void Log::update() {
       emit countChanged(m_lines.size());
       emit linesChanged();
 
-//      int loaded = 0;
-//      std::map<int, CachedString> local_res;
-//      for (size_t i = 0; i < diff; ++i) {
-//        CachedString cs;
-//        cs.originValue = makeString(m_cache.size() + i);
-//        cs.Value = cs.originValue;
-//        local_res.insert(std::make_pair(m_cache.size() + i, cs));
-//        loaded++;
-//      }
-      beginInsertRows(createIndex(0, 0, nullptr), old_size-1, old_size + diff);
-//      for (auto &kv : local_res) {
-//        m_cache.insert(std::make_pair(kv.first, kv.second));
-//      }
+      //      int loaded = 0;
+      //      std::map<int, CachedString> local_res;
+      //      for (size_t i = 0; i < diff; ++i) {
+      //        CachedString cs;
+      //        cs.originValue = makeString(m_cache.size() + i);
+      //        cs.Value = cs.originValue;
+      //        local_res.insert(std::make_pair(m_cache.size() + i, cs));
+      //        loaded++;
+      //      }
+      beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
+      //      for (auto &kv : local_res) {
+      //        m_cache.insert(std::make_pair(kv.first, kv.second));
+      //      }
       endInsertRows();
       emit m_lv_object->scrollToBottom();
     }
@@ -149,7 +147,7 @@ void Log::update() {
   qDebug() << "update elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-std::shared_ptr<QString> Log::makeString(int row, bool isPlain) const {
+std::shared_ptr<QString> Log::makeRawString(int row) const {
   auto line_pos = m_lines[row];
   int start = line_pos.first;
   int i = line_pos.second;
@@ -164,19 +162,24 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain) const {
 
   std::shared_ptr<QString> result =
       std::make_shared<QString>(m_codec->toUnicode(localStr));
+  return result;
+}
 
-  if (!isPlain) {
-    if (m_global_highlight == nullptr) {
-      throw std::logic_error("m_global_highlight==nullptr");
-    }
-    result->replace('<', "&lt;");
-    result->replace('>', "&gt;");
-    result->replace(' ', "&nbsp;"); // html eats white spaces
-    for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
-      heighlightStr(result.get(), *it);
-    }
+void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
+  if (m_global_highlight == nullptr) {
+    throw std::logic_error("m_global_highlight==nullptr");
   }
+  rawString->replace('<', "&lt;");
+  rawString->replace('>', "&gt;");
+  rawString->replace(' ', "&nbsp;"); // html eats white spaces
+  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
+    heighlightStr(rawString.get(), *it);
+  }
+}
 
+std::shared_ptr<QString> Log::makeString(int row) const {
+  auto result = makeRawString(row);
+  rawStringToValue(result);
   return result;
 }
 
@@ -184,6 +187,9 @@ int Log::rowCount(const QModelIndex &parent) const {
   Q_UNUSED(parent);
   if (!m_load_complete) {
     return 0;
+  }
+  if (_fltr != nullptr) {
+    return m_cache.size();
   }
   return m_lines.size();
   // return m_cache.size();
@@ -199,7 +205,7 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    if(m_cache[index.row()].Value!=nullptr){
+    if (m_cache[index.row()].Value != nullptr) {
       return *m_cache[index.row()].Value;
     } else {
       CachedString cs;
@@ -215,7 +221,7 @@ QVariant Log::data(const QModelIndex &index, int role) const {
 QString Log::plainText(const QModelIndex &index) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QString("error");
-  return *makeString(index.row(), true);
+  return *makeRawString(index.row());
 }
 
 void Log::clearHightlight() {
@@ -319,4 +325,39 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
     }
   }
   return QPair<int, QString>(index, "");
+}
+
+void Log::setFilter(const Filter_Ptr &fltr) {
+  qDebug() << "Log::setFilter";
+  _fltr = fltr;
+  int count = 0;
+  for (size_t i = 0; i < m_lines.size(); ++i) {
+    auto qs = makeRawString(i);
+    if (fltr->inFilter(*qs)) {
+      rawStringToValue(qs);
+      auto cs = m_cache[count];
+      cs.clear();
+      cs.index = count;
+      cs.originValue = qs;
+      cs.Value = cs.originValue;
+      m_cache[count] = cs;
+      count++;
+    }
+  }
+
+  beginResetModel();
+  m_cache.resize(count);
+  endResetModel();
+}
+
+void Log::clearFilter() {
+  qDebug() << "Log::clearFilter";
+  _fltr = nullptr;
+  beginResetModel();
+  m_cache.resize(m_lines.size());
+  for (int i = 0; i < m_cache.size(); ++i) {
+    m_cache[i].clear();
+  }
+  _fltr = nullptr;
+  endResetModel();
 }
