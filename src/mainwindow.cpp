@@ -1,9 +1,9 @@
 #include "mainwindow.h"
 #include "highlighteditdialog.h"
+#include "highlightpattern.h"
 #include "logviewer.h"
 #include "textcodecselectiondialog.h"
 #include "ui_mainwindow.h"
-#include "highlightpattern.h"
 #include <QAbstractItemView>
 #include <QDebug>
 #include <QFileDialog>
@@ -111,7 +111,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_timer_widget->defaultState();
 
-  //QTimer::singleShot(1000, this, SLOT(showMaximized()));
+  // QTimer::singleShot(1000, this, SLOT(showMaximized()));
 }
 
 MainWindow::~MainWindow() {
@@ -379,20 +379,20 @@ void MainWindow::loadHighlightFromSettings() {
     if (!doc.isNull()) {
       if (doc.isObject()) {
         QJsonObject obj = doc.object();
-        QJsonArray patterns=obj["patterns"].toArray();
-        for(int i=0;i< patterns.count();++i){
-            auto p=patterns.at(i).toObject();
-            HighlightPattern hp;
-            hp.pattern=p["pattern"].toString();
-            hp.rgb=p["rgb"].toString();
-            qDebug()<<">> "<<hp.pattern<<":"<<hp.rgb;
-            m_controller->m_global_highlight.insert(hp.pattern, hp);
+        QJsonArray patterns = obj["patterns"].toArray();
+        for (int i = 0; i < patterns.count(); ++i) {
+          auto p = patterns.at(i).toObject();
+          HighlightPattern hp;
+          hp.pattern = p["pattern"].toString();
+          hp.rgb = p["rgb"].toString();
+          qDebug() << ">> " << hp.pattern << ":" << hp.rgb;
+          m_controller->m_global_highlight.insert(hp.pattern, hp);
         }
       }
-    }else{
-        throw std::logic_error("highlights format error: "+jsonStr.toStdString());
+    } else {
+      throw std::logic_error("highlights format error: " + jsonStr.toStdString());
     }
-  }else{
-      m_controller->m_global_highlight=default_highlight_settings;
+  } else {
+    m_controller->m_global_highlight = default_highlight_settings;
   }
 }

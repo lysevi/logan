@@ -73,7 +73,7 @@ bool HighlightModel::removeRows(int row, int count, const QModelIndex &parent) {
 
   beginRemoveRows(QModelIndex(), row, row + count - 1);
 
-  int index=row;
+  int index = row;
   for (int r = 0; r < count; ++r) {
     _hp.remove(index++);
   }

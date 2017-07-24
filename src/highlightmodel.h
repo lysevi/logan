@@ -3,9 +3,9 @@
 
 #include "highlightpattern.h"
 #include <QAbstractTableModel>
+#include <QDebug>
 #include <QObject>
 #include <QVector>
-#include <QDebug>
 
 class HighlightModel : public QAbstractTableModel {
 public:
@@ -20,18 +20,15 @@ public:
 
   Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-  bool removeRows(int row, int count,
-                  const QModelIndex &parent = QModelIndex()) override;
+  bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
-
-  bool insertRows(int row, int count,
-                  const QModelIndex &parent = QModelIndex()) override;
+  bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
   QVector<HighlightPattern> _hp;
 
   HighlightPatterns result();
 
-  void resetTo(const HighlightPatterns&hp);
+  void resetTo(const HighlightPatterns &hp);
 signals:
   void editCompleted(const QString &);
 };

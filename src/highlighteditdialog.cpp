@@ -2,15 +2,17 @@
 #include "ui_highlighteditdialog.h"
 #include <QDebug>
 
-
 HighlightEditDialog::HighlightEditDialog(const HighlightPatterns &hl, QWidget *parent)
     : QDialog(parent), m_model(hl, parent), ui(new Ui::HighlightEditDialog) {
   ui->setupUi(this);
   ui->tableView->setModel(&m_model);
 
-  connect(ui->actiondelete_selected, &QAction::triggered, this, &HighlightEditDialog::rmSelected);
-  connect(ui->actionInsert_pattern, &QAction::triggered, this, &HighlightEditDialog::addNew);
-  connect(ui->actionDefault, &QAction::triggered, this, &HighlightEditDialog::setToDefault);
+  connect(ui->actiondelete_selected, &QAction::triggered, this,
+          &HighlightEditDialog::rmSelected);
+  connect(ui->actionInsert_pattern, &QAction::triggered, this,
+          &HighlightEditDialog::addNew);
+  connect(ui->actionDefault, &QAction::triggered, this,
+          &HighlightEditDialog::setToDefault);
 }
 
 HighlightEditDialog::~HighlightEditDialog() {
@@ -24,16 +26,16 @@ void HighlightEditDialog::addNew() {
 
 void HighlightEditDialog::rmSelected() {
   qDebug() << "HighlightEditDialog::rmSelected()";
-  auto selected=ui->tableView->selectionModel()->selectedIndexes();
-  if(selected.size()!=0){
-      for(auto v:selected){
-          qDebug()<<v.row();
-      }
-      m_model.removeRows(selected.front().row(),1);
+  auto selected = ui->tableView->selectionModel()->selectedIndexes();
+  if (selected.size() != 0) {
+    for (auto v : selected) {
+      qDebug() << v.row();
+    }
+    m_model.removeRows(selected.front().row(), 1);
   }
 }
 
-void HighlightEditDialog::setToDefault(){
+void HighlightEditDialog::setToDefault() {
   qDebug() << "HighlightEditDialog::setToDefault()";
   m_model.resetTo(default_highlight_settings);
 }

@@ -5,22 +5,21 @@
 namespace Ui {
 class TimerForm;
 }
-class TimerForm : public QWidget
-{
-    Q_OBJECT
+class TimerForm : public QWidget {
+  Q_OBJECT
 public:
-    explicit TimerForm(QWidget *parent = nullptr);
-    void defaultState();
-    ~TimerForm();
-    Ui::TimerForm *ui;
+  explicit TimerForm(QWidget *parent = nullptr);
+  void defaultState();
+  ~TimerForm();
+  Ui::TimerForm *ui;
 
-    void setTimerWidgetEnabled(bool value);
+  void setTimerWidgetEnabled(bool value);
 signals:
-    void timerParamChangedSignal(int);
-    void timerIsEnabledSignal(bool);
+  void timerParamChangedSignal(int);
+  void timerIsEnabledSignal(bool);
 public slots:
-    void timerParamChangedSlot(int);
-    void checkBoxStatChangedSlot(int);
+  void timerParamChangedSlot(int);
+  void checkBoxStatChangedSlot(int);
 };
 
 #endif // TIMERFORM_H
