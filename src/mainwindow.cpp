@@ -565,15 +565,18 @@ void MainWindow::rmSelectedFiltrSlot() {
 }
 
 void MainWindow::resetFilter() {
-  if (m_filters.empty() || !ui->fltrFrame->isVisible()) {
-    return;
-  }
-  auto fltr = std::make_shared<FilterUnion>();
-  for (const auto &s : m_filters) {
-    fltr->addFilter(std::make_shared<StringFilter>(s));
-  }
   auto log = getLog(m_tabbar->currentIndex());
   if (log != nullptr) {
+
+    if (m_filters.empty() || !ui->fltrFrame->isVisible()) {
+      log->clearFilter();
+      return;
+    }
+    auto fltr = std::make_shared<FilterUnion>();
+    for (const auto &s : m_filters) {
+      fltr->addFilter(std::make_shared<StringFilter>(s));
+    }
+
     if (m_filters.size() != 0) {
       log->resetFilter(fltr);
     } else {
