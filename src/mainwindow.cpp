@@ -391,6 +391,8 @@ void MainWindow::openHighlightDlg() {
     QString strJson(doc.toJson(QJsonDocument::Compact));
     m_highlight_settings.setValue(highlightKey, strJson);
     qDebug() << ">>> " << strJson;
+
+    m_controller->updateAllSlot("null");
   }
 }
 
