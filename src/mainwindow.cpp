@@ -174,6 +174,7 @@ void MainWindow::openFile(const QString &fname) {
       _recent_files.remove(i);
       _recent_files.insert(0, s);
       isExists = true;
+      break;
     }
   }
   if (!isExists) {
@@ -181,8 +182,8 @@ void MainWindow::openFile(const QString &fname) {
     if (_recent_files.size() > RecentFiles_Max) {
       _recent_files.remove(0);
     }
-    saveRecent();
   }
+  saveRecent();
   updateRecentFileMenu();
 }
 
@@ -494,4 +495,5 @@ void MainWindow::loadRecent() {
   }
   m_recent_files_settings.endArray();
   updateRecentFileMenu();
+  saveRecent();
 }
