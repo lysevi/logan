@@ -23,9 +23,8 @@ const QString defaultEncodingKey = "defaultEncoding";
 const QString highlightKey = "highlightKey";
 const QString recentFilesKey = "recentFilesKey";
 
-const QString v1 = QString(LVIEW_VERSION);
-const QString v2 = QString(GIT_VERSION);
-const QString logan_version = "Logan - " + v1 + "-" + v2;
+const QString version = QString(GIT_VERSION);
+const QString logan_version = "Logan - " + version;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
