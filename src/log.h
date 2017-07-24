@@ -94,6 +94,7 @@ public:
                                SearchDirection direction);
 
   void setFilter(const Filter_Ptr &fltr);
+  void resetFilter(const Filter_Ptr&fltr);
   void clearFilter();
 signals:
   void linesChanged();

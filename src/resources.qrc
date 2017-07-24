@@ -12,5 +12,6 @@
         <file>icons/logan.png</file>
         <file>icons/logan.svg</file>
         <file>icons/find.svg</file>
+        <file>icons/filter.svg</file>
     </qresource>
 </RCC>

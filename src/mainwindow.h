@@ -3,19 +3,21 @@
 #include "controller.h"
 #include "logviewer.h"
 #include "timerform.h"
+#include <QAction>
 #include <QMainWindow>
+#include <QMenu>
 #include <QSettings>
+#include <QStringList>
+#include <QStringListModel>
 #include <QTabWidget>
 #include <QTimer>
-#include <QMenu>
-#include <QAction>
 
 namespace Ui {
 class MainWindow;
 }
 
-const int RecentFiles_Max=10;
-using RecentFiles=QVector<QString>;
+const int RecentFiles_Max = 10;
+using RecentFiles = QVector<QString>;
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
@@ -32,6 +34,9 @@ public:
   void updateRecentFileMenu();
   void saveRecent();
   void loadRecent();
+
+  void disableFiltration();
+  void resetFilter();
 public slots:
   // open,close,update
   void openFileSlot();
@@ -63,6 +68,11 @@ public slots:
   // highlights
   void openHighlightDlg();
 
+  // filtration
+  void showFltrPanelSlot();
+  void addFltrSlot();
+  void rmSelectedFiltrSlot();
+
 private:
   Ui::MainWindow *ui;
   QTabWidget *m_tabbar;
@@ -79,4 +89,7 @@ private:
   RecentFiles _recent_files;
   QMenu _recentFile_Menu;
   QVector<std::shared_ptr<QAction>> _recentFile_Actions;
+
+  QStringList m_filters;
+  QStringListModel m_filter_model;
 };

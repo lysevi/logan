@@ -327,6 +327,12 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
   return QPair<int, QString>(index, "");
 }
 
+void Log::resetFilter(const Filter_Ptr&fltr){
+    qDebug() << "Log::resetFilter";
+    m_cache.resize(m_lines.size());
+    setFilter(fltr);
+}
+
 void Log::setFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
   _fltr = fltr;

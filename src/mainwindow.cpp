@@ -36,6 +36,7 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
 
   ui->searchFrame->setVisible(false);
+  ui->fltrFrame->setVisible(false);
 
   // read settings
   m_defaultFont = this->font();
@@ -111,10 +112,19 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->searchNextPushButton, &QPushButton::clicked, this,
           &MainWindow::searchNextSlot);
 
+  connect(ui->actionEnable_filtration, &QAction::triggered, this,
+          &MainWindow::showFltrPanelSlot);
+  connect(ui->addFltrButton, &QPushButton::clicked, this, &MainWindow::addFltrSlot);
+  connect(ui->rmFltrButton, &QPushButton::clicked, this,
+          &MainWindow::rmSelectedFiltrSlot);
+
   m_timer_widget->defaultState();
 
   loadRecent();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
+
+  m_filter_model.setStringList(m_filters);
+  ui->filtrListView->setModel(&m_filter_model);
 }
 
 MainWindow::~MainWindow() {
@@ -156,15 +166,11 @@ void MainWindow::openFile(const QString &fname) {
     return;
   }
 
-  Filter_Ptr fltr=std::make_shared<StringFilter>("(ERR.*)");
-  log->setFilter(fltr);
-
   auto lb = new LogViewer(m_defaultFont, m_tabbar);
   lb->setModel(log);
   lb->setAutoScroll(m_autoscroll_enabled);
   auto index = m_tabbar->addTab(lb, log->filename());
   m_tabbar->setCurrentIndex(index);
-
 
   if (m_tabbar->count() == 1) {
     m_tabbar->tabBar()->hide();
@@ -369,6 +375,9 @@ void MainWindow::searchEndSlot() {
   if (ui->searchFrame->isVisible()) {
     ui->actionFind->trigger();
   }
+  if (ui->fltrFrame->isVisible()) {
+    ui->actionEnable_filtration->trigger();
+  }
 }
 
 void MainWindow::openHighlightDlg() {
@@ -502,4 +511,60 @@ void MainWindow::loadRecent() {
   m_recent_files_settings.endArray();
   updateRecentFileMenu();
   saveRecent();
+}
+
+void MainWindow::disableFiltration() {
+  auto log = getLog(m_tabbar->currentIndex());
+  if (log != nullptr) {
+    log->clearFilter();
+  }
+}
+
+void MainWindow::showFltrPanelSlot() {
+  qDebug() << "MainWindow::showFltrPanelSlot()";
+  bool isFltrVisible = ui->fltrFrame->isVisible();
+  if (!isFltrVisible) {
+    ui->fltrFrame->setVisible(true);
+    ui->fltrEdit->setFocus();
+  } else {
+    ui->fltrFrame->setVisible(false);
+    disableFiltration();
+  }
+}
+
+void MainWindow::addFltrSlot() {
+  qDebug() << "MainWindow::addFltrSlot()";
+  auto text = ui->fltrEdit->text();
+  if (text.trimmed() != "") {
+    m_filters << text.trimmed();
+    m_filter_model.setStringList(m_filters);
+
+    resetFilter();
+  }
+  ui->fltrEdit->clear();
+}
+
+void MainWindow::rmSelectedFiltrSlot() {
+  qDebug() << "MainWindow::rmSelectedFiltrSlot()";
+  auto selectedIndexes = ui->filtrListView->selectionModel()->selectedIndexes();
+  if (selectedIndexes.size() > 0) {
+    m_filters.removeAt(selectedIndexes.front().row());
+    m_filter_model.setStringList(m_filters);
+    resetFilter();
+  }
+}
+
+void MainWindow::resetFilter() {
+  auto fltr = std::make_shared<FilterUnion>();
+  for (const auto &s : m_filters) {
+    fltr->addFilter(std::make_shared<StringFilter>(s));
+  }
+  auto log = getLog(m_tabbar->currentIndex());
+  if (log != nullptr) {
+    if (m_filters.size() != 0) {
+      log->resetFilter(fltr);
+    } else {
+      log->clearFilter();
+    }
+  }
 }
