@@ -299,7 +299,7 @@ void MainWindow::selectTextEncodingSlot() {
     auto encoding = dlg.selectedEncoding();
     qDebug() << "selected encoding:" << encoding;
     m_settings.setValue(defaultEncodingKey, encoding);
-    m_default_text_encoding = encoding; // TODO set to all log files.
+    m_default_text_encoding = encoding;
   }
 }
 
@@ -370,7 +370,6 @@ void MainWindow::openHighlightDlg() {
   qDebug() << "MainWindow::searchEndSlot()";
   HighlightEditDialog dlg(m_controller->m_global_highlight, this);
   if (dlg.exec()) {
-    // TODO repoen all files after change(if changed).
     m_controller->m_global_highlight = dlg.m_model.result();
 
     for (auto v : m_controller->m_global_highlight) {
