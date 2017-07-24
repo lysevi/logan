@@ -29,7 +29,8 @@ SOURCES += \
     logviewer.cpp \
     textcodecselectiondialog.cpp \
     highlighteditdialog.cpp \
-    highlightmodel.cpp
+    highlightmodel.cpp \
+    highlightpattern.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -40,7 +41,8 @@ HEADERS += \
     logviewer.h \
     textcodecselectiondialog.h \
     highlighteditdialog.h \
-    highlightmodel.h
+    highlightmodel.h \
+    highlightpattern.h
 
 
 FORMS += \

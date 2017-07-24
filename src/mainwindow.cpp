@@ -3,6 +3,7 @@
 #include "logviewer.h"
 #include "textcodecselectiondialog.h"
 #include "ui_mainwindow.h"
+#include "highlightpattern.h"
 #include <QAbstractItemView>
 #include <QDebug>
 #include <QFileDialog>
@@ -389,5 +390,7 @@ void MainWindow::loadHighlightFromSettings() {
     }else{
         throw std::logic_error("highlights format error: "+jsonStr.toStdString());
     }
+  }else{
+      m_controller->m_global_highlight=default_highlight_settings;
   }
 }

@@ -24,6 +24,7 @@ public:
 public slots:
     void addNew();
     void rmSelected();
+    void setToDefault();
 private:
     Ui::HighlightEditDialog *ui;
 

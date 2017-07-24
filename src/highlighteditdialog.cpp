@@ -10,6 +10,7 @@ HighlightEditDialog::HighlightEditDialog(const HighlightPatterns &hl, QWidget *p
 
   connect(ui->actiondelete_selected, &QAction::triggered, this, &HighlightEditDialog::rmSelected);
   connect(ui->actionInsert_pattern, &QAction::triggered, this, &HighlightEditDialog::addNew);
+  connect(ui->actionDefault, &QAction::triggered, this, &HighlightEditDialog::setToDefault);
 }
 
 HighlightEditDialog::~HighlightEditDialog() {
@@ -30,4 +31,9 @@ void HighlightEditDialog::rmSelected() {
       }
       m_model.removeRows(selected.front().row(),1);
   }
+}
+
+void HighlightEditDialog::setToDefault(){
+  qDebug() << "HighlightEditDialog::setToDefault()";
+  m_model.resetTo(default_highlight_settings);
 }

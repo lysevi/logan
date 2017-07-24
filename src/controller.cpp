@@ -6,7 +6,6 @@ Controller::Controller(QObject*parent):QObject(parent){
     //auto threads=QThreadPool::globalInstance()->maxThreadCount();
     //QThreadPool::globalInstance()->setMaxThreadCount(threads);
     //qDebug()<<"maxThreadCount"<<threads;
-    clearHighlightedTextSlot();
 }
 
 
@@ -57,9 +56,7 @@ void Controller::addHighlightedTextSlot(const HighlightPattern &s){
 
 void Controller::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
-    const HighlightPattern datePattern{dateRe, "#0000FF"};
     m_global_highlight.clear();
-    m_global_highlight[datePattern.pattern]=datePattern;
     for(auto log:m_logs){
         log->clearHightlight();
     }

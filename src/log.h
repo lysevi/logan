@@ -10,13 +10,7 @@
 #include <vector>
 #include <future>
 #include <memory>
-
-struct HighlightPattern{
-    QString pattern;
-    QString rgb;
-};
-
-using HighlightPatterns=QMap<QString, HighlightPattern>;
+#include "highlightpattern.h"
 
 struct LinePosition{
     int first;
@@ -33,7 +27,6 @@ struct CachedString{
     std::shared_ptr<QString> Value;
 };
 
-const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
 
 enum class SearchDirection{
     Up, Down
