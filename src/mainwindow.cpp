@@ -110,6 +110,8 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::searchNextSlot);
 
   m_timer_widget->defaultState();
+
+  //QTimer::singleShot(1000, this, SLOT(showMaximized()));
 }
 
 MainWindow::~MainWindow() {
