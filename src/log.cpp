@@ -116,26 +116,22 @@ void Log::update() {
       m_lines = std::move(lines);
       m_cache.clear();
       m_cache.resize(m_lines.size());
+
       m_load_complete = true;
       // this->endResetModel();
 
       emit countChanged(m_lines.size());
       emit linesChanged();
 
-      //      int loaded = 0;
-      //      std::map<int, CachedString> local_res;
-      //      for (size_t i = 0; i < diff; ++i) {
-      //        CachedString cs;
-      //        cs.originValue = makeString(m_cache.size() + i);
-      //        cs.Value = cs.originValue;
-      //        local_res.insert(std::make_pair(m_cache.size() + i, cs));
-      //        loaded++;
-      //      }
-      beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
-      //      for (auto &kv : local_res) {
-      //        m_cache.insert(std::make_pair(kv.first, kv.second));
-      //      }
-      endInsertRows();
+      if (_fltr != nullptr) {
+        resetFilter(_fltr);
+      } else {
+        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
+        //      for (auto &kv : local_res) {
+        //        m_cache.insert(std::make_pair(kv.first, kv.second));
+        //      }
+        endInsertRows();
+      }
       emit m_lv_object->scrollToBottom();
     }
 
@@ -189,7 +185,7 @@ int Log::rowCount(const QModelIndex &parent) const {
     return 0;
   }
   if (_fltr != nullptr) {
-    return m_cache.size();
+    return m_fltr_cache.size();
   }
   return m_lines.size();
   // return m_cache.size();
@@ -205,12 +201,15 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
+    if (_fltr != nullptr) {
+      return *m_fltr_cache[index.row()].Value;
+    }
     if (m_cache[index.row()].Value != nullptr) {
       return *m_cache[index.row()].Value;
     } else {
       CachedString cs;
       cs.originValue = makeRawString(index.row());
-      cs.index=index.row();
+      cs.index = index.row();
       rawStringToValue(cs.originValue);
       cs.Value = cs.originValue;
       m_cache[index.row()] = cs;
@@ -223,10 +222,10 @@ QVariant Log::data(const QModelIndex &index, int role) const {
 QString Log::plainText(const QModelIndex &index) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QString("error");
-  if(_fltr==nullptr){
-      return *makeRawString(index.row());
-  }else{
-      return *makeRawString(m_cache[index.row()].index);
+  if (_fltr == nullptr) {
+    return *makeRawString(index.row());
+  } else {
+    return *makeRawString(m_fltr_cache[index.row()].index);
   }
 }
 
@@ -333,43 +332,46 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
   return QPair<int, QString>(index, "");
 }
 
-void Log::resetFilter(const Filter_Ptr&fltr){
-    qDebug() << "Log::resetFilter";
-    m_cache.resize(m_lines.size());
-    setFilter(fltr);
+void Log::resetFilter(const Filter_Ptr &fltr) {
+  qDebug() << "Log::resetFilter";
+  m_cache.resize(m_lines.size());
+  setFilter(fltr);
 }
 
 void Log::setFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
   _fltr = fltr;
   int count = 0;
+  m_fltr_cache.resize(m_lines.size());
   for (size_t i = 0; i < m_lines.size(); ++i) {
     auto qs = makeRawString(i);
     if (fltr->inFilter(*qs)) {
       rawStringToValue(qs);
-      auto cs = m_cache[count];
-      cs.clear();
+      CachedString cs;
       cs.index = i;
       cs.originValue = qs;
       cs.Value = cs.originValue;
-      m_cache[count] = cs;
+      m_fltr_cache[count] = cs;
       count++;
     }
   }
 
   beginResetModel();
-  m_cache.resize(count);
+  m_fltr_cache.resize(count);
   endResetModel();
 }
 
 void Log::clearFilter() {
   qDebug() << "Log::clearFilter";
-  _fltr = nullptr;
-  beginResetModel();
-  m_cache.resize(m_lines.size());
-  for (int i = 0; i < m_cache.size(); ++i) {
-    m_cache[i].clear();
+  if (_fltr != nullptr) {
+    _fltr = nullptr;
+    beginResetModel();
+    m_cache.resize(m_lines.size());
+    for (int i = 0; i < m_cache.size(); ++i) {
+      m_cache[i].clear();
+    }
+    _fltr = nullptr;
+    m_fltr_cache.resize(1);
+    endResetModel();
   }
-  _fltr = nullptr;
-  endResetModel();
 }

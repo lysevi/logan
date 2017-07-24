@@ -123,7 +123,9 @@ protected:
   QFileInfo m_fileInfo;
   QDateTime m_lastModifed;
   QString m_default_encoding;
+
   Filter_Ptr _fltr;
+  mutable QVector<CachedString> m_fltr_cache;
 };
 
 #endif // LOG_H

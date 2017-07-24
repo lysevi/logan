@@ -31,6 +31,7 @@ MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
       m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
       m_recent_files_settings("lysevi", "logan_highlights"), _recent_files() {
+  _current_tab = 0;
   m_timer->setInterval(0);
 
   ui->setupUi(this);
@@ -134,6 +135,9 @@ MainWindow::~MainWindow() {
 }
 
 Log *MainWindow::getLog(int index) {
+  if (index < 0) {
+    return nullptr;
+  }
   auto widget = m_tabbar->widget(index);
   auto log = dynamic_cast<LogViewer *>(widget)->model();
   return log;
@@ -293,12 +297,18 @@ void MainWindow::timerIntervalEnabledSlot(bool b) {
 
 void MainWindow::currentTabChangedSlot() {
   qDebug() << "MainWindow::currentTabChanged()";
+  auto log = getLog(_current_tab);
+  if (log != nullptr) {
+    log->clearFilter();
+  }
   auto i = m_tabbar->currentIndex();
   if (i < 0) {
     return;
   }
-  auto log = getLog(i);
+  log = getLog(i);
   setWindowTitle(logan_version + ": " + log->filename());
+  _current_tab = i;
+  resetFilter();
 }
 
 void MainWindow::selectTextEncodingSlot() {
@@ -526,6 +536,7 @@ void MainWindow::showFltrPanelSlot() {
   if (!isFltrVisible) {
     ui->fltrFrame->setVisible(true);
     ui->fltrEdit->setFocus();
+    resetFilter();
   } else {
     ui->fltrFrame->setVisible(false);
     disableFiltration();
@@ -555,6 +566,9 @@ void MainWindow::rmSelectedFiltrSlot() {
 }
 
 void MainWindow::resetFilter() {
+  if (m_filters.empty() || !ui->fltrFrame->isVisible()) {
+    return;
+  }
   auto fltr = std::make_shared<FilterUnion>();
   for (const auto &s : m_filters) {
     fltr->addFilter(std::make_shared<StringFilter>(s));

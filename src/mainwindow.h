@@ -74,6 +74,7 @@ public slots:
   void rmSelectedFiltrSlot();
 
 private:
+  int _current_tab;
   Ui::MainWindow *ui;
   QTabWidget *m_tabbar;
   Controller *m_controller;
