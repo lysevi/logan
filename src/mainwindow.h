@@ -23,7 +23,7 @@ class MainWindow : public QMainWindow {
 public:
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
-  void openFile(const QString &fname, bool updateRecent=true);
+  void openFile(const QString &fname);
   Log *getLog(int index);
   LogViewer *getViewer(int index);
   void endSearching();

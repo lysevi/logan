@@ -114,7 +114,7 @@ MainWindow::MainWindow(QWidget *parent)
   m_timer_widget->defaultState();
 
   loadRecent();
-  // QTimer::singleShot(1000, this, SLOT(showMaximized()));
+  QTimer::singleShot(300, this, SLOT(showMaximized()));
 }
 
 MainWindow::~MainWindow() {
@@ -149,7 +149,7 @@ void MainWindow::openFontDlgSlot() {
   }
 }
 
-void MainWindow::openFile(const QString &fname, bool updateRecent) {
+void MainWindow::openFile(const QString &fname) {
   qDebug() << "openFile()" << fname;
   auto log = m_controller->openFile(m_default_text_encoding, fname);
   if (log == nullptr) {
@@ -167,14 +167,23 @@ void MainWindow::openFile(const QString &fname, bool updateRecent) {
     m_tabbar->tabBar()->setVisible(true);
   }
 
-  if (updateRecent) {
+  bool isExists = false;
+  for (int i = 0; i < _recent_files.size(); ++i) {
+    if (_recent_files[i] == fname) {
+      auto s = _recent_files[i];
+      _recent_files.remove(i);
+      _recent_files.insert(0, s);
+      isExists = true;
+    }
+  }
+  if (!isExists) {
     _recent_files.append(fname);
     if (_recent_files.size() > RecentFiles_Max) {
       _recent_files.remove(0);
     }
-    updateRecentFileMenu();
     saveRecent();
   }
+  updateRecentFileMenu();
 }
 
 void MainWindow::openFileSlot() {
@@ -351,8 +360,8 @@ void MainWindow::searchNextSlot() {
 
 void MainWindow::searchEndSlot() {
   qDebug() << "MainWindow::searchEnd()";
-  if(ui->searchFrame->isVisible()){
-      ui->actionFind->trigger();
+  if (ui->searchFrame->isVisible()) {
+    ui->actionFind->trigger();
   }
 }
 
@@ -417,7 +426,7 @@ void MainWindow::recentOpenSlot() {
   if (action) {
     auto fname = action->data().toString();
     qDebug() << "open:" << fname;
-    openFile(fname, false);
+    openFile(fname);
   }
 }
 
@@ -451,7 +460,8 @@ void MainWindow::updateRecentFileMenu() {
       _recentFile_Actions[i]->setData(fname);
       _recentFile_Actions[i]->setVisible(true);
       _recentFile_Menu.addAction(_recentFile_Actions[i].get());
-      connect(_recentFile_Actions[i].get(), &QAction::triggered, this, &MainWindow::recentOpenSlot);
+      connect(_recentFile_Actions[i].get(), &QAction::triggered, this,
+              &MainWindow::recentOpenSlot);
       i++;
     }
   }
