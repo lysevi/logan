@@ -6,7 +6,6 @@ Controller::Controller(QObject*parent):QObject(parent){
     //auto threads=QThreadPool::globalInstance()->maxThreadCount();
     //QThreadPool::globalInstance()->setMaxThreadCount(threads);
     //qDebug()<<"maxThreadCount"<<threads;
-    clearHighlightedTextSlot();
 }
 
 
@@ -47,10 +46,10 @@ void Controller::closeFileSlot(const QString &fname){
 
 }
 
-void Controller::addHighlightedTextSlot(const QString &s){
-    qDebug()<<"addHighlightedTextSlot "<<s;
+void Controller::addHighlightedTextSlot(const HighlightPattern &s){
+    qDebug()<<"addHighlightedTextSlot "<<s.pattern;
     auto curDT=QDateTime::currentDateTimeUtc();
-    m_global_highlight<<s;
+    m_global_highlight[s.pattern]=s;
     //QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
     qDebug()<<"elapsed time:"<< curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
@@ -58,7 +57,6 @@ void Controller::addHighlightedTextSlot(const QString &s){
 void Controller::clearHighlightedTextSlot(){
     qDebug()<<"clearHighlightedTextSlot";
     m_global_highlight.clear();
-    m_global_highlight.insert(dateRe);
     for(auto log:m_logs){
         log->clearHightlight();
     }

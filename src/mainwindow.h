@@ -24,6 +24,7 @@ public:
     Log* getLog(int index);
     LogViewer*getViewer(int index);
     void endSearching();
+    void loadHighlightFromSettings();
 public slots:
     //open,close,update
     void openFileSlot();
@@ -51,6 +52,9 @@ public slots:
     void searchPatternChangedSlot();
     void searchNextSlot();
     void searchEndSlot();
+
+    //highlights
+    void openHighlightDlg();
 private:
     Ui::MainWindow *ui;
     QTabWidget *m_tabbar;
@@ -58,7 +62,7 @@ private:
     TimerForm *m_timer_widget;
     QTimer *m_timer;
     bool m_autoscroll_enabled;
-    QSettings m_settings;
+    QSettings m_settings, m_highlight_settings;
     QFont m_defaultFont;
     QString m_default_text_encoding;
 

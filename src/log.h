@@ -10,8 +10,7 @@
 #include <vector>
 #include <future>
 #include <memory>
-
-using HighlightPatterns=QSet<QString>;
+#include "highlightpattern.h"
 
 struct LinePosition{
     int first;
@@ -28,7 +27,6 @@ struct CachedString{
     std::shared_ptr<QString> Value;
 };
 
-const QString dateRe="\\d{2}:\\d{2}:\\d{2}\\.?\\d*";
 
 enum class SearchDirection{
     Up, Down
@@ -89,7 +87,7 @@ public:
                            QVector<CachedString>::iterator end,
                            const QString&pattern);
     void updateHeighlights(const QString&pattern);
-    static bool heighlightStr(QString* str,const QString&pattern );
+    static bool heighlightStr(QString* str,const HighlightPattern&pattern );
 
     Q_INVOKABLE void setListVoxObject(QListView *object);
 

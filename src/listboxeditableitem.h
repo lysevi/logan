@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QStyledItemDelegate>
+#include <QStylePainter>
 #include <QObject>
 #include <QTextEdit>
 #include <QStyleOption>
@@ -8,36 +9,14 @@
 #include <QDebug>
 #include "log.h"
 
-class ListboxEditableItem : public QStyledItemDelegate
+class ListboxEditableItem : public QAbstractItemDelegate
 {
 public:
     explicit  ListboxEditableItem(QObject  *parent=0);
 
     void paint(QPainter *painter,
                const QStyleOptionViewItem &option,
-               const QModelIndex &index) const override{
-
-
-        painter->save();
-
-        //painter->setFont(m_default_font);
-
-        auto value = index.model()->data(index, Qt::DisplayRole).toString();
-        QTextDocument doc;
-        doc.setHtml(value);
-        doc.setDefaultFont(m_default_font);
-
-        //qDebug()<<"font:"<<m_default_font.toString()<<" => "<<doc.defaultFont().toString();
-        option.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);
-
-        painter->translate(option.rect.left(), option.rect.top());
-
-        QRect clip(0, 0, option.rect.width(), option.rect.height());
-
-        doc.drawContents(painter, clip);
-
-        painter->restore();
-    }
+               const QModelIndex &index) const override;
 
     QSize sizeHint(const QStyleOptionViewItem &option,
                    const QModelIndex &index) const override{
