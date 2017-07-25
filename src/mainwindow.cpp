@@ -1,6 +1,6 @@
 #include "mainwindow.h"
 #include "highlighteditdialog.h"
-#include "highlightpattern.h"
+#include "pattern.h"
 #include "logviewer.h"
 #include "textcodecselectiondialog.h"
 #include "ui_mainwindow.h"
@@ -17,13 +17,14 @@
 #include <QStringListModel>
 #include <QTextCodec>
 
-// TODO move to namespace 'settings_keys'
+namespace settings_keys {
 const QString fontKey = "logFont";
 const QString showToolbarKey = "showToolBar";
 const QString defaultEncodingKey = "defaultEncoding";
 const QString highlightKey = "highlightKey";
 const QString recentFilesKey = "recentFilesKey";
 const QString filtersKey = "filtersKey";
+}
 
 const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
@@ -43,21 +44,21 @@ MainWindow::MainWindow(QWidget *parent)
 
   // read settings
   m_defaultFont = this->font();
-  if (m_settings.contains(fontKey)) {
-    QString fontName = m_settings.value(fontKey).toString();
+  if (m_settings.contains(settings_keys::fontKey)) {
+    QString fontName = m_settings.value(settings_keys::fontKey).toString();
     m_defaultFont = QFont(fontName);
     qDebug() << "defaul font is " << fontName;
   }
 
-  if (m_settings.contains(showToolbarKey)) {
-    bool value = m_settings.value(showToolbarKey).toBool();
+  if (m_settings.contains(settings_keys::showToolbarKey)) {
+    bool value = m_settings.value(settings_keys::showToolbarKey).toBool();
     ui->mainToolBar->setVisible(value);
     ui->actionshow_toolbar->setChecked(value);
   }
 
   m_default_text_encoding = defaultTextEncoding;
-  if (m_settings.contains(defaultEncodingKey)) {
-    auto value = m_settings.value(defaultEncodingKey).toString();
+  if (m_settings.contains(settings_keys::defaultEncodingKey)) {
+    auto value = m_settings.value(settings_keys::defaultEncodingKey).toString();
     m_default_text_encoding = value;
     qDebug() << "default encoding:" << m_default_text_encoding;
   }
@@ -168,7 +169,7 @@ void MainWindow::openFontDlgSlot() {
     return;
   } else {
     qDebug() << "selected font: " << fdlg.selectedFont().toString();
-    m_settings.setValue(fontKey, fdlg.selectedFont().toString());
+    m_settings.setValue(settings_keys::fontKey, fdlg.selectedFont().toString());
     m_defaultFont = fdlg.selectedFont();
     // setFont(QFont(fdlg.selectedFont().toString()));
   }
@@ -246,7 +247,7 @@ void MainWindow::clearSettingsSlot() {
 void MainWindow::showToolbarSlot() {
   bool value = ui->actionshow_toolbar->isChecked();
   qDebug() << "showToolbarSlot()" << value;
-  m_settings.setValue(showToolbarKey, value);
+  m_settings.setValue(settings_keys::showToolbarKey, value);
   ui->mainToolBar->setVisible(value);
 }
 
@@ -330,7 +331,7 @@ void MainWindow::selectTextEncodingSlot() {
   if (ret) {
     auto encoding = dlg.selectedEncoding();
     qDebug() << "selected encoding:" << encoding;
-    m_settings.setValue(defaultEncodingKey, encoding);
+    m_settings.setValue(settings_keys::defaultEncodingKey, encoding);
     m_default_text_encoding = encoding;
   }
 }
@@ -430,16 +431,16 @@ void MainWindow::saveHighlightFromSettings() {
   json["patterns"] = values;
   QJsonDocument doc(json);
   QString strJson(doc.toJson(QJsonDocument::Compact));
-  m_highlight_settings.setValue(highlightKey, strJson);
+  m_highlight_settings.setValue(settings_keys::highlightKey, strJson);
   qDebug() << ">>> " << strJson;
 }
 
 void MainWindow::loadHighlightFromSettings() {
   qDebug() << "MainWindow::loadHighlightFromSettings()";
 
-  if (m_highlight_settings.contains(highlightKey)) {
+  if (m_highlight_settings.contains(settings_keys::highlightKey)) {
     m_controller->m_global_highlight.clear();
-    QString jsonStr = m_highlight_settings.value(highlightKey).toString();
+    QString jsonStr = m_highlight_settings.value(settings_keys::highlightKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -476,14 +477,14 @@ void MainWindow::saveFiltersSettings() {
   json["patterns"] = values;
   QJsonDocument doc(json);
   QString strJson(doc.toJson(QJsonDocument::Compact));
-  m_filters_settings.setValue(filtersKey, strJson);
+  m_filters_settings.setValue(settings_keys::filtersKey, strJson);
   qDebug() << ">>> " << strJson;
 }
 
 void MainWindow::loadFiltersFromSettings() {
   qDebug() << "MainWindow::loadFiltersFromSettings()";
-  if (m_filters_settings.contains(filtersKey)) {
-    QString jsonStr = m_filters_settings.value(filtersKey).toString();
+  if (m_filters_settings.contains(settings_keys::filtersKey)) {
+    QString jsonStr = m_filters_settings.value(settings_keys::filtersKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -553,7 +554,7 @@ void MainWindow::updateRecentFileMenu() {
 void MainWindow::saveRecent() {
   qDebug() << "MainWindow::saveRecent()";
   if (_recent_files.size() > 0) {
-    m_recent_files_settings.beginWriteArray(recentFilesKey);
+    m_recent_files_settings.beginWriteArray(settings_keys::recentFilesKey);
     for (int i = 0; i < _recent_files.size(); ++i) {
       m_recent_files_settings.setArrayIndex(i);
       m_recent_files_settings.setValue("file", _recent_files[i]);
@@ -564,7 +565,7 @@ void MainWindow::saveRecent() {
 
 void MainWindow::loadRecent() {
   qDebug() << "MainWindow::loadRecent()";
-  int sz = m_recent_files_settings.beginReadArray(recentFilesKey);
+  int sz = m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
   for (int i = 0; i < sz; ++i) {
     m_recent_files_settings.setArrayIndex(i);
     auto fname = m_recent_files_settings.value("file").toString();

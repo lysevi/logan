@@ -1,5 +1,6 @@
 #pragma once
 
+#include "common_re.h"
 #include <QString>
 #include <QTime>
 #include <list>
@@ -38,7 +39,7 @@ struct DateRangeFilter : public Filter {
   DateRangeFilter(QTime _from, QTime _to) {
     from = _from;
     to = _to;
-    _re = std::unique_ptr<QRegExp>(new QRegExp("\\d{2}:\\d{2}:\\d{2}\\.?\\d*"));
+    _re = std::unique_ptr<QRegExp>(new QRegExp(common_re::dateRe));
   }
 
   bool inFilter(const QString &line) override;

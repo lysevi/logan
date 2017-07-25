@@ -2,7 +2,7 @@
 #define LOG_H
 
 #include "filter.h"
-#include "highlightpattern.h"
+#include "pattern.h"
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QFileInfo>

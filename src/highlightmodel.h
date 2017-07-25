@@ -1,7 +1,7 @@
 #ifndef HIGHLIGHTMODEL_H
 #define HIGHLIGHTMODEL_H
 
-#include "highlightpattern.h"
+#include "pattern.h"
 #include <QAbstractTableModel>
 #include <QDebug>
 #include <QObject>
