@@ -35,12 +35,13 @@ struct FilterUnion : public Filter {
 };
 
 struct DateRangeFilter : public Filter {
-  DateRangeFilter(QTime _from, QTime _to){
+  DateRangeFilter(QTime _from, QTime _to) {
     from = _from;
     to = _to;
+    _re = std::unique_ptr<QRegExp>(new QRegExp("\\d{2}:\\d{2}:\\d{2}\\.?\\d*"));
   }
 
   bool inFilter(const QString &line) override;
   QTime from, to;
-
+  std::unique_ptr<QRegExp> _re;
 };

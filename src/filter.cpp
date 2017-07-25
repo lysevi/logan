@@ -1,6 +1,6 @@
 #include "filter.h"
-#include <QRegExp>
 #include <QDebug>
+#include <QRegExp>
 
 Filter::~Filter() {}
 
@@ -34,9 +34,8 @@ bool FilterUnion::inFilter(const QString &line) {
 }
 
 bool DateRangeFilter::inFilter(const QString &line) {
-  QRegExp dateRegex("\\d{2}:\\d{2}:\\d{2}\\.?\\d*");
-  if (dateRegex.indexIn(line) != -1) {
-    auto ct = dateRegex.capturedTexts();
+  if (_re->indexIn(line) != -1) {
+    auto ct = _re->capturedTexts();
     for (auto &&captured_str : ct) {
       auto time = QTime::fromString(captured_str);
       if (from <= time && to >= time) {
