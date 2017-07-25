@@ -17,11 +17,13 @@
 #include <QStringListModel>
 #include <QTextCodec>
 
+// TODO move to namespace 'settings_keys'
 const QString fontKey = "logFont";
 const QString showToolbarKey = "showToolBar";
 const QString defaultEncodingKey = "defaultEncoding";
 const QString highlightKey = "highlightKey";
 const QString recentFilesKey = "recentFilesKey";
+const QString filtersKey = "filtersKey";
 
 const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
@@ -29,7 +31,8 @@ const QString logan_version = "Logan - " + version;
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
       m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
-      m_recent_files_settings("lysevi", "logan_highlights"), _recent_files() {
+      m_recent_files_settings("lysevi", "logan_highlights"),
+      m_filters_settings("lysevi", "logan_filters"), _recent_files() {
   _current_tab = 0;
   m_timer->setInterval(0);
 
@@ -130,10 +133,13 @@ MainWindow::MainWindow(QWidget *parent)
   m_timer_widget->defaultState();
 
   loadRecent();
+  loadFiltersFromSettings();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
 }
 
 MainWindow::~MainWindow() {
+  saveFiltersSettings();
+
   delete ui;
   delete m_timer;
   delete m_controller;
@@ -405,23 +411,27 @@ void MainWindow::openHighlightDlg() {
       qDebug() << v.pattern << "=>" << v.rgb;
     }
 
-    QJsonObject json;
-    QJsonArray values;
-    auto patterns = m_controller->m_global_highlight.values();
-    for (auto v : patterns) {
-      QJsonObject js_v;
-      js_v["pattern"] = v.pattern;
-      js_v["rgb"] = v.rgb;
-      values.append(js_v);
-    }
-    json["patterns"] = values;
-    QJsonDocument doc(json);
-    QString strJson(doc.toJson(QJsonDocument::Compact));
-    m_highlight_settings.setValue(highlightKey, strJson);
-    qDebug() << ">>> " << strJson;
+    saveHighlightFromSettings();
 
     m_controller->updateAllSlot("null");
   }
+}
+
+void MainWindow::saveHighlightFromSettings() {
+  QJsonObject json;
+  QJsonArray values;
+  auto patterns = m_controller->m_global_highlight.values();
+  for (auto v : patterns) {
+    QJsonObject js_v;
+    js_v["pattern"] = v.pattern;
+    js_v["rgb"] = v.rgb;
+    values.append(js_v);
+  }
+  json["patterns"] = values;
+  QJsonDocument doc(json);
+  QString strJson(doc.toJson(QJsonDocument::Compact));
+  m_highlight_settings.setValue(highlightKey, strJson);
+  qDebug() << ">>> " << strJson;
 }
 
 void MainWindow::loadHighlightFromSettings() {
@@ -449,6 +459,48 @@ void MainWindow::loadHighlightFromSettings() {
     }
   } else {
     m_controller->m_global_highlight = default_highlight_settings;
+  }
+}
+
+void MainWindow::saveFiltersSettings() {
+  qDebug() << "MainWindow::saveFiltersSettings()";
+  QJsonObject json;
+  QJsonArray values;
+  auto patterns = m_controller->m_global_highlight.values();
+  for (auto v : m_filters) {
+    QJsonObject js_v;
+    js_v["pattern"] = v.pattern;
+    js_v["enabled"] = v.is_enabled;
+    values.append(js_v);
+  }
+  json["patterns"] = values;
+  QJsonDocument doc(json);
+  QString strJson(doc.toJson(QJsonDocument::Compact));
+  m_filters_settings.setValue(filtersKey, strJson);
+  qDebug() << ">>> " << strJson;
+}
+
+void MainWindow::loadFiltersFromSettings() {
+  qDebug() << "MainWindow::loadFiltersFromSettings()";
+  if (m_filters_settings.contains(filtersKey)) {
+    QString jsonStr = m_filters_settings.value(filtersKey).toString();
+    QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
+    if (!doc.isNull()) {
+      if (doc.isObject()) {
+        QJsonObject obj = doc.object();
+        QJsonArray patterns = obj["patterns"].toArray();
+        for (int i = 0; i < patterns.count(); ++i) {
+          auto p = patterns.at(i).toObject();
+          StringFilterDescription sfd;
+          sfd.pattern = p["pattern"].toString();
+          sfd.is_enabled = p["enabled"].toBool();
+          qDebug() << ">> " << sfd.pattern << ":" << sfd.is_enabled;
+          m_filters << sfd;
+        }
+      }
+    } else {
+      throw std::logic_error("filters format error: " + jsonStr.toStdString());
+    }
   }
 }
 
@@ -541,6 +593,8 @@ void MainWindow::showFltrPanelSlot() {
   if (!isFltrVisible) {
     ui->fltrFrame->setVisible(true);
     ui->fltrEdit->setFocus();
+    ui->timeRangeGroupBox->setChecked(false);
+    fillFilterModel();
     resetFilter();
   } else {
     ui->fltrFrame->setVisible(false);
@@ -587,8 +641,8 @@ void MainWindow::fillFilterModel() {
   int row = 0;
   for (auto fltr : m_filters) {
     QStandardItem *item = new QStandardItem(fltr.pattern);
-    item->setCheckable(fltr.is_enabled);
-    item->setCheckState(Qt::Checked); // TODO read from flr description.
+    item->setCheckable(true);
+    item->setCheckState(fltr.is_enabled ? Qt::Checked : Qt::Unchecked);
     item->setData(Qt::Checked, Qt::CheckStateRole);
     m_filter_model->setItem(row++, item);
   }
