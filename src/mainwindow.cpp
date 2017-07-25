@@ -1,7 +1,7 @@
 #include "mainwindow.h"
 #include "highlighteditdialog.h"
-#include "pattern.h"
 #include "logviewer.h"
+#include "pattern.h"
 #include "textcodecselectiondialog.h"
 #include "ui_mainwindow.h"
 #include <QAbstractItemView>
@@ -151,6 +151,9 @@ Log *MainWindow::getLog(int index) {
     return nullptr;
   }
   auto widget = m_tabbar->widget(index);
+  if (widget == nullptr) {
+    return nullptr;
+  }
   auto log = dynamic_cast<LogViewer *>(widget)->model();
   return log;
 }
@@ -643,8 +646,9 @@ void MainWindow::fillFilterModel() {
   for (auto fltr : m_filters) {
     QStandardItem *item = new QStandardItem(fltr.pattern);
     item->setCheckable(true);
-    item->setCheckState(fltr.is_enabled ? Qt::Checked : Qt::Unchecked);
-    item->setData(Qt::Checked, Qt::CheckStateRole);
+    auto state=fltr.is_enabled ? Qt::Checked : Qt::Unchecked;
+    item->setCheckState(state);
+    item->setData(state, Qt::CheckStateRole);
     m_filter_model->setItem(row++, item);
   }
   connect(m_filter_model.get(), &QStandardItemModel::itemChanged, this,
