@@ -79,6 +79,7 @@ public slots:
   void addFltrSlot();
   void rmSelectedFiltrSlot();
   void fltrItemChangedSlot(QStandardItem *item);
+  void dateRangeChangedSlot();
 
 private:
   int _current_tab;

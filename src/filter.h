@@ -1,6 +1,7 @@
 #pragma once
 
 #include <QString>
+#include <QTime>
 #include <list>
 #include <memory>
 
@@ -31,4 +32,15 @@ struct FilterUnion : public Filter {
 
   bool inFilter(const QString &line) override;
   std::list<Filter_Ptr> _filters;
+};
+
+struct DateRangeFilter : public Filter {
+  DateRangeFilter(QTime _from, QTime _to){
+    from = _from;
+    to = _to;
+  }
+
+  bool inFilter(const QString &line) override;
+  QTime from, to;
+
 };

@@ -98,6 +98,7 @@ MainWindow::MainWindow(QWidget *parent)
   connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
   connect(ui->actionHighlights, &QAction::triggered, this, &MainWindow::openHighlightDlg);
 
+  // timer
   connect(m_timer_widget, &TimerForm::timerParamChangedSignal, this,
           &MainWindow::timerIntervalChangedSlot);
   connect(m_timer_widget, &TimerForm::timerIsEnabledSignal, this,
@@ -107,16 +108,24 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_tabbar, &QTabWidget::currentChanged, this,
           &MainWindow::currentTabChangedSlot);
 
+  // search
   connect(ui->searchPatternEdit, &QLineEdit::textChanged, this,
           &MainWindow::searchPatternChangedSlot);
   connect(ui->searchNextPushButton, &QPushButton::clicked, this,
           &MainWindow::searchNextSlot);
 
+  // fltr
   connect(ui->actionEnable_filtration, &QAction::triggered, this,
           &MainWindow::showFltrPanelSlot);
   connect(ui->addFltrButton, &QPushButton::clicked, this, &MainWindow::addFltrSlot);
   connect(ui->rmFltrButton, &QPushButton::clicked, this,
           &MainWindow::rmSelectedFiltrSlot);
+
+  connect(ui->timeRangeGroupBox, &QGroupBox::toggled, this,
+          &MainWindow::dateRangeChangedSlot);
+  connect(ui->rangeFrom, &QTimeEdit::timeChanged, this,
+          &MainWindow::dateRangeChangedSlot);
+  connect(ui->rangeTo, &QTimeEdit::timeChanged, this, &MainWindow::dateRangeChangedSlot);
 
   m_timer_widget->defaultState();
 
@@ -561,6 +570,11 @@ void MainWindow::rmSelectedFiltrSlot() {
   }
 }
 
+void MainWindow::dateRangeChangedSlot() {
+  qDebug() << "MainWindow::dateRangeChangedSlot()";
+  resetFilter();
+}
+
 void MainWindow::fillFilterModel() {
   if (m_filter_model != nullptr) {
     for (int i = 0; i < m_filter_model->rowCount(); ++i) {
@@ -598,6 +612,14 @@ void MainWindow::resetFilter() {
 
     auto fltr = std::make_shared<FilterUnion>();
     size_t fltrs_count = 0;
+
+    if (ui->timeRangeGroupBox->isChecked()) {
+      auto timeFltr =
+          std::make_shared<DateRangeFilter>(ui->rangeFrom->time(), ui->rangeTo->time());
+      fltr->addFilter(timeFltr);
+      fltrs_count++;
+    }
+
     for (const auto &s : m_filters) {
       qDebug() << s.pattern << " => " << s.is_enabled;
       if (s.is_enabled) {
@@ -611,7 +633,7 @@ void MainWindow::resetFilter() {
       return;
     }
 
-    if (m_filters.size() != 0) {
+    if (fltrs_count != 0) {
       log->resetFilter(fltr);
     } else {
       log->clearFilter();

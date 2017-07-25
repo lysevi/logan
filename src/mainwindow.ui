@@ -131,7 +131,7 @@
         </layout>
        </item>
        <item row="0" column="1">
-        <widget class="QGroupBox" name="groupBox">
+        <widget class="QGroupBox" name="timeRangeGroupBox">
          <property name="sizePolicy">
           <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
            <horstretch>0</horstretch>
@@ -172,10 +172,6 @@
         </widget>
        </item>
       </layout>
-      <zorder>rmFltrButton</zorder>
-      <zorder>groupBox</zorder>
-      <zorder>filtrListView</zorder>
-      <zorder>fltrEdit</zorder>
      </widget>
     </item>
    </layout>
