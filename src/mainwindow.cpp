@@ -563,6 +563,9 @@ void MainWindow::rmSelectedFiltrSlot() {
 
 void MainWindow::fillFilterModel() {
   if (m_filter_model != nullptr) {
+    for (int i = 0; i < m_filter_model->rowCount(); ++i) {
+      delete m_filter_model->item(i);
+    }
     m_filter_model->clear();
   }
   m_filter_model = std::make_shared<QStandardItemModel>(ui->filtrListView);
