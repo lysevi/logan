@@ -122,9 +122,6 @@ MainWindow::MainWindow(QWidget *parent)
 
   loadRecent();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
-
-  m_filter_model.setStringList(m_filters);
-  ui->filtrListView->setModel(&m_filter_model);
 }
 
 MainWindow::~MainWindow() {
@@ -546,8 +543,8 @@ void MainWindow::addFltrSlot() {
   qDebug() << "MainWindow::addFltrSlot()";
   auto text = ui->fltrEdit->text();
   if (text.trimmed() != "") {
-    m_filters << text.trimmed();
-    m_filter_model.setStringList(m_filters);
+    m_filters << StringFilterDescription{true, text.trimmed()};
+    fillFilterModel();
 
     resetFilter();
   }
@@ -559,22 +556,56 @@ void MainWindow::rmSelectedFiltrSlot() {
   auto selectedIndexes = ui->filtrListView->selectionModel()->selectedIndexes();
   if (selectedIndexes.size() > 0) {
     m_filters.removeAt(selectedIndexes.front().row());
-    m_filter_model.setStringList(m_filters);
+    fillFilterModel();
     resetFilter();
   }
+}
+
+void MainWindow::fillFilterModel() {
+  if (m_filter_model != nullptr) {
+    m_filter_model->clear();
+  }
+  m_filter_model = std::make_shared<QStandardItemModel>(ui->filtrListView);
+  ui->filtrListView->setModel(m_filter_model.get());
+  int row = 0;
+  for (auto fltr : m_filters) {
+    QStandardItem *item = new QStandardItem(fltr.pattern);
+    item->setCheckable(fltr.is_enabled);
+    item->setCheckState(Qt::Checked); // TODO read from flr description.
+    item->setData(Qt::Checked, Qt::CheckStateRole);
+    m_filter_model->setItem(row++, item);
+  }
+  connect(m_filter_model.get(), &QStandardItemModel::itemChanged, this,
+          &MainWindow::fltrItemChangedSlot);
+}
+
+void MainWindow::fltrItemChangedSlot(QStandardItem *item) {
+  for (auto &v : m_filters) {
+    if (v.pattern.trimmed() == item->text().trimmed()) {
+      v.is_enabled = item->checkState() == Qt::Checked;
+      qDebug() << v.pattern << " => " << v.is_enabled;
+    }
+  }
+  resetFilter();
 }
 
 void MainWindow::resetFilter() {
   auto log = getLog(m_tabbar->currentIndex());
   if (log != nullptr) {
 
-    if (m_filters.empty() || !ui->fltrFrame->isVisible()) {
+    auto fltr = std::make_shared<FilterUnion>();
+    size_t fltrs_count = 0;
+    for (const auto &s : m_filters) {
+      qDebug() << s.pattern << " => " << s.is_enabled;
+      if (s.is_enabled) {
+        fltrs_count++;
+        fltr->addFilter(std::make_shared<StringFilter>(s.pattern));
+      }
+    }
+
+    if (fltrs_count == 0 || !ui->fltrFrame->isVisible()) {
       log->clearFilter();
       return;
-    }
-    auto fltr = std::make_shared<FilterUnion>();
-    for (const auto &s : m_filters) {
-      fltr->addFilter(std::make_shared<StringFilter>(s));
     }
 
     if (m_filters.size() != 0) {

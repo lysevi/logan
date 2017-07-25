@@ -7,14 +7,19 @@
 #include <QMainWindow>
 #include <QMenu>
 #include <QSettings>
+#include <QStandardItemModel>
 #include <QStringList>
-#include <QStringListModel>
 #include <QTabWidget>
 #include <QTimer>
 
 namespace Ui {
 class MainWindow;
 }
+
+struct StringFilterDescription {
+  bool is_enabled;
+  QString pattern;
+};
 
 const int RecentFiles_Max = 10;
 using RecentFiles = QVector<QString>;
@@ -35,6 +40,7 @@ public:
   void saveRecent();
   void loadRecent();
 
+  void fillFilterModel();
   void disableFiltration();
   void resetFilter();
 public slots:
@@ -72,6 +78,7 @@ public slots:
   void showFltrPanelSlot();
   void addFltrSlot();
   void rmSelectedFiltrSlot();
+  void fltrItemChangedSlot(QStandardItem *item);
 
 private:
   int _current_tab;
@@ -91,6 +98,6 @@ private:
   QMenu _recentFile_Menu;
   QVector<std::shared_ptr<QAction>> _recentFile_Actions;
 
-  QStringList m_filters;
-  QStringListModel m_filter_model;
+  QList<StringFilterDescription> m_filters;
+  std::shared_ptr<QStandardItemModel> m_filter_model;
 };
