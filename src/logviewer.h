@@ -20,11 +20,14 @@ public:
   void setAutoScroll(bool value);
   bool eventFilter(QObject *object, QEvent *event) override;
   void selectRow(int row);
+  int selectedRow();
+signals:
+  void selectNewRow();
 private slots:
   void onScrollRangeChanged(int min, int max);
   void customContextMenu(const QPoint &);
   void copySelectedSlot();
-
+ void onSelectionChangedSlot();
 private:
   Ui::LogViewer *ui;
   Log *m_model;

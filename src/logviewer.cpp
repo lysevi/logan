@@ -29,6 +29,8 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
   connect(lb->verticalScrollBar(), &QScrollBar::rangeChanged, this,
           &LogViewer::onScrollRangeChanged);
   connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
+  connect(ui->listView, &QListView::clicked, this,
+          &LogViewer::onSelectionChangedSlot);
 }
 
 LogViewer::~LogViewer() {
@@ -103,4 +105,18 @@ void LogViewer::selectRow(int row) {
   ui->listView->selectionModel()->select(index,
                                          QItemSelectionModel::SelectionFlag::Select);
   ui->listView->scrollTo(index);
+}
+
+int LogViewer::selectedRow() {
+  auto si = ui->listView->selectionModel()->selectedIndexes();
+  if (si.empty()) {
+    return 0;
+  } else {
+    return si.first().row();
+  }
+}
+
+void LogViewer::onSelectionChangedSlot() {
+  qDebug() << "onSelectionChangedSlot";
+  emit selectNewRow();
 }

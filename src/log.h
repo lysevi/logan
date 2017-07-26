@@ -95,6 +95,8 @@ public:
   void setFilter(const Filter_Ptr &fltr);
   void resetFilter(const Filter_Ptr &fltr);
   void clearFilter();
+
+  QDateTime lastUpdate() const { return m_fileInfo.lastModified(); }
 signals:
   void linesChanged();
   void countChanged(int);
@@ -108,6 +110,7 @@ protected:
   std::shared_ptr<QString> makeString(int row) const;
 
   void setFilter_impl(const Filter_Ptr &fltr);
+
 protected:
   mutable std::mutex _locker;
   bool m_load_complete = false;

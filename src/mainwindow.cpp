@@ -111,6 +111,8 @@ MainWindow::MainWindow(QWidget *parent)
   connect(m_timer, &QTimer::timeout, this, &MainWindow::reloadAllSlot);
   connect(m_tabbar, &QTabWidget::currentChanged, this,
           &MainWindow::currentTabChangedSlot);
+  connect(m_tabbar, &QTabWidget::currentChanged, this,
+          &MainWindow::updateStatusBarInfoSlot);
 
   // search
   connect(ui->searchPatternEdit, &QLineEdit::textChanged, this,
@@ -188,6 +190,7 @@ void MainWindow::openFile(const QString &fname) {
   auto lb = new LogViewer(m_defaultFont, m_tabbar);
   lb->setModel(log);
   lb->setAutoScroll(m_autoscroll_enabled);
+  connect(lb, &LogViewer::selectNewRow, this, &MainWindow::updateStatusBarInfoSlot);
   auto index = m_tabbar->addTab(lb, log->filename());
   m_tabbar->setCurrentIndex(index);
 
@@ -324,6 +327,23 @@ void MainWindow::currentTabChangedSlot() {
   setWindowTitle(logan_version + ": " + log->filename());
   _current_tab = i;
   resetFilter();
+}
+
+void MainWindow::updateStatusBarInfoSlot() {
+  qDebug() << "MainWindow::updateStatusBarInfoSlot()";
+  auto i = m_tabbar->currentIndex();
+  auto log = getLog(i);
+  if (log != nullptr) {
+    auto viewer = getViewer(i);
+    auto msg1 = QString("%1/%0 %2")
+                    .arg(QString::number(log->rowCount()))
+                    .arg(viewer->selectedRow())
+                    .arg(log->lastUpdate().toString());
+
+    statusBar()->showMessage(msg1);
+  } else {
+    statusBar()->clearMessage();
+  }
 }
 
 void MainWindow::selectTextEncodingSlot() {
@@ -604,6 +624,7 @@ void MainWindow::showFltrPanelSlot() {
     ui->fltrFrame->setVisible(false);
     disableFiltration();
   }
+   updateStatusBarInfoSlot();
 }
 
 void MainWindow::addFltrSlot() {
@@ -646,7 +667,7 @@ void MainWindow::fillFilterModel() {
   for (auto fltr : m_filters) {
     QStandardItem *item = new QStandardItem(fltr.pattern);
     item->setCheckable(true);
-    auto state=fltr.is_enabled ? Qt::Checked : Qt::Unchecked;
+    auto state = fltr.is_enabled ? Qt::Checked : Qt::Unchecked;
     item->setCheckState(state);
     item->setData(state, Qt::CheckStateRole);
     m_filter_model->setItem(row++, item);
@@ -697,5 +718,6 @@ void MainWindow::resetFilter() {
     } else {
       log->clearFilter();
     }
+    updateStatusBarInfoSlot();
   }
 }
