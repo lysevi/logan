@@ -9,8 +9,6 @@
 #include <QScrollBar>
 #include <QTextCodec>
 
-const QRegExp dateRegex("\\d\\d:\\d\\d:\\d\\d");
-
 LinePositionList allLinePos(const QByteArray &bts) {
 
   int count = 0;
@@ -28,8 +26,7 @@ LinePositionList allLinePos(const QByteArray &bts) {
       LinePosition lp;
       lp.first = start;
       lp.second = i;
-      lp.index = index++;
-      result[lp.index] = lp;
+      result[index++] = lp;
       start = i + 1;
     }
   }
@@ -93,6 +90,7 @@ QString Log::filename() const {
 
 void Log::update() {
   qDebug() << "update " << m_name << "=>" << m_fname;
+  std::lock_guard<std::mutex> lg(_locker);
   QFileInfo fileInfo(m_fname);
 
   //    if(fileInfo.lastModified()<=m_lastModifed){
@@ -102,7 +100,7 @@ void Log::update() {
   //    }
   m_lastModifed = fileInfo.lastModified();
 
-  qDebug() << "loadFile " << m_fname;
+  qDebug() << "update " << m_fname;
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
@@ -110,7 +108,7 @@ void Log::update() {
     auto lines = allLinePos(bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
-        auto old_size=m_lines.size();
+      auto old_size = m_lines.size();
       // m_load_complete=false;
       // this->beginResetModel();
       m_bts = std::move(bts);
@@ -118,26 +116,22 @@ void Log::update() {
       m_lines = std::move(lines);
       m_cache.clear();
       m_cache.resize(m_lines.size());
+
       m_load_complete = true;
       // this->endResetModel();
 
       emit countChanged(m_lines.size());
       emit linesChanged();
 
-//      int loaded = 0;
-//      std::map<int, CachedString> local_res;
-//      for (size_t i = 0; i < diff; ++i) {
-//        CachedString cs;
-//        cs.originValue = makeString(m_cache.size() + i);
-//        cs.Value = cs.originValue;
-//        local_res.insert(std::make_pair(m_cache.size() + i, cs));
-//        loaded++;
-//      }
-      beginInsertRows(createIndex(0, 0, nullptr), old_size-1, old_size + diff);
-//      for (auto &kv : local_res) {
-//        m_cache.insert(std::make_pair(kv.first, kv.second));
-//      }
-      endInsertRows();
+      if (_fltr != nullptr) {
+        resetFilter(_fltr);
+      } else {
+        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
+        //      for (auto &kv : local_res) {
+        //        m_cache.insert(std::make_pair(kv.first, kv.second));
+        //      }
+        endInsertRows();
+      }
       emit m_lv_object->scrollToBottom();
     }
 
@@ -149,7 +143,8 @@ void Log::update() {
   qDebug() << "update elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-std::shared_ptr<QString> Log::makeString(int row, bool isPlain) const {
+std::shared_ptr<QString> Log::makeRawString(int row) const {
+  qDebug() << "Log::makeRawString";
   auto line_pos = m_lines[row];
   int start = line_pos.first;
   int i = line_pos.second;
@@ -164,26 +159,36 @@ std::shared_ptr<QString> Log::makeString(int row, bool isPlain) const {
 
   std::shared_ptr<QString> result =
       std::make_shared<QString>(m_codec->toUnicode(localStr));
+  return result;
+}
 
-  if (!isPlain) {
-    if (m_global_highlight == nullptr) {
-      throw std::logic_error("m_global_highlight==nullptr");
-    }
-    result->replace('<', "&lt;");
-    result->replace('>', "&gt;");
-    result->replace(' ', "&nbsp;"); // html eats white spaces
-    for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
-      heighlightStr(result.get(), *it);
-    }
+void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
+  if (m_global_highlight == nullptr) {
+    throw std::logic_error("m_global_highlight==nullptr");
   }
+  rawString->replace('<', "&lt;");
+  rawString->replace('>', "&gt;");
+  rawString->replace(' ', "&nbsp;"); // html eats white spaces
+  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
+    heighlightStr(rawString.get(), *it);
+  }
+}
 
+std::shared_ptr<QString> Log::makeString(int row) const {
+  auto result = makeRawString(row);
+  rawStringToValue(result);
   return result;
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
+  qDebug() << "Log::rowCount";
+  std::lock_guard<std::mutex> lg(_locker);
   Q_UNUSED(parent);
   if (!m_load_complete) {
     return 0;
+  }
+  if (_fltr != nullptr) {
+    return m_fltr_cache.size();
   }
   return m_lines.size();
   // return m_cache.size();
@@ -199,11 +204,18 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    if(m_cache[index.row()].Value!=nullptr){
+    qDebug() << "Log::data";
+    std::lock_guard<std::mutex> lg(_locker);
+    if (_fltr != nullptr) {
+      return *m_fltr_cache[index.row()].Value;
+    }
+    if (m_cache[index.row()].Value != nullptr) {
       return *m_cache[index.row()].Value;
     } else {
       CachedString cs;
-      cs.originValue = makeString(index.row());
+      cs.originValue = makeRawString(index.row());
+      cs.index = index.row();
+      rawStringToValue(cs.originValue);
       cs.Value = cs.originValue;
       m_cache[index.row()] = cs;
       return *cs.Value;
@@ -215,7 +227,11 @@ QVariant Log::data(const QModelIndex &index, int role) const {
 QString Log::plainText(const QModelIndex &index) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QString("error");
-  return *makeString(index.row(), true);
+  if (_fltr == nullptr) {
+    return *makeRawString(index.row());
+  } else {
+    return *makeRawString(m_fltr_cache[index.row()].index);
+  }
 }
 
 void Log::clearHightlight() {
@@ -260,17 +276,6 @@ void Log::updateHeighlights(QVector<CachedString>::iterator /*begin*/,
   }
   auto curDT = QDateTime::currentDateTimeUtc();
 
-  //    QtConcurrent::blockingMap(begin, end,[this,&pattern](CachedString&cs){
-  //        QString str(*cs.Value);
-  //        auto is_updated=heighlightStr(&str, pattern);
-  //        if(is_updated){
-  //            cs.Value=std::make_shared<QString>(str);
-  //        }
-  //    });
-  //    for(int k=0;k<m_buffer.size();++k){
-  //        auto mi=this->createIndex(k,0);
-  //        dataChanged(mi, mi);
-  //    }
   qDebug() << m_fname << "updateHeighlights elapsed time:"
            << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
@@ -292,6 +297,8 @@ void Log::setListVoxObject(QListView *object) {
 
 QPair<int, QString> Log::findFrom(const QString &pattern, int index,
                                   SearchDirection direction) {
+  qDebug() << "Log::findFrom";
+  std::lock_guard<std::mutex> lg(_locker);
   // TODO make thread safety. m_cache can be brokent, when timer is active
   if (index == m_cache.size() || index < 0) {
     return QPair<int, QString>(index, QString());
@@ -319,4 +326,49 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
     }
   }
   return QPair<int, QString>(index, "");
+}
+
+void Log::resetFilter(const Filter_Ptr &fltr) {
+  qDebug() << "Log::resetFilter";
+  std::lock_guard<std::mutex> lg(_locker);
+  m_cache.resize(m_lines.size());
+  setFilter_impl(fltr);
+}
+
+void Log::setFilter(const Filter_Ptr &fltr) {
+  qDebug() << "Log::setFilter";
+  std::lock_guard<std::mutex> lg(_locker);
+  setFilter_impl(fltr);
+}
+
+void Log::setFilter_impl(const Filter_Ptr &fltr) {
+  _fltr = fltr;
+  int count = 0;
+  m_fltr_cache.resize(m_lines.size());
+  for (size_t i = 0; i < m_lines.size(); ++i) {
+    auto qs = makeRawString(i);
+    if (fltr->inFilter(*qs)) {
+      rawStringToValue(qs);
+      CachedString cs;
+      cs.index = i;
+      cs.originValue = qs;
+      cs.Value = cs.originValue;
+      m_fltr_cache[count] = cs;
+      count++;
+    }
+  }
+
+  beginResetModel();
+  m_fltr_cache.resize(count);
+  endResetModel();
+}
+
+void Log::clearFilter() {
+  qDebug() << "Log::clearFilter";
+  if (_fltr != nullptr) {
+    beginResetModel();
+    _fltr = nullptr;
+    m_fltr_cache.resize(1);
+    endResetModel();
+  }
 }

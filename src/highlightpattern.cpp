@@ -1,1 +1,0 @@
-#include "highlightpattern.h"

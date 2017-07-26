@@ -1,7 +1,8 @@
 #ifndef LOG_H
 #define LOG_H
 
-#include "highlightpattern.h"
+#include "filter.h"
+#include "pattern.h"
 #include <QAbstractItemModel>
 #include <QDateTime>
 #include <QFileInfo>
@@ -10,21 +11,22 @@
 #include <future>
 #include <map>
 #include <memory>
+#include <mutex>
 #include <vector>
 
 struct LinePosition {
   int first;
   int second;
-  int index; // TODO remove
 };
 
-// TODO hashset?
 using LinePositionList = std::vector<LinePosition>;
 
 struct CachedString {
-  int index;
+  int index; // original string index in file.
   std::shared_ptr<QString> originValue;
   std::shared_ptr<QString> Value;
+
+  void clear() { originValue = Value = nullptr; }
 };
 
 enum class SearchDirection { Up, Down };
@@ -89,6 +91,10 @@ public:
 
   QPair<int, QString> findFrom(const QString &pattern, int index,
                                SearchDirection direction);
+
+  void setFilter(const Filter_Ptr &fltr);
+  void resetFilter(const Filter_Ptr &fltr);
+  void clearFilter();
 signals:
   void linesChanged();
   void countChanged(int);
@@ -97,9 +103,13 @@ signals:
 public slots:
 protected:
   void loadFile();
-  std::shared_ptr<QString> makeString(int row, bool isPlain = false) const;
+  std::shared_ptr<QString> makeRawString(int row) const;
+  void rawStringToValue(std::shared_ptr<QString> &rawString) const;
+  std::shared_ptr<QString> makeString(int row) const;
 
+  void setFilter_impl(const Filter_Ptr &fltr);
 protected:
+  mutable std::mutex _locker;
   bool m_load_complete = false;
   QString m_name;
   QString m_fname;
@@ -114,6 +124,9 @@ protected:
   QFileInfo m_fileInfo;
   QDateTime m_lastModifed;
   QString m_default_encoding;
+
+  Filter_Ptr _fltr;
+  mutable QVector<CachedString> m_fltr_cache;
 };
 
 #endif // LOG_H
