@@ -107,6 +107,7 @@ private:
 
   int m_search_index = 0;
 
+  bool _recent_menu_addeded;
   RecentFiles _recent_files;
   QMenu _recentFile_Menu;
   QVector<std::shared_ptr<QAction>> _recentFile_Actions;

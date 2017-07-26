@@ -33,9 +33,11 @@ const QString logan_version = "Logan - " + version;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
-      m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
+      m_settings("lysevi", "logan"),
+      m_highlight_settings("lysevi", "logan_highlights"),
       m_recent_files_settings("lysevi", "logan_highlights"),
       m_filters_settings("lysevi", "logan_filters"), _recent_files() {
+  _recent_menu_addeded = false;
   _current_tab = 0;
   m_timer->setInterval(0);
 
@@ -81,7 +83,8 @@ MainWindow::MainWindow(QWidget *parent)
   loadHighlightFromSettings();
   setWindowTitle(logan_version);
   m_tabbar = new QTabWidget(ui->centralWidget);
-  m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  m_tabbar->setSizePolicy(
+      QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   ui->gridLayout->addWidget(m_tabbar);
 
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
@@ -104,9 +107,12 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::showToolbarSlot);
   connect(ui->actionselect_text_encoding, &QAction::triggered, this,
           &MainWindow::selectTextEncodingSlot);
-  connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
-  connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
-  connect(ui->actionHighlights, &QAction::triggered, this, &MainWindow::openHighlightDlg);
+  connect(ui->actionFind, &QAction::triggered, this,
+          &MainWindow::showSearchPanelSlot);
+  connect(ui->actionsearch_end, &QAction::triggered, this,
+          &MainWindow::searchEndSlot);
+  connect(ui->actionHighlights, &QAction::triggered, this,
+          &MainWindow::openHighlightDlg);
 
   // timer
   connect(m_timer_widget, &TimerForm::timerParamChangedSignal, this,
@@ -129,7 +135,8 @@ MainWindow::MainWindow(QWidget *parent)
   // fltr
   connect(ui->actionEnable_filtration, &QAction::triggered, this,
           &MainWindow::showFltrPanelSlot);
-  connect(ui->addFltrButton, &QPushButton::clicked, this, &MainWindow::addFltrSlot);
+  connect(ui->addFltrButton, &QPushButton::clicked, this,
+          &MainWindow::addFltrSlot);
   connect(ui->rmFltrButton, &QPushButton::clicked, this,
           &MainWindow::rmSelectedFiltrSlot);
 
@@ -218,7 +225,8 @@ void MainWindow::openFile(const QString &fname) {
   auto lb = new LogViewer(m_defaultFont, m_tabbar);
   lb->setModel(log);
   lb->setAutoScroll(m_autoscroll_enabled);
-  connect(lb, &LogViewer::selectNewRow, this, &MainWindow::updateStatusBarInfoSlot);
+  connect(lb, &LogViewer::selectNewRow, this,
+          &MainWindow::updateStatusBarInfoSlot);
   auto index = m_tabbar->addTab(lb, log->filename());
   m_tabbar->setCurrentIndex(index);
 
@@ -312,7 +320,8 @@ void MainWindow::closeCurentSlot() {
 }
 
 void MainWindow::autoscrollChangedSlot() {
-  qDebug() << "autoscrollChangedSlot()" << ui->actionautoscroll_enabled->isChecked();
+  qDebug() << "autoscrollChangedSlot()"
+           << ui->actionautoscroll_enabled->isChecked();
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
 
   for (int i = 0; i < m_tabbar->count(); ++i) {
@@ -325,7 +334,8 @@ void MainWindow::timerIntervalChangedSlot(int v) {
   qDebug() << "MainWindow::timerIntervalChangedSlot()" << v;
   m_timer->setInterval(v * 1000);
 
-  qDebug() << "interval: " << m_timer->interval() << "isActive:" << m_timer->isActive();
+  qDebug() << "interval: " << m_timer->interval()
+           << "isActive:" << m_timer->isActive();
 }
 
 void MainWindow::reloadAllSlot() {
@@ -491,7 +501,8 @@ void MainWindow::loadHighlightFromSettings() {
 
   if (m_highlight_settings.contains(settings_keys::highlightKey)) {
     m_controller->m_global_highlight.clear();
-    QString jsonStr = m_highlight_settings.value(settings_keys::highlightKey).toString();
+    QString jsonStr =
+        m_highlight_settings.value(settings_keys::highlightKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -507,7 +518,8 @@ void MainWindow::loadHighlightFromSettings() {
         }
       }
     } else {
-      throw std::logic_error("highlights format error: " + jsonStr.toStdString());
+      throw std::logic_error("highlights format error: " +
+                             jsonStr.toStdString());
     }
   } else {
     m_controller->m_global_highlight = default_highlight_settings;
@@ -535,7 +547,8 @@ void MainWindow::saveFiltersSettings() {
 void MainWindow::loadFiltersFromSettings() {
   qDebug() << "MainWindow::loadFiltersFromSettings()";
   if (m_filters_settings.contains(settings_keys::filtersKey)) {
-    QString jsonStr = m_filters_settings.value(settings_keys::filtersKey).toString();
+    QString jsonStr =
+        m_filters_settings.value(settings_keys::filtersKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -594,22 +607,29 @@ void MainWindow::recentOpenSlot() {
 void MainWindow::updateRecentFileMenu() {
   qDebug() << "MainWindow::updateRecentFileMenu()";
 
+  if (_recent_files.empty()) {
+    return;
+  }
   _recentFile_Menu.clear();
-  _recentFile_Menu.setTitle(tr("Recent files"));
+  if (!_recent_menu_addeded) {
+    _recentFile_Menu.setTitle(tr("Recent files"));
 
-  QAction *delim = nullptr;
-  int index = 0;
-  for (auto act : ui->menuFile->actions()) {
-    qDebug() << act->text();
-    if (act->text() == "") {
-      index++;
-      if (index == 2) { // find second delim (before "exit")
-        delim = act;
-        break;
+    QAction *delim = nullptr;
+    int index = 0;
+    for (auto act : ui->menuFile->actions()) {
+      qDebug() << act->text();
+      if (act->text() == "") {
+        index++;
+        if (index == 2) { // find second delim (before "exit")
+          delim = act;
+          break;
+        }
       }
     }
+    ui->menuFile->insertMenu(delim, &_recentFile_Menu);
+    _recent_menu_addeded = true;
   }
-  ui->menuFile->insertMenu(delim, &_recentFile_Menu);
+
   _recentFile_Actions.clear();
   _recentFile_Actions.resize(_recent_files.size());
   int i = 0;
@@ -642,7 +662,8 @@ void MainWindow::saveRecent() {
 
 void MainWindow::loadRecent() {
   qDebug() << "MainWindow::loadRecent()";
-  int sz = m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
+  int sz =
+      m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
   for (int i = 0; i < sz; ++i) {
     m_recent_files_settings.setArrayIndex(i);
     auto fname = m_recent_files_settings.value("file").toString();
@@ -748,8 +769,8 @@ void MainWindow::resetFilter() {
     size_t fltrs_count = 0;
 
     if (ui->timeRangeGroupBox->isChecked()) {
-      auto timeFltr =
-          std::make_shared<DateRangeFilter>(fromTimeEdit->time(), toTimeEdit->time());
+      auto timeFltr = std::make_shared<DateRangeFilter>(fromTimeEdit->time(),
+                                                        toTimeEdit->time());
       fltr->addFilter(timeFltr);
       fltrs_count++;
     }
