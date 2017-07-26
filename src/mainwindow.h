@@ -85,7 +85,7 @@ public slots:
   void fltrItemChangedSlot(QStandardItem *item);
   void dateRangeChangedSlot();
 
-  //statusbar
+  // statusbar
   void updateStatusBarInfoSlot();
 private:
   int _current_tab;

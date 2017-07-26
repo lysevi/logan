@@ -190,6 +190,7 @@
      <string>Settings</string>
     </property>
     <addaction name="actionfont_selection"/>
+    <addaction name="actionselect_text_encoding"/>
     <addaction name="actionclearSettings"/>
     <addaction name="separator"/>
     <addaction name="actionHighlights"/>
@@ -212,7 +213,6 @@
     <addaction name="actionshow_toolbar"/>
     <addaction name="actionautoscroll_enabled"/>
     <addaction name="actionEnable_filtration"/>
-    <addaction name="actionselect_text_encoding"/>
    </widget>
    <widget class="QMenu" name="menuEdit">
     <property name="title">
@@ -243,10 +243,11 @@
    <addaction name="actionreolad_current"/>
    <addaction name="actionOpen"/>
    <addaction name="actionclose_current_tab"/>
-   <addaction name="actionautoscroll_enabled"/>
+   <addaction name="separator"/>
    <addaction name="actionFind"/>
    <addaction name="actionfont_selection"/>
    <addaction name="actionEnable_filtration"/>
+   <addaction name="actionautoscroll_enabled"/>
   </widget>
   <widget class="QStatusBar" name="statusBar"/>
   <action name="actionOpen">
