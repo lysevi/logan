@@ -144,7 +144,7 @@ void Log::update() {
 }
 
 std::shared_ptr<QString> Log::makeRawString(int row) const {
-  qDebug() << "Log::makeRawString";
+  //qDebug() << "Log::makeRawString";
   auto line_pos = m_lines[row];
   int start = line_pos.first;
   int i = line_pos.second;
@@ -181,7 +181,7 @@ std::shared_ptr<QString> Log::makeString(int row) const {
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
-  qDebug() << "Log::rowCount";
+  //qDebug() << "Log::rowCount";
   std::lock_guard<std::mutex> lg(_locker);
   Q_UNUSED(parent);
   if (!m_load_complete) {
@@ -204,7 +204,7 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    qDebug() << "Log::data";
+    //qDebug() << "Log::data";
     std::lock_guard<std::mutex> lg(_locker);
     if (_fltr != nullptr) {
       return *m_fltr_cache[index.row()].Value;
