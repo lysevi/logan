@@ -8,8 +8,9 @@
 #include <QScrollBar>
 
 LogViewer::LogViewer(const QFont &font, QWidget *parent)
-    : QWidget(parent), ui(new Ui::LogViewer), m_default_font(font) {
-  qDebug() << "font: " << font.toString();
+    : QWidget(parent), ui(new Ui::LogViewer) {
+  m_default_font = font;
+  qDebug() << "font: " << m_default_font.toString();
   ui->setupUi(this);
   auto lb = ui->listView;
 
@@ -29,8 +30,7 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
   connect(lb->verticalScrollBar(), &QScrollBar::rangeChanged, this,
           &LogViewer::onScrollRangeChanged);
   connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
-  connect(ui->listView, &QListView::clicked, this,
-          &LogViewer::onSelectionChangedSlot);
+  connect(ui->listView, &QListView::clicked, this, &LogViewer::onSelectionChangedSlot);
 }
 
 LogViewer::~LogViewer() {

@@ -46,7 +46,7 @@ MainWindow::MainWindow(QWidget *parent)
   m_defaultFont = this->font();
   if (m_settings.contains(settings_keys::fontKey)) {
     QString fontName = m_settings.value(settings_keys::fontKey).toString();
-    m_defaultFont = QFont(fontName);
+    m_defaultFont.fromString(fontName);
     qDebug() << "defaul font is " << fontName;
   }
 
@@ -173,9 +173,10 @@ void MainWindow::openFontDlgSlot() {
   if (!fdlg.exec()) {
     return;
   } else {
-    qDebug() << "selected font: " << fdlg.selectedFont().toString();
-    m_settings.setValue(settings_keys::fontKey, fdlg.selectedFont().toString());
+
     m_defaultFont = fdlg.selectedFont();
+    m_settings.setValue(settings_keys::fontKey, m_defaultFont.toString());
+    qDebug() << "selected font: " << m_defaultFont.toString();
     // setFont(QFont(fdlg.selectedFont().toString()));
   }
 }
@@ -624,7 +625,7 @@ void MainWindow::showFltrPanelSlot() {
     ui->fltrFrame->setVisible(false);
     disableFiltration();
   }
-   updateStatusBarInfoSlot();
+  updateStatusBarInfoSlot();
 }
 
 void MainWindow::addFltrSlot() {
