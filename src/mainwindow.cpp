@@ -24,6 +24,7 @@ const QString defaultEncodingKey = "defaultEncoding";
 const QString highlightKey = "highlightKey";
 const QString recentFilesKey = "recentFilesKey";
 const QString filtersKey = "filtersKey";
+const QString filterFrameWidthKey = "filterFrameWidthKey";
 }
 
 const QString version = QString(GIT_VERSION);
@@ -61,6 +62,18 @@ MainWindow::MainWindow(QWidget *parent)
     auto value = m_settings.value(settings_keys::defaultEncodingKey).toString();
     m_default_text_encoding = value;
     qDebug() << "default encoding:" << m_default_text_encoding;
+  }
+
+  if (m_settings.contains(settings_keys::filterFrameWidthKey)) {
+    QList<int> szs;
+    int len = m_settings.beginReadArray(settings_keys::filterFrameWidthKey);
+    for (int i = 0; i < len; ++i) {
+      m_settings.setArrayIndex(i);
+      szs << m_settings.value("i").toInt();
+    }
+    m_settings.endArray();
+    qDebug() << "read splitter sizes" << szs.size();
+    ui->splitter->setSizes(szs);
   }
 
   // ui settings
@@ -142,6 +155,16 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
   saveFiltersSettings();
+
+  auto szs = ui->splitter->sizes();
+  qDebug() << "save splitter sizes" << szs.size();
+  m_settings.beginWriteArray(settings_keys::filterFrameWidthKey);
+  int i = 0;
+  for (auto s : szs) {
+    m_settings.setArrayIndex(i++);
+    m_settings.setValue("i", s);
+  }
+  m_settings.endArray();
 
   delete ui;
   delete m_timer;
