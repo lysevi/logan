@@ -30,7 +30,8 @@ SOURCES += \
     highlighteditdialog.cpp \
     highlightmodel.cpp \
     filter.cpp \
-    pattern.cpp
+    pattern.cpp \
+    timeeditform.cpp
 
 HEADERS += \
         mainwindow.h \
@@ -44,7 +45,8 @@ HEADERS += \
     highlightmodel.h \
     filter.h \
     common_re.h \
-    pattern.h
+    pattern.h \
+    timeeditform.h
 
 
 FORMS += \
@@ -52,7 +54,8 @@ FORMS += \
         timer_setup.ui \
     logviewer.ui \
     textcodecselectiondialog.ui \
-    highlighteditdialog.ui
+    highlighteditdialog.ui \
+    timeeditform.ui
 
 RESOURCES += \
     resources.qrc

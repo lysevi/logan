@@ -3,6 +3,7 @@
 #include "controller.h"
 #include "logviewer.h"
 #include "timerform.h"
+#include "timeeditform.h"
 #include <QAction>
 #include <QMainWindow>
 #include <QMenu>
@@ -107,4 +108,6 @@ private:
 
   QList<StringFilterDescription> m_filters;
   std::shared_ptr<QStandardItemModel> m_filter_model;
+
+  TimeEditForm *fromTimeEdit, *toTimeEdit;
 };

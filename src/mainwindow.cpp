@@ -3,6 +3,7 @@
 #include "logviewer.h"
 #include "pattern.h"
 #include "textcodecselectiondialog.h"
+#include "timeeditform.h"
 #include "ui_mainwindow.h"
 #include <QAbstractItemView>
 #include <QDebug>
@@ -95,6 +96,24 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
 
+  // TODO move to methods
+  {
+    auto ly = ui->timeRangeGroupBox->layout();
+    auto oldFrom = ui->rangeFrom;
+    fromTimeEdit = new TimeEditForm(TIME_RANGE::MIN, ui->timeRangeGroupBox);
+    ly->replaceWidget(oldFrom, fromTimeEdit);
+    ui->rangeFrom = fromTimeEdit;
+    delete oldFrom;
+  }
+  {
+    auto ly = ui->timeRangeGroupBox->layout();
+    auto oldTo = ui->rangeTo;
+    toTimeEdit = new TimeEditForm(TIME_RANGE::MAX, ui->timeRangeGroupBox);
+    ly->replaceWidget(oldTo, toTimeEdit);
+    ui->rangeTo = toTimeEdit;
+    delete oldTo;
+  }
+
   // actions
   connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
   connect(ui->actionreolad_current, &QAction::triggered, this,
@@ -142,9 +161,10 @@ MainWindow::MainWindow(QWidget *parent)
 
   connect(ui->timeRangeGroupBox, &QGroupBox::toggled, this,
           &MainWindow::dateRangeChangedSlot);
-  connect(ui->rangeFrom, &QTimeEdit::timeChanged, this,
+  connect(fromTimeEdit, &TimeEditForm::timeChanged, this,
           &MainWindow::dateRangeChangedSlot);
-  connect(ui->rangeTo, &QTimeEdit::timeChanged, this, &MainWindow::dateRangeChangedSlot);
+  connect(toTimeEdit, &TimeEditForm::timeChanged, this,
+          &MainWindow::dateRangeChangedSlot);
 
   m_timer_widget->defaultState();
 
@@ -719,7 +739,7 @@ void MainWindow::resetFilter() {
 
     if (ui->timeRangeGroupBox->isChecked()) {
       auto timeFltr =
-          std::make_shared<DateRangeFilter>(ui->rangeFrom->time(), ui->rangeTo->time());
+          std::make_shared<DateRangeFilter>(fromTimeEdit->time(), toTimeEdit->time());
       fltr->addFilter(timeFltr);
       fltrs_count++;
     }
