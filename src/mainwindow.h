@@ -2,8 +2,8 @@
 
 #include "controller.h"
 #include "logviewer.h"
-#include "timerform.h"
 #include "timeeditform.h"
+#include "timerform.h"
 #include <QAction>
 #include <QMainWindow>
 #include <QMenu>
@@ -40,6 +40,8 @@ public:
   void loadHighlightFromSettings();
   void saveFiltersSettings();
   void loadFiltersFromSettings();
+  void saveLayoutSettings();
+  void loadLayoutSettings();
 
   void updateRecentFileMenu();
   void saveRecent();
@@ -48,6 +50,8 @@ public:
   void fillFilterModel();
   void disableFiltration();
   void resetFilter();
+
+  void replaceTimeRangeWidgets();
 public slots:
   // open,close,update
   void openFileSlot();
@@ -88,6 +92,7 @@ public slots:
 
   // statusbar
   void updateStatusBarInfoSlot();
+
 private:
   int _current_tab;
   Ui::MainWindow *ui;

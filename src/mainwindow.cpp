@@ -65,17 +65,7 @@ MainWindow::MainWindow(QWidget *parent)
     qDebug() << "default encoding:" << m_default_text_encoding;
   }
 
-  if (m_settings.contains(settings_keys::filterFrameWidthKey)) {
-    QList<int> szs;
-    int len = m_settings.beginReadArray(settings_keys::filterFrameWidthKey);
-    for (int i = 0; i < len; ++i) {
-      m_settings.setArrayIndex(i);
-      szs << m_settings.value("i").toInt();
-    }
-    m_settings.endArray();
-    qDebug() << "read splitter sizes" << szs.size();
-    ui->splitter->setSizes(szs);
-  }
+  loadLayoutSettings();
 
   // ui settings
   setWindowIcon(QIcon(":/icons/logan.svg"));
@@ -96,23 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
 
-  // TODO move to methods
-  {
-    auto ly = ui->timeRangeGroupBox->layout();
-    auto oldFrom = ui->rangeFrom;
-    fromTimeEdit = new TimeEditForm(TIME_RANGE::MIN, ui->timeRangeGroupBox);
-    ly->replaceWidget(oldFrom, fromTimeEdit);
-    ui->rangeFrom = fromTimeEdit;
-    delete oldFrom;
-  }
-  {
-    auto ly = ui->timeRangeGroupBox->layout();
-    auto oldTo = ui->rangeTo;
-    toTimeEdit = new TimeEditForm(TIME_RANGE::MAX, ui->timeRangeGroupBox);
-    ly->replaceWidget(oldTo, toTimeEdit);
-    ui->rangeTo = toTimeEdit;
-    delete oldTo;
-  }
+  replaceTimeRangeWidgets();
 
   // actions
   connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
@@ -175,20 +149,30 @@ MainWindow::MainWindow(QWidget *parent)
 
 MainWindow::~MainWindow() {
   saveFiltersSettings();
-
-  auto szs = ui->splitter->sizes();
-  qDebug() << "save splitter sizes" << szs.size();
-  m_settings.beginWriteArray(settings_keys::filterFrameWidthKey);
-  int i = 0;
-  for (auto s : szs) {
-    m_settings.setArrayIndex(i++);
-    m_settings.setValue("i", s);
-  }
-  m_settings.endArray();
+  saveLayoutSettings();
 
   delete ui;
   delete m_timer;
   delete m_controller;
+}
+
+void MainWindow::replaceTimeRangeWidgets() {
+  {
+    auto ly = ui->timeRangeGroupBox->layout();
+    auto oldFrom = ui->rangeFrom;
+    fromTimeEdit = new TimeEditForm(TIME_RANGE::MIN, ui->timeRangeGroupBox);
+    ly->replaceWidget(oldFrom, fromTimeEdit);
+    ui->rangeFrom = fromTimeEdit;
+    delete oldFrom;
+  }
+  {
+    auto ly = ui->timeRangeGroupBox->layout();
+    auto oldTo = ui->rangeTo;
+    toTimeEdit = new TimeEditForm(TIME_RANGE::MAX, ui->timeRangeGroupBox);
+    ly->replaceWidget(oldTo, toTimeEdit);
+    ui->rangeTo = toTimeEdit;
+    delete oldTo;
+  }
 }
 
 Log *MainWindow::getLog(int index) {
@@ -569,6 +553,32 @@ void MainWindow::loadFiltersFromSettings() {
     } else {
       throw std::logic_error("filters format error: " + jsonStr.toStdString());
     }
+  }
+}
+
+void MainWindow::saveLayoutSettings() {
+  auto szs = ui->splitter->sizes();
+  qDebug() << "save splitter sizes" << szs.size();
+  m_settings.beginWriteArray(settings_keys::filterFrameWidthKey);
+  int i = 0;
+  for (auto s : szs) {
+    m_settings.setArrayIndex(i++);
+    m_settings.setValue("i", s);
+  }
+  m_settings.endArray();
+}
+
+void MainWindow::loadLayoutSettings() {
+  if (m_settings.contains(settings_keys::filterFrameWidthKey)) {
+    QList<int> szs;
+    int len = m_settings.beginReadArray(settings_keys::filterFrameWidthKey);
+    for (int i = 0; i < len; ++i) {
+      m_settings.setArrayIndex(i);
+      szs << m_settings.value("i").toInt();
+    }
+    m_settings.endArray();
+    qDebug() << "read splitter sizes" << szs.size();
+    ui->splitter->setSizes(szs);
   }
 }
 
