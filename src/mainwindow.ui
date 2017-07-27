@@ -293,7 +293,7 @@
   </action>
   <action name="actionsearch_end">
    <property name="text">
-    <string>search end</string>
+    <string>Stop Search</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>

@@ -100,12 +100,13 @@ void Log::update() {
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
-    auto bts = inputFile.readAll();
+    auto bts = m_codec->toUnicode(std::move(inputFile.readAll()));
     auto lines = allLinePos(bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
-      auto old_size = m_lines.size();
-      // m_load_complete=false;
+      qDebug() << "diff " << diff;
+      //auto old_size = m_lines.size();
+      m_load_complete = false;
 
       m_bts = std::move(bts);
 
@@ -121,10 +122,13 @@ void Log::update() {
       if (_fltr != nullptr) {
         resetFilter(_fltr);
       } else {
-        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
-        endInsertRows();
+        beginResetModel();
+        endResetModel();
+        //        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size +
+        //        diff);
+        //        endInsertRows();
       }
-      emit m_lv_object->scrollToBottom();
+      // emit m_lv_object->scrollToBottom();
     }
 
     inputFile.close();
