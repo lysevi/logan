@@ -27,7 +27,9 @@ struct StringFilter : public Filter {
 };
 
 struct FilterUnion : public Filter {
-  FilterUnion();
+  enum class UnionKind { AND, OR };
+
+  FilterUnion(UnionKind uk);
 
   void addFilter(const Filter_Ptr &f);
   void clearFilters();
@@ -35,6 +37,7 @@ struct FilterUnion : public Filter {
   bool inFilter(const QString &line) override;
   size_t filters() const override { return _filters.size(); }
   std::list<Filter_Ptr> _filters;
+  UnionKind _uk;
 };
 
 struct DateRangeFilter : public Filter {

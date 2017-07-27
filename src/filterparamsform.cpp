@@ -77,7 +77,7 @@ void FilterParamsForm::update() {
 }
 
 Filter_Ptr FilterParamsForm::Filter() const {
-  auto fltr = std::make_shared<FilterUnion>();
+  auto fltr = std::make_shared<FilterUnion>(FilterUnion::UnionKind::AND);
 
   if (ui->timeRangeGroupBox->isChecked()) {
     auto timeFltr =
@@ -85,11 +85,20 @@ Filter_Ptr FilterParamsForm::Filter() const {
     fltr->addFilter(timeFltr);
   }
 
-  for (const auto &s : m_filters) {
-    qDebug() << s.pattern << " => " << s.is_enabled;
-    if (s.is_enabled) {
-      fltr->addFilter(std::make_shared<StringFilter>(s.pattern));
+  if (!m_filters.empty()) {
+    auto combination = ui->AndRadioButton->isChecked() ? FilterUnion::UnionKind::AND
+                                                       : FilterUnion::UnionKind::OR;
+    qDebug() << "string filters combination: "
+             << (combination == FilterUnion::UnionKind::AND ? "And" : "Or");
+
+    auto str_fltr = std::make_shared<FilterUnion>(combination);
+    for (const auto &s : m_filters) {
+      qDebug() << s.pattern << " => " << s.is_enabled;
+      if (s.is_enabled) {
+        str_fltr->addFilter(std::make_shared<StringFilter>(s.pattern));
+      }
     }
+    fltr->addFilter(str_fltr);
   }
 
   return fltr;

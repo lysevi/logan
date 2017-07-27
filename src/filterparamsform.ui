@@ -35,7 +35,7 @@
      <property name="frameShadow">
       <enum>QFrame::Raised</enum>
      </property>
-     <layout class="QVBoxLayout" name="verticalLayout_3">
+     <layout class="QVBoxLayout" name="verticalLayout_4">
       <item>
        <widget class="QGroupBox" name="timeRangeGroupBox">
         <property name="sizePolicy">
@@ -73,6 +73,32 @@
          </item>
          <item row="1" column="1">
           <widget class="QWidget" name="rangeTo" native="true"/>
+         </item>
+        </layout>
+       </widget>
+      </item>
+      <item>
+       <widget class="QGroupBox" name="groupBox">
+        <property name="title">
+         <string>Filter combination kind</string>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QRadioButton" name="AndRadioButton">
+           <property name="text">
+            <string>And</string>
+           </property>
+           <property name="checked">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QRadioButton" name="OrradioButtn">
+           <property name="text">
+            <string>Or</string>
+           </property>
+          </widget>
          </item>
         </layout>
        </widget>
