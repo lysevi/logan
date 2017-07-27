@@ -120,9 +120,10 @@
     </property>
     <addaction name="actionfont_selection"/>
     <addaction name="actionselect_text_encoding"/>
-    <addaction name="actionclearSettings"/>
     <addaction name="separator"/>
     <addaction name="actionHighlights"/>
+    <addaction name="separator"/>
+    <addaction name="actionclearSettings"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">

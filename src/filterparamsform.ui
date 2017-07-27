@@ -119,7 +119,7 @@
            </sizepolicy>
           </property>
           <property name="text">
-           <string>Remove</string>
+           <string>Remove selected</string>
           </property>
          </widget>
         </item>
