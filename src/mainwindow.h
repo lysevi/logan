@@ -13,7 +13,6 @@
 #include <QStringList>
 #include <QTabWidget>
 #include <QTimer>
-#include <memory>
 
 namespace Ui {
 class MainWindow;

@@ -19,10 +19,10 @@ const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)) {
+    : QMainWindow(parent), ui(new Ui::MainWindow), _settings(new Settings(this)),
+      m_timer(new QTimer(this)) {
   ui->setupUi(this);
 
-  _settings = std::make_unique<Settings>(this);
   _recent_menu_addeded = false;
   _current_tab = 0;
   m_timer->setInterval(0);
