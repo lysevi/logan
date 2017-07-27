@@ -31,10 +31,36 @@ const QString filterFrameWidthKey = "filterFrameWidthKey";
 const int RecentFiles_Max = 10;
 using RecentFiles = QVector<QString>;
 
+class MainWindow;
+struct Settings {
+  Settings(MainWindow *window);
+
+  void load();
+  void save();
+
+  void saveFont();
+
+  void saveHighlight();
+  void loadHighlight();
+
+  void saveFilters();
+  void loadFilters();
+
+  void saveLayout();
+  void loadLayout();
+
+  void saveRecent();
+  void loadRecent();
+
+  MainWindow *_mainWindow;
+  QSettings m_settings, m_highlight_settings, m_recent_files_settings, m_filters_settings;
+};
+
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
 public:
+  friend class Settings;
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
   void openFile(const QString &fname);
@@ -42,21 +68,10 @@ public:
   LogViewer *getViewer(int index);
 
   void connect_signals();
-  void settingsLoad();
-  void settingsSave();
-  void settingsSaveFontSetting();
-  void saveHighlightFromSettings();
-  void loadHighlightFromSettings();
-  void saveFiltersSettings();
-  void loadFiltersFromSettings();
-  void saveLayoutSettings();
-  void loadLayoutSettings();
 
   void endSearching();
 
   void updateRecentFileMenu();
-  void saveRecent();
-  void loadRecent();
 
   void fillFilterModel();
   void disableFiltration();
@@ -103,12 +118,13 @@ public slots:
 private:
   int _current_tab;
   Ui::MainWindow *ui;
+  std::unique_ptr<Settings> _settings;
   QTabWidget *m_tabbar;
   Controller *m_controller;
   TimerForm *m_timer_widget;
   QTimer *m_timer;
   bool m_autoscroll_enabled;
-  QSettings m_settings, m_highlight_settings, m_recent_files_settings, m_filters_settings;
+
   QFont m_defaultFont;
   QString m_default_text_encoding;
 

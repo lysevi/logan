@@ -1,50 +1,57 @@
 #include "mainwindow.h"
-#include "ui_mainwindow.h"
 #include "textcodecselectiondialog.h"
+#include "ui_mainwindow.h"
 #include <QJsonArray>
 #include <QJsonDocument>
 #include <QJsonObject>
 
+Settings::Settings(MainWindow *window)
+    : m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
+      m_recent_files_settings("lysevi", "logan_highlights"),
+      m_filters_settings("lysevi", "logan_filters") {
+  _mainWindow = window;
+}
 
-
-void MainWindow::settingsLoad() {
-  qDebug() << "MainWindow::settingsLoad()";
+void Settings::load() {
+  qDebug() << "Settings::settingsLoad()";
   // read settings
-  m_defaultFont = this->font();
+  loadHighlight();
+  _mainWindow->m_defaultFont = _mainWindow->font();
   if (m_settings.contains(settings_keys::fontKey)) {
     QString fontName = m_settings.value(settings_keys::fontKey).toString();
-    m_defaultFont.fromString(fontName);
+    _mainWindow->m_defaultFont.fromString(fontName);
     qDebug() << "defaul font is " << fontName;
   }
 
   if (m_settings.contains(settings_keys::showToolbarKey)) {
     bool value = m_settings.value(settings_keys::showToolbarKey).toBool();
-    ui->mainToolBar->setVisible(value);
-    ui->actionshow_toolbar->setChecked(value);
+    _mainWindow->ui->mainToolBar->setVisible(value);
+    _mainWindow->ui->actionshow_toolbar->setChecked(value);
   }
 
-  m_default_text_encoding = defaultTextEncoding;
+  _mainWindow->m_default_text_encoding = defaultTextEncoding;
   if (m_settings.contains(settings_keys::defaultEncodingKey)) {
     auto value = m_settings.value(settings_keys::defaultEncodingKey).toString();
-    m_default_text_encoding = value;
-    qDebug() << "default encoding:" << m_default_text_encoding;
+    _mainWindow->m_default_text_encoding = value;
+    qDebug() << "default encoding:" << _mainWindow->m_default_text_encoding;
   }
 
-  loadLayoutSettings();
+  loadLayout();
   loadRecent();
-  loadFiltersFromSettings();
+  loadFilters();
 }
 
-void MainWindow::settingsSave() {
-  qDebug() << "MainWindow::settingsSave()";
-  saveFiltersSettings();
-  saveLayoutSettings();
+void Settings::save() {
+  qDebug() << "Settings::settingsSave()";
+  saveFilters();
+  saveLayout();
+  saveRecent();
 }
 
-void MainWindow::saveHighlightFromSettings() {
+void Settings::saveHighlight() {
   QJsonObject json;
   QJsonArray values;
-  auto patterns = m_controller->m_global_highlight.values();
+  auto patterns = _mainWindow->m_controller->m_global_highlight.values();
   for (auto v : patterns) {
     QJsonObject js_v;
     js_v["pattern"] = v.pattern;
@@ -58,11 +65,11 @@ void MainWindow::saveHighlightFromSettings() {
   qDebug() << ">>> " << strJson;
 }
 
-void MainWindow::loadHighlightFromSettings() {
-  qDebug() << "MainWindow::loadHighlightFromSettings()";
+void Settings::loadHighlight() {
+  qDebug() << "Settings::loadHighlightFromSettings()";
 
   if (m_highlight_settings.contains(settings_keys::highlightKey)) {
-    m_controller->m_global_highlight.clear();
+    _mainWindow->m_controller->m_global_highlight.clear();
     QString jsonStr = m_highlight_settings.value(settings_keys::highlightKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
@@ -75,23 +82,23 @@ void MainWindow::loadHighlightFromSettings() {
           hp.pattern = p["pattern"].toString();
           hp.rgb = p["rgb"].toString();
           qDebug() << ">> " << hp.pattern << ":" << hp.rgb;
-          m_controller->m_global_highlight.insert(hp.pattern, hp);
+          _mainWindow->m_controller->m_global_highlight.insert(hp.pattern, hp);
         }
       }
     } else {
       throw std::logic_error("highlights format error: " + jsonStr.toStdString());
     }
   } else {
-    m_controller->m_global_highlight = default_highlight_settings;
+    _mainWindow->m_controller->m_global_highlight = default_highlight_settings;
   }
 }
 
-void MainWindow::saveFiltersSettings() {
-  qDebug() << "MainWindow::saveFiltersSettings()";
+void Settings::saveFilters() {
+  qDebug() << "Settings::saveFiltersSettings()";
   QJsonObject json;
   QJsonArray values;
-  auto patterns = m_controller->m_global_highlight.values();
-  for (auto v : _filter_form->m_filters) {
+  auto patterns = _mainWindow->m_controller->m_global_highlight.values();
+  for (auto v : _mainWindow->_filter_form->m_filters) {
     QJsonObject js_v;
     js_v["pattern"] = v.pattern;
     js_v["enabled"] = v.is_enabled;
@@ -104,8 +111,8 @@ void MainWindow::saveFiltersSettings() {
   qDebug() << ">>> " << strJson;
 }
 
-void MainWindow::loadFiltersFromSettings() {
-  qDebug() << "MainWindow::loadFiltersFromSettings()";
+void Settings::loadFilters() {
+  qDebug() << "Settings::loadFiltersFromSettings()";
   if (m_filters_settings.contains(settings_keys::filtersKey)) {
     QString jsonStr = m_filters_settings.value(settings_keys::filtersKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
@@ -119,9 +126,9 @@ void MainWindow::loadFiltersFromSettings() {
           sfd.pattern = p["pattern"].toString();
           sfd.is_enabled = p["enabled"].toBool();
           qDebug() << ">> " << sfd.pattern << ":" << sfd.is_enabled;
-          _filter_form->m_filters << sfd;
+          _mainWindow->_filter_form->m_filters << sfd;
         }
-        _filter_form->update();
+        _mainWindow->_filter_form->update();
       }
     } else {
       throw std::logic_error("filters format error: " + jsonStr.toStdString());
@@ -129,8 +136,8 @@ void MainWindow::loadFiltersFromSettings() {
   }
 }
 
-void MainWindow::saveLayoutSettings() {
-  auto szs = ui->splitter->sizes();
+void Settings::saveLayout() {
+  auto szs = _mainWindow->ui->splitter->sizes();
   qDebug() << "save splitter sizes" << szs.size();
   m_settings.beginWriteArray(settings_keys::filterFrameWidthKey);
   int i = 0;
@@ -141,7 +148,7 @@ void MainWindow::saveLayoutSettings() {
   m_settings.endArray();
 }
 
-void MainWindow::loadLayoutSettings() {
+void Settings::loadLayout() {
   if (m_settings.contains(settings_keys::filterFrameWidthKey)) {
     QList<int> szs;
     int len = m_settings.beginReadArray(settings_keys::filterFrameWidthKey);
@@ -151,11 +158,44 @@ void MainWindow::loadLayoutSettings() {
     }
     m_settings.endArray();
     qDebug() << "read splitter sizes" << szs.size();
-    ui->splitter->setSizes(szs);
+    _mainWindow->ui->splitter->setSizes(szs);
   }
 }
 
-void MainWindow::settingsSaveFontSetting() {
-  m_settings.setValue(settings_keys::fontKey, m_defaultFont.toString());
-  qDebug() << "selected font: " << m_defaultFont.toString();
+void Settings::saveFont() {
+  m_settings.setValue(settings_keys::fontKey, _mainWindow->m_defaultFont.toString());
+  qDebug() << "selected font: " << _mainWindow->m_defaultFont.toString();
+}
+
+void Settings::saveRecent() {
+  qDebug() << "Settings::saveRecent()";
+  if (_mainWindow->_recent_files.size() > 0) {
+    m_recent_files_settings.beginWriteArray(settings_keys::recentFilesKey);
+    for (int i = 0; i < _mainWindow->_recent_files.size(); ++i) {
+      m_recent_files_settings.setArrayIndex(i);
+      auto fname = _mainWindow->_recent_files[i];
+      qDebug() << fname;
+      m_recent_files_settings.setValue("file", fname);
+    }
+    m_recent_files_settings.endArray();
+  }
+}
+
+void Settings::loadRecent() {
+  qDebug() << "Settings::loadRecent()";
+  int sz = m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
+  for (int i = 0; i < sz; ++i) {
+    m_recent_files_settings.setArrayIndex(i);
+    auto fname = m_recent_files_settings.value("file").toString();
+    QFileInfo check_file(fname);
+    qDebug() << fname;
+    if (check_file.exists() && check_file.isFile()) {
+      _mainWindow->_recent_files.append(fname);
+    } else {
+      qDebug() << fname << "not exists or not a file";
+    }
+  }
+  m_recent_files_settings.endArray();
+  _mainWindow->updateRecentFileMenu();
+  saveRecent();
 }

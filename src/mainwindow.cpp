@@ -19,15 +19,13 @@ const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
 
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
-      m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
-      m_recent_files_settings("lysevi", "logan_highlights"),
-      m_filters_settings("lysevi", "logan_filters"), _recent_files() {
+    : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)) {
+  ui->setupUi(this);
+
+  _settings = std::make_unique<Settings>(this);
   _recent_menu_addeded = false;
   _current_tab = 0;
   m_timer->setInterval(0);
-
-  ui->setupUi(this);
 
   ui->searchFrame->setVisible(false);
 
@@ -42,7 +40,7 @@ MainWindow::MainWindow(QWidget *parent)
   setAutoFillBackground(true);
 
   m_controller = new Controller(this);
-  loadHighlightFromSettings();
+
   setWindowTitle(logan_version);
   m_tabbar = new QTabWidget(ui->centralWidget);
   m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
@@ -57,12 +55,12 @@ MainWindow::MainWindow(QWidget *parent)
   connect_signals();
   m_timer_widget->defaultState();
 
-  settingsLoad();
+  _settings->load();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
 }
 
 MainWindow::~MainWindow() {
-  settingsSave();
+  _settings->save();
 
   delete ui;
   delete m_timer;
@@ -96,11 +94,10 @@ void MainWindow::openFontDlgSlot() {
   } else {
 
     m_defaultFont = fdlg.selectedFont();
-    settingsSaveFontSetting();
+    _settings->saveFont();
     // setFont(QFont(fdlg.selectedFont().toString()));
   }
 }
-
 
 void MainWindow::openFile(const QString &fname) {
   qDebug() << "openFile()" << fname;
@@ -138,7 +135,7 @@ void MainWindow::openFile(const QString &fname) {
       _recent_files.remove(0);
     }
   }
-  saveRecent();
+  _settings->saveRecent();
   updateRecentFileMenu();
 }
 
@@ -168,14 +165,14 @@ void MainWindow::clearSettingsSlot() {
   int ret = msgBox.exec();
   if (ret == QMessageBox::Yes) {
     qDebug() << "clear settings...";
-    m_settings.clear();
+    _settings->m_settings.clear();
   }
 }
 
 void MainWindow::showToolbarSlot() {
   bool value = ui->actionshow_toolbar->isChecked();
   qDebug() << "showToolbarSlot()" << value;
-  m_settings.setValue(settings_keys::showToolbarKey, value);
+  _settings->m_settings.setValue(settings_keys::showToolbarKey, value);
   ui->mainToolBar->setVisible(value);
 }
 
@@ -275,7 +272,7 @@ void MainWindow::selectTextEncodingSlot() {
   if (ret) {
     auto encoding = dlg.selectedEncoding();
     qDebug() << "selected encoding:" << encoding;
-    m_settings.setValue(settings_keys::defaultEncodingKey, encoding);
+    _settings->m_settings.setValue(settings_keys::defaultEncodingKey, encoding);
     m_default_text_encoding = encoding;
   }
 }
@@ -356,7 +353,7 @@ void MainWindow::openHighlightDlg() {
       qDebug() << v.pattern << "=>" << v.rgb;
     }
 
-    saveHighlightFromSettings();
+    _settings->saveHighlight();
 
     m_controller->updateAllSlot("null");
   }
@@ -413,36 +410,6 @@ void MainWindow::updateRecentFileMenu() {
       i++;
     }
   }
-}
-
-void MainWindow::saveRecent() {
-  qDebug() << "MainWindow::saveRecent()";
-  if (_recent_files.size() > 0) {
-    m_recent_files_settings.beginWriteArray(settings_keys::recentFilesKey);
-    for (int i = 0; i < _recent_files.size(); ++i) {
-      m_recent_files_settings.setArrayIndex(i);
-      m_recent_files_settings.setValue("file", _recent_files[i]);
-    }
-    m_recent_files_settings.endArray();
-  }
-}
-
-void MainWindow::loadRecent() {
-  qDebug() << "MainWindow::loadRecent()";
-  int sz = m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
-  for (int i = 0; i < sz; ++i) {
-    m_recent_files_settings.setArrayIndex(i);
-    auto fname = m_recent_files_settings.value("file").toString();
-    QFileInfo check_file(fname);
-    if (check_file.exists() && check_file.isFile()) {
-      _recent_files.append(fname);
-    } else {
-      qDebug() << fname << "not exists or not a file";
-    }
-  }
-  m_recent_files_settings.endArray();
-  updateRecentFileMenu();
-  saveRecent();
 }
 
 void MainWindow::disableFiltration() {
