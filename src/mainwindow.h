@@ -1,6 +1,7 @@
 #pragma once
 
 #include "controller.h"
+#include "filterparamsform.h"
 #include "logviewer.h"
 #include "timeeditform.h"
 #include "timerform.h"
@@ -16,11 +17,6 @@
 namespace Ui {
 class MainWindow;
 }
-
-struct StringFilterDescription {
-  bool is_enabled;
-  QString pattern;
-};
 
 const int RecentFiles_Max = 10;
 using RecentFiles = QVector<QString>;
@@ -51,7 +47,6 @@ public:
   void disableFiltration();
   void resetFilter();
 
-  void replaceTimeRangeWidgets();
 public slots:
   // open,close,update
   void openFileSlot();
@@ -85,13 +80,10 @@ public slots:
 
   // filtration
   void showFltrPanelSlot();
-  void addFltrSlot();
-  void rmSelectedFiltrSlot();
-  void fltrItemChangedSlot(QStandardItem *item);
-  void dateRangeChangedSlot();
 
   // statusbar
   void updateStatusBarInfoSlot();
+  void filterApplySlot();
 
 private:
   int _current_tab;
@@ -112,8 +104,5 @@ private:
   QMenu _recentFile_Menu;
   QVector<std::shared_ptr<QAction>> _recentFile_Actions;
 
-  QList<StringFilterDescription> m_filters;
-  std::shared_ptr<QStandardItemModel> m_filter_model;
-
-  TimeEditForm *fromTimeEdit, *toTimeEdit;
+  FilterParamsForm *_filter_form;
 };

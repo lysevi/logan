@@ -33,8 +33,7 @@ const QString logan_version = "Logan - " + version;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), m_timer(new QTimer(this)),
-      m_settings("lysevi", "logan"),
-      m_highlight_settings("lysevi", "logan_highlights"),
+      m_settings("lysevi", "logan"), m_highlight_settings("lysevi", "logan_highlights"),
       m_recent_files_settings("lysevi", "logan_highlights"),
       m_filters_settings("lysevi", "logan_filters"), _recent_files() {
   _recent_menu_addeded = false;
@@ -44,7 +43,6 @@ MainWindow::MainWindow(QWidget *parent)
   ui->setupUi(this);
 
   ui->searchFrame->setVisible(false);
-  ui->fltrFrame->setVisible(false);
 
   // read settings
   m_defaultFont = this->font();
@@ -83,13 +81,14 @@ MainWindow::MainWindow(QWidget *parent)
   loadHighlightFromSettings();
   setWindowTitle(logan_version);
   m_tabbar = new QTabWidget(ui->centralWidget);
-  m_tabbar->setSizePolicy(
-      QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
+  m_tabbar->setSizePolicy(QSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding));
   ui->gridLayout->addWidget(m_tabbar);
 
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
 
-  replaceTimeRangeWidgets();
+  _filter_form = new FilterParamsForm(this);
+  _filter_form->setVisible(false);
+  ui->splitter->insertWidget(0, _filter_form);
 
   // actions
   connect(ui->actionOpen, &QAction::triggered, this, &MainWindow::openFileSlot);
@@ -107,12 +106,9 @@ MainWindow::MainWindow(QWidget *parent)
           &MainWindow::showToolbarSlot);
   connect(ui->actionselect_text_encoding, &QAction::triggered, this,
           &MainWindow::selectTextEncodingSlot);
-  connect(ui->actionFind, &QAction::triggered, this,
-          &MainWindow::showSearchPanelSlot);
-  connect(ui->actionsearch_end, &QAction::triggered, this,
-          &MainWindow::searchEndSlot);
-  connect(ui->actionHighlights, &QAction::triggered, this,
-          &MainWindow::openHighlightDlg);
+  connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
+  connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
+  connect(ui->actionHighlights, &QAction::triggered, this, &MainWindow::openHighlightDlg);
 
   // timer
   connect(m_timer_widget, &TimerForm::timerParamChangedSignal, this,
@@ -135,17 +131,8 @@ MainWindow::MainWindow(QWidget *parent)
   // fltr
   connect(ui->actionEnable_filtration, &QAction::triggered, this,
           &MainWindow::showFltrPanelSlot);
-  connect(ui->addFltrButton, &QPushButton::clicked, this,
-          &MainWindow::addFltrSlot);
-  connect(ui->rmFltrButton, &QPushButton::clicked, this,
-          &MainWindow::rmSelectedFiltrSlot);
-
-  connect(ui->timeRangeGroupBox, &QGroupBox::toggled, this,
-          &MainWindow::dateRangeChangedSlot);
-  connect(fromTimeEdit, &TimeEditForm::timeChanged, this,
-          &MainWindow::dateRangeChangedSlot);
-  connect(toTimeEdit, &TimeEditForm::timeChanged, this,
-          &MainWindow::dateRangeChangedSlot);
+  connect(_filter_form, &FilterParamsForm::filterApply, this,
+          &MainWindow::filterApplySlot);
 
   m_timer_widget->defaultState();
 
@@ -161,25 +148,6 @@ MainWindow::~MainWindow() {
   delete ui;
   delete m_timer;
   delete m_controller;
-}
-
-void MainWindow::replaceTimeRangeWidgets() {
-  {
-    auto ly = ui->timeRangeGroupBox->layout();
-    auto oldFrom = ui->rangeFrom;
-    fromTimeEdit = new TimeEditForm(TIME_RANGE::MIN, ui->timeRangeGroupBox);
-    ly->replaceWidget(oldFrom, fromTimeEdit);
-    ui->rangeFrom = fromTimeEdit;
-    delete oldFrom;
-  }
-  {
-    auto ly = ui->timeRangeGroupBox->layout();
-    auto oldTo = ui->rangeTo;
-    toTimeEdit = new TimeEditForm(TIME_RANGE::MAX, ui->timeRangeGroupBox);
-    ly->replaceWidget(oldTo, toTimeEdit);
-    ui->rangeTo = toTimeEdit;
-    delete oldTo;
-  }
 }
 
 Log *MainWindow::getLog(int index) {
@@ -225,8 +193,7 @@ void MainWindow::openFile(const QString &fname) {
   auto lb = new LogViewer(m_defaultFont, m_tabbar);
   lb->setModel(log);
   lb->setAutoScroll(m_autoscroll_enabled);
-  connect(lb, &LogViewer::selectNewRow, this,
-          &MainWindow::updateStatusBarInfoSlot);
+  connect(lb, &LogViewer::selectNewRow, this, &MainWindow::updateStatusBarInfoSlot);
   auto index = m_tabbar->addTab(lb, log->filename());
   m_tabbar->setCurrentIndex(index);
 
@@ -320,8 +287,7 @@ void MainWindow::closeCurentSlot() {
 }
 
 void MainWindow::autoscrollChangedSlot() {
-  qDebug() << "autoscrollChangedSlot()"
-           << ui->actionautoscroll_enabled->isChecked();
+  qDebug() << "autoscrollChangedSlot()" << ui->actionautoscroll_enabled->isChecked();
   m_autoscroll_enabled = ui->actionautoscroll_enabled->isChecked();
 
   for (int i = 0; i < m_tabbar->count(); ++i) {
@@ -334,8 +300,7 @@ void MainWindow::timerIntervalChangedSlot(int v) {
   qDebug() << "MainWindow::timerIntervalChangedSlot()" << v;
   m_timer->setInterval(v * 1000);
 
-  qDebug() << "interval: " << m_timer->interval()
-           << "isActive:" << m_timer->isActive();
+  qDebug() << "interval: " << m_timer->interval() << "isActive:" << m_timer->isActive();
 }
 
 void MainWindow::reloadAllSlot() {
@@ -458,7 +423,7 @@ void MainWindow::searchEndSlot() {
   if (ui->searchFrame->isVisible()) {
     ui->actionFind->trigger();
   }
-  if (ui->fltrFrame->isVisible()) {
+  if (_filter_form->isVisible()) {
     ui->actionEnable_filtration->trigger();
   }
 }
@@ -501,8 +466,7 @@ void MainWindow::loadHighlightFromSettings() {
 
   if (m_highlight_settings.contains(settings_keys::highlightKey)) {
     m_controller->m_global_highlight.clear();
-    QString jsonStr =
-        m_highlight_settings.value(settings_keys::highlightKey).toString();
+    QString jsonStr = m_highlight_settings.value(settings_keys::highlightKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -518,8 +482,7 @@ void MainWindow::loadHighlightFromSettings() {
         }
       }
     } else {
-      throw std::logic_error("highlights format error: " +
-                             jsonStr.toStdString());
+      throw std::logic_error("highlights format error: " + jsonStr.toStdString());
     }
   } else {
     m_controller->m_global_highlight = default_highlight_settings;
@@ -531,7 +494,7 @@ void MainWindow::saveFiltersSettings() {
   QJsonObject json;
   QJsonArray values;
   auto patterns = m_controller->m_global_highlight.values();
-  for (auto v : m_filters) {
+  for (auto v : _filter_form->m_filters) {
     QJsonObject js_v;
     js_v["pattern"] = v.pattern;
     js_v["enabled"] = v.is_enabled;
@@ -547,8 +510,7 @@ void MainWindow::saveFiltersSettings() {
 void MainWindow::loadFiltersFromSettings() {
   qDebug() << "MainWindow::loadFiltersFromSettings()";
   if (m_filters_settings.contains(settings_keys::filtersKey)) {
-    QString jsonStr =
-        m_filters_settings.value(settings_keys::filtersKey).toString();
+    QString jsonStr = m_filters_settings.value(settings_keys::filtersKey).toString();
     QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
     if (!doc.isNull()) {
       if (doc.isObject()) {
@@ -560,8 +522,9 @@ void MainWindow::loadFiltersFromSettings() {
           sfd.pattern = p["pattern"].toString();
           sfd.is_enabled = p["enabled"].toBool();
           qDebug() << ">> " << sfd.pattern << ":" << sfd.is_enabled;
-          m_filters << sfd;
+          _filter_form->m_filters << sfd;
         }
+        _filter_form->update();
       }
     } else {
       throw std::logic_error("filters format error: " + jsonStr.toStdString());
@@ -662,8 +625,7 @@ void MainWindow::saveRecent() {
 
 void MainWindow::loadRecent() {
   qDebug() << "MainWindow::loadRecent()";
-  int sz =
-      m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
+  int sz = m_recent_files_settings.beginReadArray(settings_keys::recentFilesKey);
   for (int i = 0; i < sz; ++i) {
     m_recent_files_settings.setArrayIndex(i);
     auto fname = m_recent_files_settings.value("file").toString();
@@ -688,76 +650,18 @@ void MainWindow::disableFiltration() {
 
 void MainWindow::showFltrPanelSlot() {
   qDebug() << "MainWindow::showFltrPanelSlot()";
-  bool isFltrVisible = ui->fltrFrame->isVisible();
+  bool isFltrVisible = _filter_form->isVisible();
   if (!isFltrVisible) {
-    ui->fltrFrame->setVisible(true);
-    ui->fltrEdit->setFocus();
-    ui->timeRangeGroupBox->setChecked(false);
-    fillFilterModel();
-    resetFilter();
+    _filter_form->setVisible(true);
   } else {
-    ui->fltrFrame->setVisible(false);
+    _filter_form->setVisible(false);
     disableFiltration();
   }
   updateStatusBarInfoSlot();
 }
 
-void MainWindow::addFltrSlot() {
-  qDebug() << "MainWindow::addFltrSlot()";
-  auto text = ui->fltrEdit->text();
-  if (text.trimmed() != "") {
-    m_filters << StringFilterDescription{true, text.trimmed()};
-    fillFilterModel();
-
-    resetFilter();
-  }
-  ui->fltrEdit->clear();
-}
-
-void MainWindow::rmSelectedFiltrSlot() {
-  qDebug() << "MainWindow::rmSelectedFiltrSlot()";
-  auto selectedIndexes = ui->filtrListView->selectionModel()->selectedIndexes();
-  if (selectedIndexes.size() > 0) {
-    m_filters.removeAt(selectedIndexes.front().row());
-    fillFilterModel();
-    resetFilter();
-  }
-}
-
-void MainWindow::dateRangeChangedSlot() {
-  qDebug() << "MainWindow::dateRangeChangedSlot()";
-  resetFilter();
-}
-
-void MainWindow::fillFilterModel() {
-  if (m_filter_model != nullptr) {
-    for (int i = 0; i < m_filter_model->rowCount(); ++i) {
-      delete m_filter_model->item(i);
-    }
-    m_filter_model->clear();
-  }
-  m_filter_model = std::make_shared<QStandardItemModel>(ui->filtrListView);
-  ui->filtrListView->setModel(m_filter_model.get());
-  int row = 0;
-  for (auto fltr : m_filters) {
-    QStandardItem *item = new QStandardItem(fltr.pattern);
-    item->setCheckable(true);
-    auto state = fltr.is_enabled ? Qt::Checked : Qt::Unchecked;
-    item->setCheckState(state);
-    item->setData(state, Qt::CheckStateRole);
-    m_filter_model->setItem(row++, item);
-  }
-  connect(m_filter_model.get(), &QStandardItemModel::itemChanged, this,
-          &MainWindow::fltrItemChangedSlot);
-}
-
-void MainWindow::fltrItemChangedSlot(QStandardItem *item) {
-  for (auto &v : m_filters) {
-    if (v.pattern.trimmed() == item->text().trimmed()) {
-      v.is_enabled = item->checkState() == Qt::Checked;
-      qDebug() << v.pattern << " => " << v.is_enabled;
-    }
-  }
+void MainWindow::filterApplySlot() {
+  qDebug() << "MainWindow::filterApplySlot()";
   resetFilter();
 }
 
@@ -765,25 +669,10 @@ void MainWindow::resetFilter() {
   auto log = getLog(m_tabbar->currentIndex());
   if (log != nullptr) {
 
-    auto fltr = std::make_shared<FilterUnion>();
-    size_t fltrs_count = 0;
+    auto fltr = _filter_form->Filter();
+    int fltrs_count = fltr->filters();
 
-    if (ui->timeRangeGroupBox->isChecked()) {
-      auto timeFltr = std::make_shared<DateRangeFilter>(fromTimeEdit->time(),
-                                                        toTimeEdit->time());
-      fltr->addFilter(timeFltr);
-      fltrs_count++;
-    }
-
-    for (const auto &s : m_filters) {
-      qDebug() << s.pattern << " => " << s.is_enabled;
-      if (s.is_enabled) {
-        fltrs_count++;
-        fltr->addFilter(std::make_shared<StringFilter>(s.pattern));
-      }
-    }
-
-    if (fltrs_count == 0 || !ui->fltrFrame->isVisible()) {
+    if (fltrs_count == 0 || !_filter_form) {
       log->clearFilter();
       return;
     }
