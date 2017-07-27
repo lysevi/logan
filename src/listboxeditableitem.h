@@ -39,7 +39,7 @@ public:
 
   void setEditorData(QWidget *editor, const QModelIndex &index) const override {
     auto log = dynamic_cast<const Log *>(index.model());
-    auto value = log->plainText(index);
+    auto value = log->plainText(index).trimmed();
     static_cast<QTextEdit *>(editor)->setPlainText(value);
   }
   //    void setModelData(QWidget *editor, QAbstractItemModel *model,
