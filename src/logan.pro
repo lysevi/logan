@@ -32,7 +32,9 @@ SOURCES += \
     filter.cpp \
     pattern.cpp \
     timeeditform.cpp \
-    filterparamsform.cpp
+    filterparamsform.cpp \
+    mainwindow_connect.cpp \
+    maiwindow_settings.cpp
 
 HEADERS += \
         mainwindow.h \

@@ -18,6 +18,16 @@ namespace Ui {
 class MainWindow;
 }
 
+namespace settings_keys {
+const QString fontKey = "logFont";
+const QString showToolbarKey = "showToolBar";
+const QString defaultEncodingKey = "defaultEncoding";
+const QString highlightKey = "highlightKey";
+const QString recentFilesKey = "recentFilesKey";
+const QString filtersKey = "filtersKey";
+const QString filterFrameWidthKey = "filterFrameWidthKey";
+}
+
 const int RecentFiles_Max = 10;
 using RecentFiles = QVector<QString>;
 
@@ -30,14 +40,19 @@ public:
   void openFile(const QString &fname);
   Log *getLog(int index);
   LogViewer *getViewer(int index);
-  void endSearching();
 
+  void connect_signals();
+  void settingsLoad();
+  void settingsSave();
+  void settingsSaveFontSetting();
   void saveHighlightFromSettings();
   void loadHighlightFromSettings();
   void saveFiltersSettings();
   void loadFiltersFromSettings();
   void saveLayoutSettings();
   void loadLayoutSettings();
+
+  void endSearching();
 
   void updateRecentFileMenu();
   void saveRecent();

@@ -9,28 +9,51 @@
 #include <QScrollBar>
 #include <QTextCodec>
 
+const QChar LOG_ENDL(QChar::CarriageReturn);
+
 LinePositionList allLinePos(const QString &bts) {
 
   int count = 0;
   auto size = bts.size();
   for (int i = 0; i < size; ++i) {
-    if (bts[i] == QChar(QChar::CarriageReturn)) {
+    if (bts[i] == LOG_ENDL) {
       count++;
     }
   }
   LinePositionList result(count);
-  int start = 0;
-  int index = 0;
-  for (int i = 0; i < size; ++i) {
-    if (bts[i] == QChar(QChar::CarriageReturn)) {
-      LinePosition lp;
-      lp.first = start;
-      lp.second = i;
-      result[index++] = lp;
-      start = i + 1;
-    }
+  int start, index, i;
+  start = index = i = 0;
+
+  while ((i = bts.indexOf(LOG_ENDL, start)) != -1) {
+    LinePosition lp;
+    lp.first = start;
+    lp.second = i;
+    result[index++] = lp;
+    start = i + 1;
   }
   return result;
+}
+
+Log::Log(const QFileInfo &fileInfo, const QString &filename,
+         const HighlightPatterns *global_highlight, const QString &default_encoding,
+         QObject *parent)
+    : QAbstractItemModel(parent) {
+
+  m_default_encoding = default_encoding;
+  m_fileInfo = fileInfo;
+  m_lastModifed = m_fileInfo.lastModified();
+  m_name = m_fileInfo.fileName();
+  m_fname = filename;
+  m_global_highlight = global_highlight;
+  m_load_complete = false;
+  m_codec = QTextCodec::codecForName(m_default_encoding.toStdString().c_str());
+
+  if (m_codec == nullptr) {
+    throw std::logic_error("m_codec==nullptr");
+  }
+
+  loadFile();
+  qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
 }
 
 Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlight,
@@ -58,29 +81,6 @@ void Log::loadFile() {
   m_load_complete = true;
 }
 
-Log::Log(const QFileInfo &fileInfo, const QString &filename,
-         const HighlightPatterns *global_highlight, const QString &default_encoding,
-         QObject *parent)
-    : QAbstractItemModel(parent) {
-  m_default_encoding = default_encoding;
-  m_fileInfo = fileInfo;
-  m_lastModifed = m_fileInfo.lastModified();
-  m_name = m_fileInfo.fileName();
-  m_fname = filename;
-  m_global_highlight = global_highlight;
-  m_load_complete = false;
-  m_codec = QTextCodec::codecForName(m_default_encoding.toStdString().c_str());
-  if (m_codec == nullptr) {
-    throw std::logic_error("m_codec==nullptr");
-  }
-  loadFile();
-  //  auto idx = createIndex(-1, -1, nullptr);
-  //  while (canFetchMore(idx)) {
-  //    fetchMore(idx);
-  //  }
-  qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
-}
-
 QString Log::name() const {
   return m_name;
 }
@@ -94,11 +94,6 @@ void Log::update() {
   std::lock_guard<std::mutex> lg(_locker);
   QFileInfo fileInfo(m_fname);
 
-  //    if(fileInfo.lastModified()<=m_lastModifed){
-  //        qDebug()<<"nothing to read: curDt:"<<fileInfo.lastModified()<<"
-  //        myDt:"<<m_fileInfo.lastModified();
-  //        return;
-  //    }
   m_lastModifed = fileInfo.lastModified();
 
   qDebug() << "update " << m_fname;
@@ -111,7 +106,7 @@ void Log::update() {
     if (diff > 0) {
       auto old_size = m_lines.size();
       // m_load_complete=false;
-      // this->beginResetModel();
+
       m_bts = std::move(bts);
 
       m_lines = std::move(lines);
@@ -119,7 +114,6 @@ void Log::update() {
       m_cache.resize(m_lines.size());
 
       m_load_complete = true;
-      // this->endResetModel();
 
       emit countChanged(m_lines.size());
       emit linesChanged();
@@ -128,9 +122,6 @@ void Log::update() {
         resetFilter(_fltr);
       } else {
         beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size + diff);
-        //      for (auto &kv : local_res) {
-        //        m_cache.insert(std::make_pair(kv.first, kv.second));
-        //      }
         endInsertRows();
       }
       emit m_lv_object->scrollToBottom();
@@ -142,41 +133,6 @@ void Log::update() {
   }
 
   qDebug() << "update elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
-}
-
-std::shared_ptr<QString> Log::makeRawString(int row) const {
-  // qDebug() << "Log::makeRawString";
-  auto line_pos = m_lines[row];
-  int start = line_pos.first;
-  int i = line_pos.second;
-
-  int stringSize = int(i - start + 1);
-  std::shared_ptr<QString> result = std::make_shared<QString>(stringSize, ' ');
-
-  int insertPos = 0;
-  for (int pos = start; pos < i; ++pos) {
-    (*result)[insertPos++] = m_bts[pos];
-  }
-
-  return result;
-}
-
-void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
-  if (m_global_highlight == nullptr) {
-    throw std::logic_error("m_global_highlight==nullptr");
-  }
-  rawString->replace('<', "&lt;");
-  rawString->replace('>', "&gt;");
-  rawString->replace(' ', "&nbsp;"); // html eats white spaces
-  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
-    heighlightStr(rawString.get(), *it);
-  }
-}
-
-std::shared_ptr<QString> Log::makeString(int row) const {
-  auto result = makeRawString(row);
-  rawStringToValue(result);
-  return result;
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
@@ -233,20 +189,6 @@ QString Log::plainText(const QModelIndex &index) const {
   }
 }
 
-void Log::clearHightlight() {
-  //    m_load_complete=false;
-  //    this->beginResetModel();
-  //    QtConcurrent::blockingMap(m_buffer,[](CachedString&cs){
-  //        cs.Value=cs.originValue;
-  //    });
-  //    for(int k=0;k<m_buffer.size();++k){
-  //        auto mi=this->createIndex(k,0);
-  //        dataChanged(mi, mi);
-  //    }
-  //    m_load_complete=true;
-  //    this->endResetModel();
-}
-
 bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   if (pattern.pattern.size() == 0) {
     return false;
@@ -265,29 +207,6 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   }
 
   return result;
-}
-
-void Log::updateHeighlights(QVector<CachedString>::iterator /*begin*/,
-                            QVector<CachedString>::iterator /*end*/,
-                            const QString &pattern) {
-  if (pattern.size() == 0) {
-    return;
-  }
-  auto curDT = QDateTime::currentDateTimeUtc();
-
-  qDebug() << m_fname << "updateHeighlights elapsed time:"
-           << curDT.secsTo(QDateTime::currentDateTimeUtc());
-}
-
-void Log::updateHeighlights(const QString & /*pattern*/) {
-  // updateHeighlights(m_buffer.begin(), m_buffer.end(), pattern);
-}
-
-void Log::localHightlightPattern(const QString &pattern) {
-  if (pattern.size() == 0) {
-    return;
-  }
-  updateHeighlights(pattern);
 }
 
 void Log::setListVoxObject(QListView *object) {
@@ -370,4 +289,40 @@ void Log::clearFilter() {
     m_fltr_cache.resize(1);
     endResetModel();
   }
+}
+
+std::shared_ptr<QString> Log::makeRawString(int row) const {
+  // qDebug() << "Log::makeRawString";
+  auto line_pos = m_lines[row];
+  int start = line_pos.first;
+  int i = line_pos.second;
+
+  int stringSize = int(i - start + 1);
+  std::shared_ptr<QString> result = std::make_shared<QString>(stringSize, ' ');
+
+  int insertPos = 0;
+  for (int pos = start; pos < i; ++pos) {
+    (*result)[insertPos++] = m_bts[pos];
+  }
+
+  return result;
+}
+
+void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
+  if (m_global_highlight == nullptr) {
+    throw std::logic_error("m_global_highlight==nullptr");
+  }
+  rawString->replace('<', "&lt;");
+  rawString->replace('>', "&gt;");
+  rawString->replace(' ', "&nbsp;"); // html eats white spaces
+
+  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
+    heighlightStr(rawString.get(), *it);
+  }
+}
+
+std::shared_ptr<QString> Log::makeString(int row) const {
+  auto result = makeRawString(row);
+  rawStringToValue(result);
+  return result;
 }

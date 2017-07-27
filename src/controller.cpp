@@ -50,11 +50,4 @@ void Controller::addHighlightedTextSlot(const HighlightPattern &s) {
   qDebug() << "elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
-void Controller::clearHighlightedTextSlot() {
-  qDebug() << "clearHighlightedTextSlot";
-  m_global_highlight.clear();
-  for (auto log : m_logs) {
-    log->clearHightlight();
-  }
-}
 
