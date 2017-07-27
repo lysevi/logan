@@ -329,7 +329,6 @@ void MainWindow::currentTabChangedSlot() {
   log = getLog(i);
   setWindowTitle(logan_version + ": " + log->filename());
   _current_tab = i;
-  resetFilter();
 }
 
 void MainWindow::updateStatusBarInfoSlot() {

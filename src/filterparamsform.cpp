@@ -98,7 +98,10 @@ Filter_Ptr FilterParamsForm::Filter() const {
         str_fltr->addFilter(std::make_shared<StringFilter>(s.pattern));
       }
     }
-    fltr->addFilter(str_fltr);
+
+    if (str_fltr->filters() != 0) {
+      fltr->addFilter(str_fltr);
+    }
   }
 
   return fltr;
