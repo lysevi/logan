@@ -9,12 +9,12 @@
 #include <QScrollBar>
 #include <QTextCodec>
 
-LinePositionList allLinePos(const QByteArray &bts) {
+LinePositionList allLinePos(const QString &bts) {
 
   int count = 0;
   auto size = bts.size();
   for (int i = 0; i < size; ++i) {
-    if (bts[i] == '\n') {
+    if (bts[i] == QChar(QChar::CarriageReturn)) {
       count++;
     }
   }
@@ -22,7 +22,7 @@ LinePositionList allLinePos(const QByteArray &bts) {
   int start = 0;
   int index = 0;
   for (int i = 0; i < size; ++i) {
-    if (bts[i] == '\n') {
+    if (bts[i] == QChar(QChar::CarriageReturn)) {
       LinePosition lp;
       lp.first = start;
       lp.second = i;
@@ -46,7 +46,8 @@ void Log::loadFile() {
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
-    m_bts = std::move(inputFile.readAll());
+    m_bts = m_codec->toUnicode(std::move(inputFile.readAll()));
+    qDebug() << "string sz" << m_bts.size();
     m_lines = allLinePos(m_bts);
     m_cache.resize(m_lines.size());
     inputFile.close();
@@ -73,10 +74,10 @@ Log::Log(const QFileInfo &fileInfo, const QString &filename,
     throw std::logic_error("m_codec==nullptr");
   }
   loadFile();
-  auto idx = createIndex(-1, -1, nullptr);
-  while (canFetchMore(idx)) {
-    fetchMore(idx);
-  }
+  //  auto idx = createIndex(-1, -1, nullptr);
+  //  while (canFetchMore(idx)) {
+  //    fetchMore(idx);
+  //  }
   qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
 }
 
@@ -144,21 +145,19 @@ void Log::update() {
 }
 
 std::shared_ptr<QString> Log::makeRawString(int row) const {
-  //qDebug() << "Log::makeRawString";
+  // qDebug() << "Log::makeRawString";
   auto line_pos = m_lines[row];
   int start = line_pos.first;
   int i = line_pos.second;
 
   int stringSize = int(i - start + 1);
-  QByteArray localStr(stringSize, ' ');
+  std::shared_ptr<QString> result = std::make_shared<QString>(stringSize, ' ');
 
   int insertPos = 0;
   for (int pos = start; pos < i; ++pos) {
-    localStr[insertPos++] = m_bts[pos];
+    (*result)[insertPos++] = m_bts[pos];
   }
 
-  std::shared_ptr<QString> result =
-      std::make_shared<QString>(m_codec->toUnicode(localStr));
   return result;
 }
 
@@ -181,7 +180,7 @@ std::shared_ptr<QString> Log::makeString(int row) const {
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
-  //qDebug() << "Log::rowCount";
+  // qDebug() << "Log::rowCount";
   std::lock_guard<std::mutex> lg(_locker);
   Q_UNUSED(parent);
   if (!m_load_complete) {
@@ -204,7 +203,7 @@ QVariant Log::data(const QModelIndex &index, int role) const {
   if (index.row() < 0 || index.row() >= int(m_lines.size()))
     return QVariant();
   if (role == Qt::DisplayRole || role == Qt::EditRole) {
-    //qDebug() << "Log::data";
+    // qDebug() << "Log::data";
     std::lock_guard<std::mutex> lg(_locker);
     if (_fltr != nullptr) {
       return *m_fltr_cache[index.row()].Value;
