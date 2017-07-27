@@ -67,7 +67,9 @@ public:
 
   Qt::ItemFlags flags(const QModelIndex &index) const {
     Q_UNUSED(index)
-    return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    return  Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    //Qt::ItemIsEditable |
+    //TODO rm 'edit' from delegate.
   }
 
   QModelIndex index(int row, int column,
