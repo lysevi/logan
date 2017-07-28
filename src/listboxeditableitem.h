@@ -33,6 +33,7 @@ public:
     Q_UNUSED(option);
     QTextEdit *result = new QTextEdit(parent);
     result->setFont(m_default_font);
+    result->setReadOnly(true);
     // result->setText(index.data());
     return result;
   }
