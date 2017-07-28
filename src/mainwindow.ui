@@ -35,111 +35,6 @@
       <property name="orientation">
        <enum>Qt::Horizontal</enum>
       </property>
-      <widget class="QFrame" name="fltrFrame">
-       <property name="sizePolicy">
-        <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-         <horstretch>0</horstretch>
-         <verstretch>0</verstretch>
-        </sizepolicy>
-       </property>
-       <property name="frameShape">
-        <enum>QFrame::Box</enum>
-       </property>
-       <property name="frameShadow">
-        <enum>QFrame::Raised</enum>
-       </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
-        <item>
-         <widget class="QGroupBox" name="timeRangeGroupBox">
-          <property name="sizePolicy">
-           <sizepolicy hsizetype="Minimum" vsizetype="Minimum">
-            <horstretch>0</horstretch>
-            <verstretch>0</verstretch>
-           </sizepolicy>
-          </property>
-          <property name="title">
-           <string>Time range</string>
-          </property>
-          <property name="flat">
-           <bool>true</bool>
-          </property>
-          <property name="checkable">
-           <bool>true</bool>
-          </property>
-          <layout class="QFormLayout" name="formLayout">
-           <item row="0" column="0">
-            <widget class="QLabel" name="label_2">
-             <property name="text">
-              <string>From:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="0" column="1">
-            <widget class="QTimeEdit" name="rangeFrom"/>
-           </item>
-           <item row="1" column="0">
-            <widget class="QLabel" name="label_3">
-             <property name="text">
-              <string>To:</string>
-             </property>
-            </widget>
-           </item>
-           <item row="1" column="1">
-            <widget class="QTimeEdit" name="rangeTo"/>
-           </item>
-          </layout>
-         </widget>
-        </item>
-        <item>
-         <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_2">
-            <item>
-             <widget class="QLineEdit" name="fltrEdit">
-              <property name="sizePolicy">
-               <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-                <horstretch>0</horstretch>
-                <verstretch>0</verstretch>
-               </sizepolicy>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QPushButton" name="addFltrButton">
-              <property name="text">
-               <string>Add filter</string>
-              </property>
-             </widget>
-            </item>
-           </layout>
-          </item>
-          <item>
-           <widget class="QListView" name="filtrListView">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Expanding">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="rmFltrButton">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Remove</string>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-       </layout>
-      </widget>
       <widget class="QWidget" name="layoutWidget">
        <layout class="QVBoxLayout" name="logWithSearchLayout">
         <item>
@@ -225,9 +120,10 @@
     </property>
     <addaction name="actionfont_selection"/>
     <addaction name="actionselect_text_encoding"/>
-    <addaction name="actionclearSettings"/>
     <addaction name="separator"/>
     <addaction name="actionHighlights"/>
+    <addaction name="separator"/>
+    <addaction name="actionclearSettings"/>
    </widget>
    <widget class="QMenu" name="menuFile">
     <property name="title">
@@ -397,7 +293,7 @@
   </action>
   <action name="actionsearch_end">
    <property name="text">
-    <string>search end</string>
+    <string>Stop Search</string>
    </property>
    <property name="shortcut">
     <string>Esc</string>
@@ -406,11 +302,6 @@
   <action name="actionHighlights">
    <property name="text">
     <string>Highlights</string>
-   </property>
-  </action>
-  <action name="action_2">
-   <property name="text">
-    <string>Recent files</string>
    </property>
   </action>
   <action name="actionEnable_filtration">
@@ -460,22 +351,6 @@
     <hint type="destinationlabel">
      <x>646</x>
      <y>443</y>
-    </hint>
-   </hints>
-  </connection>
-  <connection>
-   <sender>fltrEdit</sender>
-   <signal>returnPressed()</signal>
-   <receiver>addFltrButton</receiver>
-   <slot>click()</slot>
-   <hints>
-    <hint type="sourcelabel">
-     <x>359</x>
-     <y>319</y>
-    </hint>
-    <hint type="destinationlabel">
-     <x>741</x>
-     <y>320</y>
     </hint>
    </hints>
   </connection>

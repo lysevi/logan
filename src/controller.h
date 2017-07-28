@@ -23,7 +23,6 @@ public slots:
 
   void closeFileSlot(const QString &fname);
   void addHighlightedTextSlot(const HighlightPattern &s);
-  void clearHighlightedTextSlot();
 };
 
 #endif // WINDOWCONTROLLER_H

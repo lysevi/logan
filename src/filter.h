@@ -8,6 +8,7 @@
 
 struct Filter {
   virtual bool inFilter(const QString &line) = 0;
+  virtual size_t filters() const { return size_t(1); }
   virtual ~Filter();
 };
 
@@ -26,13 +27,17 @@ struct StringFilter : public Filter {
 };
 
 struct FilterUnion : public Filter {
-  FilterUnion();
+  enum class UnionKind { AND, OR };
+
+  FilterUnion(UnionKind uk);
 
   void addFilter(const Filter_Ptr &f);
   void clearFilters();
 
   bool inFilter(const QString &line) override;
+  size_t filters() const override { return _filters.size(); }
   std::list<Filter_Ptr> _filters;
+  UnionKind _uk;
 };
 
 struct DateRangeFilter : public Filter {

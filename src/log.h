@@ -48,21 +48,28 @@ public:
   QString filename() const;
 
   void update();
+
+  //// QAbstractItemModel methods
   int rowCount(const QModelIndex &parent = QModelIndex()) const;
   QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const;
+
   bool setData(const QModelIndex &index, const QVariant &value, int role) {
     Q_UNUSED(index)
     Q_UNUSED(value)
     Q_UNUSED(role)
     return true;
   }
+
   int columnCount(const QModelIndex &parent = QModelIndex()) const override {
     Q_UNUSED(parent);
     return 1;
   }
+
   Qt::ItemFlags flags(const QModelIndex &index) const {
     Q_UNUSED(index)
-    return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    return  Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    //Qt::ItemIsEditable |
+    //TODO rm 'edit' from delegate.
   }
 
   QModelIndex index(int row, int column,
@@ -78,14 +85,11 @@ public:
     return QModelIndex();
   }
 
-  Q_INVOKABLE void clearHightlight();
-  Q_INVOKABLE void localHightlightPattern(const QString &pattern);
-  void updateHeighlights(QVector<CachedString>::iterator begin,
-                         QVector<CachedString>::iterator end, const QString &pattern);
-  void updateHeighlights(const QString &pattern);
+
+  //// Log methods
   static bool heighlightStr(QString *str, const HighlightPattern &pattern);
 
-  Q_INVOKABLE void setListVoxObject(QListView *object);
+  void setListVoxObject(QListView *object);
 
   QString plainText(const QModelIndex &index) const;
 
@@ -118,7 +122,7 @@ protected:
   QString m_fname;
 
   LinePositionList m_lines;
-  QByteArray m_bts;
+  QString m_bts;
   mutable QVector<CachedString> m_cache;
   const HighlightPatterns *m_global_highlight;
 

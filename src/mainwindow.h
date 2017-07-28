@@ -1,7 +1,9 @@
 #pragma once
 
 #include "controller.h"
+#include "filterparamsform.h"
 #include "logviewer.h"
+#include "timeeditform.h"
 #include "timerform.h"
 #include <QAction>
 #include <QMainWindow>
@@ -16,37 +18,66 @@ namespace Ui {
 class MainWindow;
 }
 
-struct StringFilterDescription {
-  bool is_enabled;
-  QString pattern;
-};
+namespace settings_keys {
+const QString fontKey = "logFont";
+const QString showToolbarKey = "showToolBar";
+const QString defaultEncodingKey = "defaultEncoding";
+const QString highlightKey = "highlightKey";
+const QString recentFilesKey = "recentFilesKey";
+const QString filtersKey = "filtersKey";
+const QString filterFrameWidthKey = "filterFrameWidthKey";
+}
 
 const int RecentFiles_Max = 10;
 using RecentFiles = QVector<QString>;
+
+class MainWindow;
+struct Settings {
+  Settings(MainWindow *window);
+
+  void load();
+  void save();
+
+  void saveFont();
+
+  void saveHighlight();
+  void loadHighlight();
+
+  void saveFilters();
+  void loadFilters();
+
+  void saveLayout();
+  void loadLayout();
+
+  void saveRecent();
+  void loadRecent();
+
+  MainWindow *_mainWindow;
+  QSettings m_settings, m_highlight_settings, m_recent_files_settings, m_filters_settings;
+};
 
 class MainWindow : public QMainWindow {
   Q_OBJECT
 
 public:
+  friend class Settings;
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
   void openFile(const QString &fname);
   Log *getLog(int index);
   LogViewer *getViewer(int index);
+
+  void connect_signals();
+
   void endSearching();
 
-  void saveHighlightFromSettings();
-  void loadHighlightFromSettings();
-  void saveFiltersSettings();
-  void loadFiltersFromSettings();
-
   void updateRecentFileMenu();
-  void saveRecent();
-  void loadRecent();
 
   void fillFilterModel();
   void disableFiltration();
   void resetFilter();
+
+  void showMessageAboutSettings();
 public slots:
   // open,close,update
   void openFileSlot();
@@ -80,31 +111,30 @@ public slots:
 
   // filtration
   void showFltrPanelSlot();
-  void addFltrSlot();
-  void rmSelectedFiltrSlot();
-  void fltrItemChangedSlot(QStandardItem *item);
-  void dateRangeChangedSlot();
 
   // statusbar
   void updateStatusBarInfoSlot();
+  void filterApplySlot();
+
 private:
   int _current_tab;
   Ui::MainWindow *ui;
+  std::unique_ptr<Settings> _settings;
   QTabWidget *m_tabbar;
   Controller *m_controller;
   TimerForm *m_timer_widget;
   QTimer *m_timer;
   bool m_autoscroll_enabled;
-  QSettings m_settings, m_highlight_settings, m_recent_files_settings, m_filters_settings;
+
   QFont m_defaultFont;
   QString m_default_text_encoding;
 
   int m_search_index = 0;
 
+  bool _recent_menu_addeded;
   RecentFiles _recent_files;
   QMenu _recentFile_Menu;
   QVector<std::shared_ptr<QAction>> _recentFile_Actions;
 
-  QList<StringFilterDescription> m_filters;
-  std::shared_ptr<QStandardItemModel> m_filter_model;
+  FilterParamsForm *_filter_form;
 };

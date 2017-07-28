@@ -14,7 +14,9 @@ bool StringFilter::inFilter(const QString &line) {
   return _re->indexIn(line.toUpper()) != -1;
 }
 
-FilterUnion::FilterUnion() {}
+FilterUnion::FilterUnion(UnionKind uk) {
+  _uk = uk;
+}
 
 void FilterUnion::addFilter(const Filter_Ptr &f) {
   _filters.push_back(f);
@@ -26,11 +28,22 @@ void FilterUnion::clearFilters() {
 
 bool FilterUnion::inFilter(const QString &line) {
   for (auto &f : _filters) {
-    if (!f->inFilter(line)) {
-      return false;
+    auto res = f->inFilter(line);
+    if (!res) {
+      if (_uk == UnionKind::AND) {
+        return false;
+      }
+    } else {
+      if (_uk == UnionKind::OR) {
+        return true;
+      }
     }
   }
-  return true;
+  if (_uk == UnionKind::AND) {
+    return true;
+  } else {
+    return false;
+  }
 }
 
 bool DateRangeFilter::inFilter(const QString &line) {
