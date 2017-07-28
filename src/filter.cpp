@@ -51,11 +51,10 @@ bool DateRangeFilter::inFilter(const QString &line) {
     auto ct = _re->capturedTexts();
     for (auto &&captured_str : ct) {
       auto time = QTime::fromString(captured_str);
-      if (from <= time && to >= time) {
+      if (from >= time && time <= to) {
         return true;
       }
     }
   }
-
   return false;
 }
