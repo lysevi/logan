@@ -159,6 +159,10 @@ void Settings::loadLayout() {
     m_settings.endArray();
     qDebug() << "read splitter sizes" << szs.size();
     _mainWindow->ui->splitter->setSizes(szs);
+  } else {
+    QList<int> szs;
+    szs << int(_mainWindow->width() * 0.3) << int(_mainWindow->width() * 0.7);
+    _mainWindow->ui->splitter->setSizes(szs);
   }
 }
 
