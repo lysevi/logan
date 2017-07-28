@@ -19,7 +19,8 @@ protected:
   QSet<QString> m_heightlight;
 
 public slots:
-  void updateAllSlot(const QString &msg);
+  void update();
+  void update(const QString &msg);
 
   void closeFileSlot(const QString &fname);
   void addHighlightedTextSlot(const HighlightPattern &s);

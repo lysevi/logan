@@ -8,14 +8,17 @@ Controller::Controller(QObject *parent) : QObject(parent) {
   // qDebug()<<"maxThreadCount"<<threads;
 }
 
-void Controller::updateAllSlot(const QString &msg) {
+void Controller::update() {
   for (auto &v : m_logs) {
-    if (msg == "null") {
+    v->update();
+  }
+}
+
+void Controller::update(const QString &msg) {
+  for (auto &v : m_logs) {
+    if (msg == v->filename()) {
       v->update();
-    } else {
-      if (msg != "null" && msg == v->filename()) {
-        v->update();
-      }
+      break;
     }
   }
 }
@@ -49,5 +52,3 @@ void Controller::addHighlightedTextSlot(const HighlightPattern &s) {
   // QtConcurrent::blockingMap(m_logs,[&s](auto v){v->updateHeighlights(s);});
   qDebug() << "elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
-
-

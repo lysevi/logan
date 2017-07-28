@@ -184,7 +184,7 @@ void MainWindow::reloadCurentSlot() {
     return;
   }
   auto log = getLog(current);
-  m_controller->updateAllSlot(log->filename());
+  m_controller->update(log->filename());
 }
 
 void MainWindow::closeCurentSlot() {
@@ -222,7 +222,7 @@ void MainWindow::timerIntervalChangedSlot(int v) {
 
 void MainWindow::reloadAllSlot() {
   qDebug() << "MainWindow::reloadAllSlot()";
-  m_controller->updateAllSlot("null");
+  m_controller->update();
 }
 
 void MainWindow::timerIntervalEnabledSlot(bool b) {
@@ -356,7 +356,7 @@ void MainWindow::openHighlightDlg() {
 
     _settings->saveHighlight();
     showMessageAboutSettings();
-    m_controller->updateAllSlot("null");
+    m_controller->update("null");
   }
 }
 
