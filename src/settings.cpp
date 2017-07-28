@@ -49,9 +49,17 @@ void Settings::save() {
 }
 
 void Settings::saveHighlight() {
+  auto strJson =
+      Settings::highlight2string(_mainWindow->m_controller->m_global_highlight);
+  m_highlight_settings.setValue(settings_keys::highlightKey, strJson);
+  qDebug() << ">>> " << strJson;
+}
+
+QString Settings::highlight2string(const HighlightPatterns &hm) {
   QJsonObject json;
   QJsonArray values;
-  auto patterns = _mainWindow->m_controller->m_global_highlight.values();
+
+  auto patterns = hm.values();
   for (auto v : patterns) {
     QJsonObject js_v;
     js_v["pattern"] = v.pattern;
@@ -61,8 +69,29 @@ void Settings::saveHighlight() {
   json["patterns"] = values;
   QJsonDocument doc(json);
   QString strJson(doc.toJson(QJsonDocument::Compact));
-  m_highlight_settings.setValue(settings_keys::highlightKey, strJson);
-  qDebug() << ">>> " << strJson;
+  return strJson;
+}
+
+HighlightPatterns Settings::highlightFromString(const QString &jsonStr) {
+  QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
+  HighlightPatterns result;
+  if (!doc.isNull()) {
+    if (doc.isObject()) {
+      QJsonObject obj = doc.object();
+      QJsonArray patterns = obj["patterns"].toArray();
+      for (int i = 0; i < patterns.count(); ++i) {
+        auto p = patterns.at(i).toObject();
+        HighlightPattern hp;
+        hp.pattern = p["pattern"].toString();
+        hp.rgb = p["rgb"].toString();
+        qDebug() << ">> " << hp.pattern << ":" << hp.rgb;
+        result.insert(hp.pattern, hp);
+      }
+    }
+  } else {
+    throw std::logic_error("highlights format error: " + jsonStr.toStdString());
+  }
+  return result;
 }
 
 void Settings::loadHighlight() {
@@ -71,23 +100,7 @@ void Settings::loadHighlight() {
   if (m_highlight_settings.contains(settings_keys::highlightKey)) {
     _mainWindow->m_controller->m_global_highlight.clear();
     QString jsonStr = m_highlight_settings.value(settings_keys::highlightKey).toString();
-    QJsonDocument doc = QJsonDocument::fromJson(jsonStr.toUtf8());
-    if (!doc.isNull()) {
-      if (doc.isObject()) {
-        QJsonObject obj = doc.object();
-        QJsonArray patterns = obj["patterns"].toArray();
-        for (int i = 0; i < patterns.count(); ++i) {
-          auto p = patterns.at(i).toObject();
-          HighlightPattern hp;
-          hp.pattern = p["pattern"].toString();
-          hp.rgb = p["rgb"].toString();
-          qDebug() << ">> " << hp.pattern << ":" << hp.rgb;
-          _mainWindow->m_controller->m_global_highlight.insert(hp.pattern, hp);
-        }
-      }
-    } else {
-      throw std::logic_error("highlights format error: " + jsonStr.toStdString());
-    }
+    _mainWindow->m_controller->m_global_highlight = highlightFromString(jsonStr);
   } else {
     _mainWindow->m_controller->m_global_highlight = default_highlight_settings;
   }

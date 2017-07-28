@@ -52,6 +52,9 @@ struct Settings {
   void saveRecent();
   void loadRecent();
 
+  static QString highlight2string(const HighlightPatterns&hm);
+  static HighlightPatterns highlightFromString(const QString&jsonStr);
+
   MainWindow *_mainWindow;
   QSettings m_settings, m_highlight_settings, m_recent_files_settings, m_filters_settings;
 };
