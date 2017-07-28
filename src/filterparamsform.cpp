@@ -80,8 +80,12 @@ Filter_Ptr FilterParamsForm::Filter() const {
   auto fltr = std::make_shared<FilterUnion>(FilterUnion::UnionKind::AND);
 
   if (ui->timeRangeGroupBox->isChecked()) {
-    auto timeFltr =
-        std::make_shared<DateRangeFilter>(fromTimeEdit->time(), toTimeEdit->time());
+    auto ft = fromTimeEdit->time();
+    ft.setHMS(ft.hour(), ft.minute(), 0, 0);
+    auto tt = toTimeEdit->time();
+    tt.setHMS(tt.hour(), tt.minute(), 0, 0);
+
+    auto timeFltr = std::make_shared<DateRangeFilter>(ft, tt);
     fltr->addFilter(timeFltr);
   }
 

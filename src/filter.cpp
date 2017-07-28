@@ -47,11 +47,15 @@ bool FilterUnion::inFilter(const QString &line) {
 }
 
 bool DateRangeFilter::inFilter(const QString &line) {
+  auto msecFrom = from.msecsSinceStartOfDay();
+  auto msecTo = to.msecsSinceStartOfDay();
   if (_re->indexIn(line) != -1) {
     auto ct = _re->capturedTexts();
     for (auto &&captured_str : ct) {
-      auto time = QTime::fromString(captured_str);
-      if (from >= time && time <= to) {
+      auto time = QTime::fromString(captured_str).msecsSinceStartOfDay();
+      bool greaterFrom = msecFrom <= time;
+      bool lessThanTo = time <= msecTo;
+      if (greaterFrom && lessThanTo) {
         return true;
       }
     }
