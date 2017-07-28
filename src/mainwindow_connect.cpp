@@ -21,6 +21,8 @@ void MainWindow::connect_signals() {
   connect(ui->actionFind, &QAction::triggered, this, &MainWindow::showSearchPanelSlot);
   connect(ui->actionsearch_end, &QAction::triggered, this, &MainWindow::searchEndSlot);
   connect(ui->actionHighlights, &QAction::triggered, this, &MainWindow::openHighlightDlg);
+  connect(ui->actionExport_highlight_patterns, &QAction::triggered, this, &MainWindow::exportHighlight);
+  connect(ui->actionImport_highlight_patterns, &QAction::triggered, this, &MainWindow::importHighlight);
 
   // timer
   connect(m_timer_widget, &TimerForm::timerParamChangedSignal, this,

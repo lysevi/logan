@@ -2,3 +2,4 @@
 =====
 - Editing was disabled.
 - New filters.
+- Patterns import/export to file.

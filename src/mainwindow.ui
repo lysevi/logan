@@ -122,6 +122,8 @@
     <addaction name="actionselect_text_encoding"/>
     <addaction name="separator"/>
     <addaction name="actionHighlights"/>
+    <addaction name="actionExport_highlight_patterns"/>
+    <addaction name="actionImport_highlight_patterns"/>
     <addaction name="separator"/>
     <addaction name="actionclearSettings"/>
    </widget>
@@ -314,6 +316,16 @@
    </property>
    <property name="text">
     <string>Enable filtration</string>
+   </property>
+  </action>
+  <action name="actionExport_highlight_patterns">
+   <property name="text">
+    <string>Export highlight patterns</string>
+   </property>
+  </action>
+  <action name="actionImport_highlight_patterns">
+   <property name="text">
+    <string>Import highlight patterns</string>
    </property>
   </action>
  </widget>

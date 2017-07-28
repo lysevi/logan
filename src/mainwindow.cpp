@@ -360,6 +360,55 @@ void MainWindow::openHighlightDlg() {
   }
 }
 
+void MainWindow::exportHighlight() {
+  qDebug() << "MainWindow::exportHighlight()";
+  QString fileName = QFileDialog::getSaveFileName(this, tr("Save highlight patterns"), "",
+                                                  tr("Json (*.json);;All Files (*)"));
+  if (!fileName.isEmpty()) {
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::WriteOnly)) {
+      QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+      return;
+    } else {
+      auto jsonStr = Settings::highlight2string(m_controller->m_global_highlight);
+      file.write(jsonStr.toUtf8());
+      file.close();
+    }
+  }
+}
+
+void MainWindow::importHighlight() {
+  qDebug() << "MainWindow::importHighlight()";
+  QString fileName = QFileDialog::getOpenFileName(this, tr("Open highlight patterns"), "",
+                                                  tr("Json (*.json);;All Files (*)"));
+
+  if (!fileName.isEmpty()) {
+
+    QFile file(fileName);
+    if (!file.open(QIODevice::ReadOnly)) {
+      QMessageBox::information(this, tr("Unable to open file"), file.errorString());
+      return;
+    } else {
+      QString jsonStr(file.readAll());
+      auto subresult = Settings::highlightFromString(jsonStr);
+      for (auto v : subresult) {
+        m_controller->m_global_highlight.insert(v.pattern, v);
+      }
+      file.close();
+
+      _settings->saveHighlight();
+      auto message = tr("Imported %1 patterns.").arg(subresult.size());
+      QMessageBox msgBox;
+
+      msgBox.setInformativeText(message);
+      msgBox.setIcon(QMessageBox::Icon::Information);
+      msgBox.setStandardButtons(QMessageBox::Ok);
+      msgBox.setDefaultButton(QMessageBox::Ok);
+      msgBox.exec();
+    }
+  }
+}
 void MainWindow::recentOpenSlot() {
   QAction *action = qobject_cast<QAction *>(sender());
   if (action) {
