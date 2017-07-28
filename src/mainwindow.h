@@ -77,6 +77,7 @@ public:
   void disableFiltration();
   void resetFilter();
 
+  void showMessageAboutSettings();
 public slots:
   // open,close,update
   void openFileSlot();

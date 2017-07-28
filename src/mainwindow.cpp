@@ -95,6 +95,7 @@ void MainWindow::openFontDlgSlot() {
 
     m_defaultFont = fdlg.selectedFont();
     _settings->saveFont();
+    showMessageAboutSettings();
     // setFont(QFont(fdlg.selectedFont().toString()));
   }
 }
@@ -354,7 +355,7 @@ void MainWindow::openHighlightDlg() {
     }
 
     _settings->saveHighlight();
-
+    showMessageAboutSettings();
     m_controller->updateAllSlot("null");
   }
 }
@@ -455,4 +456,15 @@ void MainWindow::resetFilter() {
     }
     updateStatusBarInfoSlot();
   }
+}
+
+void MainWindow::showMessageAboutSettings() {
+  auto message = tr("Changes will take effect for newly opened files");
+  QMessageBox msgBox;
+
+  msgBox.setInformativeText(message);
+  msgBox.setIcon(QMessageBox::Icon::Information);
+  msgBox.setStandardButtons(QMessageBox::Ok);
+  msgBox.setDefaultButton(QMessageBox::Ok);
+  msgBox.exec();
 }
