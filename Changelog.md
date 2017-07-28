@@ -2,3 +2,4 @@
 =====
 - Unicode logs support.
 - Editing was disabled.
+- New filters.
