@@ -122,7 +122,7 @@ protected:
   QString m_fname;
 
   LinePositionList m_lines;
-  QString m_bts;
+  QByteArray m_bts;
   mutable QVector<CachedString> m_cache;
   const HighlightPatterns *m_global_highlight;
 

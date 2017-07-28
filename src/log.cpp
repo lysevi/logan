@@ -9,10 +9,9 @@
 #include <QScrollBar>
 #include <QTextCodec>
 
-const QChar LOG_ENDL(QChar::CarriageReturn);
+const char LOG_ENDL = '\n';
 
-LinePositionList allLinePos(const QString &bts) {
-
+LinePositionList allLinePos(const QByteArray &bts) {
   int count = 0;
   auto size = bts.size();
   for (int i = 0; i < size; ++i) {
@@ -21,15 +20,16 @@ LinePositionList allLinePos(const QString &bts) {
     }
   }
   LinePositionList result(count);
-  int start, index, i;
-  start = index = i = 0;
-
-  while ((i = bts.indexOf(LOG_ENDL, start)) != -1) {
-    LinePosition lp;
-    lp.first = start;
-    lp.second = i;
-    result[index++] = lp;
-    start = i + 1;
+  int start = 0;
+  int index = 0;
+  for (int i = 0; i < size; ++i) {
+    if (bts[i] == LOG_ENDL) {
+      LinePosition lp;
+      lp.first = start;
+      lp.second = i;
+      result[index++] = lp;
+      start = i + 1;
+    }
   }
   return result;
 }
@@ -69,8 +69,7 @@ void Log::loadFile() {
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
-    m_bts = m_codec->toUnicode(std::move(inputFile.readAll()));
-    qDebug() << "string sz" << m_bts.size();
+    m_bts = inputFile.readAll();
     m_lines = allLinePos(m_bts);
     m_cache.resize(m_lines.size());
     inputFile.close();
@@ -100,12 +99,12 @@ void Log::update() {
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
-    auto bts = m_codec->toUnicode(std::move(inputFile.readAll()));
+    auto bts = inputFile.readAll();
     auto lines = allLinePos(bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
       qDebug() << "diff " << diff;
-      //auto old_size = m_lines.size();
+      // auto old_size = m_lines.size();
       m_load_complete = false;
 
       m_bts = std::move(bts);
@@ -302,12 +301,15 @@ std::shared_ptr<QString> Log::makeRawString(int row) const {
   int i = line_pos.second;
 
   int stringSize = int(i - start + 1);
-  std::shared_ptr<QString> result = std::make_shared<QString>(stringSize, ' ');
+  QByteArray localStr(stringSize, ' ');
 
   int insertPos = 0;
   for (int pos = start; pos < i; ++pos) {
-    (*result)[insertPos++] = m_bts[pos];
+    localStr[insertPos++] = m_bts[pos];
   }
+
+  std::shared_ptr<QString> result =
+      std::make_shared<QString>(m_codec->toUnicode(localStr));
 
   return result;
 }
