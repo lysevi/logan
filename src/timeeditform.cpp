@@ -51,7 +51,7 @@ void TimeEditForm::timeChangedSlot() {
 
 void TimeEditForm::updateTimeEditFromSlider() {
   auto v = ui->horizontalSlider->value();
-  ui->timeEdit->setTime(QTime::fromMSecsSinceStartOfDay(v *1000-1));
+  ui->timeEdit->setTime(QTime::fromMSecsSinceStartOfDay(v * 1000 - 1));
   qDebug() << "TimeEditForm::updateTimeEditFromSlider" << v << "=>"
            << QTime::fromMSecsSinceStartOfDay(v) << time();
 }

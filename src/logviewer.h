@@ -27,7 +27,8 @@ private slots:
   void onScrollRangeChanged(int min, int max);
   void customContextMenu(const QPoint &);
   void copySelectedSlot();
- void onSelectionChangedSlot();
+  void onSelectionChangedSlot();
+
 private:
   Ui::LogViewer *ui;
   Log *m_model;

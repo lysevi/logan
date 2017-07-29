@@ -36,6 +36,7 @@ public slots:
   void rmSelectedFiltrSlot();
   void dateRangeChangedSlot();
   void applyFilterSlot();
+
 private:
   Ui::FilterParamsForm *ui;
 

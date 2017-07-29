@@ -67,7 +67,7 @@ public:
 
   Qt::ItemFlags flags(const QModelIndex &index) const {
     Q_UNUSED(index)
-    return  Qt::ItemIsEditable |Qt::ItemIsSelectable | Qt::ItemIsEnabled;
+    return Qt::ItemIsEditable | Qt::ItemIsSelectable | Qt::ItemIsEnabled;
   }
 
   QModelIndex index(int row, int column,
@@ -82,7 +82,6 @@ public:
   QModelIndex parent(const QModelIndex & /*child*/) const override {
     return QModelIndex();
   }
-
 
   //// Log methods
   static bool heighlightStr(QString *str, const HighlightPattern &pattern);
