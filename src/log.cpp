@@ -220,7 +220,6 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
                                   SearchDirection direction) {
   qDebug() << "Log::findFrom";
   std::lock_guard<std::mutex> lg(_locker);
-  // TODO make thread safety. m_cache can be brokent, when timer is active
   if (index == m_cache.size() || index < 0) {
     return QPair<int, QString>(index, QString());
   }
