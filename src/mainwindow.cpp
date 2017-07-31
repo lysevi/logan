@@ -517,3 +517,12 @@ void MainWindow::showMessageAboutSettings() {
   msgBox.setDefaultButton(QMessageBox::Ok);
   msgBox.exec();
 }
+
+void MainWindow::aboutProgram() {
+  QMessageBox::about(this, tr("Logan"),
+                     "<a href='https://github.com/lysevi/logan'>Log analyzer</a>");
+}
+
+void MainWindow::aboutQt() {
+  QMessageBox::aboutQt(this);
+}

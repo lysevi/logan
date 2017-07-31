@@ -25,6 +25,8 @@ void MainWindow::connect_signals() {
           &MainWindow::exportHighlight);
   connect(ui->actionImport_highlight_patterns, &QAction::triggered, this,
           &MainWindow::importHighlight);
+  connect(ui->actionAbout, &QAction::triggered, this, &MainWindow::aboutProgram);
+  connect(ui->actionAbout_Qt, &QAction::triggered, this, &MainWindow::aboutQt);
 
   // timer
   connect(m_timer_widget, &TimerForm::timerParamChangedSignal, this,

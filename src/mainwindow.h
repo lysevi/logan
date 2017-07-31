@@ -121,6 +121,9 @@ public slots:
   void updateStatusBarInfoSlot();
   void filterApplySlot();
 
+  //about
+  void aboutProgram();
+  void aboutQt();
 private:
   int _current_tab;
   Ui::MainWindow *ui;
