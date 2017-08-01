@@ -282,7 +282,7 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
       count++;
     }
     if (progress_dlg != nullptr) {
-      qDebug() << percent << "%";
+      qDebug() << percent << " of" << 100;
       progress_dlg->setValue(percent);
     }
   }

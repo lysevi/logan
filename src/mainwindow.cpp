@@ -487,11 +487,17 @@ void MainWindow::filterApplySlot() {
 }
 
 void MainWindow::resetFilter() {
-  QProgressDialog dlg(this);
-  dlg.setWindowModality(Qt::WindowModal);
-  dlg.setRange(0, 100);
-  dlg.setAutoClose(false);
-  dlg.show();
+  /* {
+     QProgressDialog *dlg=new QProgressDialog(this);
+     dlg->setWindowModality(Qt::WindowModal);
+     dlg->setRange(0, 10000);
+     dlg->setAutoClose(false);
+     dlg->show();
+     for (int i = 0; i < 10000; ++i) {
+       dlg->setValue(i);
+     }
+   }
+   return;*/
 
   auto log = getLog(m_tabbar->currentIndex());
   if (log != nullptr) {
@@ -505,13 +511,21 @@ void MainWindow::resetFilter() {
     }
 
     if (fltrs_count != 0) {
-      log->resetFilter(&dlg, fltr);
+      QProgressDialog *dlg = new QProgressDialog(this);
+      dlg->setWindowModality(Qt::WindowModal);
+      dlg->setRange(0, 100);
+      dlg->setAutoClose(false);
+      dlg->showNormal();
+
+      log->resetFilter(dlg, fltr);
+
+      dlg->close();
+      delete dlg;
     } else {
       log->clearFilter();
     }
     updateStatusBarInfoSlot();
   }
-  dlg.close();
 }
 
 void MainWindow::showMessageAboutSettings() {
