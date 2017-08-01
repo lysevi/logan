@@ -31,6 +31,7 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
           &LogViewer::onScrollRangeChanged);
   connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
   connect(ui->listView, &QListView::clicked, this, &LogViewer::onSelectionChangedSlot);
+  ui->progressBar->setVisible(false);
 }
 
 LogViewer::~LogViewer() {
@@ -43,6 +44,9 @@ void LogViewer::setModel(Log *model_) {
   m_model = model_;
   connect(model_, SIGNAL(rowsInserted(QModelIndex, int, int)), this->ui->listView,
           SLOT(scrollToBottom()));
+  connect(model_, &Log::progress, this, &LogViewer::progressSlot);
+  connect(model_, &Log::longOperationStop, this, &LogViewer::longOperationStopSlot);
+  connect(model_, &Log::longOperationStart, this, &LogViewer::longOperationStartSlot);
 }
 
 void LogViewer::setAutoScroll(bool value) {
@@ -119,4 +123,18 @@ int LogViewer::selectedRow() {
 void LogViewer::onSelectionChangedSlot() {
   qDebug() << "onSelectionChangedSlot";
   emit selectNewRow();
+}
+
+void LogViewer::longOperationStartSlot() {
+  qDebug() << "LogViewer::longOperationStartSlot()";
+  ui->progressBar->setVisible(true);
+}
+void LogViewer::longOperationStopSlot() {
+  qDebug() << "LogViewer::longOperationStopSlot()";
+  ui->progressBar->setVisible(false);
+}
+
+void LogViewer::progressSlot(int percent) {
+  qDebug() << "progressSlot:" << percent;
+  ui->progressBar->setValue(percent);
 }

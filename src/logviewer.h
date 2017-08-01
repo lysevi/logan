@@ -29,6 +29,10 @@ private slots:
   void copySelectedSlot();
   void onSelectionChangedSlot();
 
+  void progressSlot(int percent);
+  void longOperationStartSlot();
+  void longOperationStopSlot();
+
 private:
   Ui::LogViewer *ui;
   Log *m_model;

@@ -103,6 +103,9 @@ signals:
   void countChanged(int);
   void nameChanged();
   void filenameChanged();
+  void longOperationStart();
+  void longOperationStop();
+  void progress(int percent);
 public slots:
 protected:
   void loadFile();

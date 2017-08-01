@@ -265,7 +265,10 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
   _fltr = fltr;
   int count = 0;
   m_fltr_cache.resize(m_lines.size());
+  int percent = 0;
+  emit longOperationStart();
   for (size_t i = 0; i < m_lines.size(); ++i) {
+    percent = (100.0 * i) / m_lines.size() + 1;
     auto qs = makeRawString(i);
     if (fltr->inFilter(*qs)) {
       rawStringToValue(qs);
@@ -276,8 +279,9 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
       m_fltr_cache[count] = cs;
       count++;
     }
+    emit progress(percent);
   }
-
+  emit longOperationStop();
   beginResetModel();
   m_fltr_cache.resize(count);
   endResetModel();
