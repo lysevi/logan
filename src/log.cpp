@@ -121,7 +121,8 @@ void Log::update() {
       emit linesChanged();
 
       if (_fltr != nullptr) {
-        resetFilter(_fltr);
+        // TODO get qprogressdialog
+        resetFilter(nullptr, _fltr);
       } else {
         beginResetModel();
         endResetModel();
@@ -250,25 +251,24 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
   return QPair<int, QString>(index, "");
 }
 
-void Log::resetFilter(const Filter_Ptr &fltr) {
+void Log::resetFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
   qDebug() << "Log::resetFilter";
   std::lock_guard<std::mutex> lg(_locker);
   m_cache.resize(m_lines.size());
-  setFilter_impl(fltr);
+  setFilter_impl(progress_dlg, fltr);
 }
 
-void Log::setFilter(const Filter_Ptr &fltr) {
+void Log::setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
   std::lock_guard<std::mutex> lg(_locker);
-  setFilter_impl(fltr);
+  setFilter_impl(progress_dlg, fltr);
 }
 
-void Log::setFilter_impl(const Filter_Ptr &fltr) {
+void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
   _fltr = fltr;
   int count = 0;
   m_fltr_cache.resize(m_lines.size());
   int percent = 0;
-  m_lv_object->longOperationStart("Apply filter.");
   for (size_t i = 0; i < m_lines.size(); ++i) {
     percent = (100.0 * i) / m_lines.size() + 1;
     auto qs = makeRawString(i);
@@ -281,10 +281,11 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
       m_fltr_cache[count] = cs;
       count++;
     }
-    m_lv_object->progress(percent);
-    //QApplication::processEvents();
+    if (progress_dlg != nullptr) {
+      qDebug() << percent << "%";
+      progress_dlg->setValue(percent);
+    }
   }
-  m_lv_object->longOperationStop();
   beginResetModel();
   m_fltr_cache.resize(count);
   endResetModel();

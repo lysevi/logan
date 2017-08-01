@@ -122,24 +122,3 @@ void LogViewer::onSelectionChangedSlot() {
   qDebug() << "onSelectionChangedSlot";
   emit selectNewRow();
 }
-
-void LogViewer::longOperationStart(const QString &title) {
-  qDebug() << "LogViewer::longOperationStartSlot() " << title;
-  m_progress_dlg =
-      std::shared_ptr<QProgressDialog>{new QProgressDialog(title, "", 0, 100, this)};
-  m_progress_dlg->setWindowModality(Qt::WindowModal);
-  m_progress_dlg->showNormal();
-}
-
-void LogViewer::longOperationStop() {
-  qDebug() << "LogViewer::longOperationStopSlot()";
-  m_progress_dlg->close();
-  m_progress_dlg = nullptr;
-}
-
-void LogViewer::progress(int percent) {
-  qDebug() << "progressSlot:" << percent;
-  if (m_progress_dlg != nullptr) {
-    m_progress_dlg->setValue(percent);
-  }
-}

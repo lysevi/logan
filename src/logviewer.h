@@ -25,10 +25,6 @@ public:
   void selectRow(int row);
   int selectedRow();
 
-  void progress(int percent);
-  void longOperationStart(const QString &title);
-  void longOperationStop();
-
 signals:
   void selectNewRow();
 private slots:
