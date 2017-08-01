@@ -1,4 +1,5 @@
 #include "logviewer.h"
+#include "log.h"
 #include "ui_logviewer.h"
 #include <QApplication>
 #include <QClipboard>
@@ -31,7 +32,7 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
           &LogViewer::onScrollRangeChanged);
   connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
   connect(ui->listView, &QListView::clicked, this, &LogViewer::onSelectionChangedSlot);
-  ui->progressBar->setVisible(false);
+  m_progress_dlg = nullptr;
 }
 
 LogViewer::~LogViewer() {
@@ -40,13 +41,10 @@ LogViewer::~LogViewer() {
 
 void LogViewer::setModel(Log *model_) {
   this->ui->listView->setModel(model_);
-  model_->setListVoxObject(this->ui->listView);
+  model_->setListVoxObject(this);
   m_model = model_;
   connect(model_, SIGNAL(rowsInserted(QModelIndex, int, int)), this->ui->listView,
           SLOT(scrollToBottom()));
-  connect(model_, &Log::progress, this, &LogViewer::progressSlot);
-  connect(model_, &Log::longOperationStop, this, &LogViewer::longOperationStopSlot);
-  connect(model_, &Log::longOperationStart, this, &LogViewer::longOperationStartSlot);
 }
 
 void LogViewer::setAutoScroll(bool value) {
@@ -125,16 +123,23 @@ void LogViewer::onSelectionChangedSlot() {
   emit selectNewRow();
 }
 
-void LogViewer::longOperationStartSlot() {
-  qDebug() << "LogViewer::longOperationStartSlot()";
-  ui->progressBar->setVisible(true);
-}
-void LogViewer::longOperationStopSlot() {
-  qDebug() << "LogViewer::longOperationStopSlot()";
-  ui->progressBar->setVisible(false);
+void LogViewer::longOperationStart(const QString &title) {
+  qDebug() << "LogViewer::longOperationStartSlot() " << title;
+  m_progress_dlg =
+      std::shared_ptr<QProgressDialog>{new QProgressDialog(title, "", 0, 100, this)};
+  m_progress_dlg->setWindowModality(Qt::WindowModal);
+  m_progress_dlg->showNormal();
 }
 
-void LogViewer::progressSlot(int percent) {
+void LogViewer::longOperationStop() {
+  qDebug() << "LogViewer::longOperationStopSlot()";
+  m_progress_dlg->close();
+  m_progress_dlg = nullptr;
+}
+
+void LogViewer::progress(int percent) {
   qDebug() << "progressSlot:" << percent;
-  ui->progressBar->setValue(percent);
+  if (m_progress_dlg != nullptr) {
+    m_progress_dlg->setValue(percent);
+  }
 }

@@ -1,4 +1,5 @@
 #include "log.h"
+#include "logviewer.h"
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -6,6 +7,7 @@
 #include <QPair>
 #include <QRegExp>
 //#include <QtConcurrent>
+#include <QApplication>
 #include <QScrollBar>
 #include <QTextCodec>
 
@@ -212,7 +214,7 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   return result;
 }
 
-void Log::setListVoxObject(QListView *object) {
+void Log::setListVoxObject(LogViewer *object) {
   m_lv_object = object;
 }
 
@@ -266,7 +268,7 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
   int count = 0;
   m_fltr_cache.resize(m_lines.size());
   int percent = 0;
-  emit longOperationStart();
+  m_lv_object->longOperationStart("Apply filter.");
   for (size_t i = 0; i < m_lines.size(); ++i) {
     percent = (100.0 * i) / m_lines.size() + 1;
     auto qs = makeRawString(i);
@@ -279,9 +281,10 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
       m_fltr_cache[count] = cs;
       count++;
     }
-    emit progress(percent);
+    m_lv_object->progress(percent);
+    //QApplication::processEvents();
   }
-  emit longOperationStop();
+  m_lv_object->longOperationStop();
   beginResetModel();
   m_fltr_cache.resize(count);
   endResetModel();

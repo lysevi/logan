@@ -1,4 +1,5 @@
 #include "listboxeditableitem.h"
+#include "log.h"
 
 ListboxEditableItem::ListboxEditableItem(QObject *parent)
     : QAbstractItemDelegate(parent) {}
@@ -34,4 +35,10 @@ void ListboxEditableItem::paint(QPainter *painter, const QStyleOptionViewItem &o
   doc.drawContents(painter, clip);
 
   painter->restore();
+}
+
+void ListboxEditableItem::setEditorData(QWidget *editor, const QModelIndex &index) const {
+  auto log = dynamic_cast<const Log *>(index.model());
+  auto value = log->plainText(index).trimmed();
+  static_cast<QTextEdit *>(editor)->setPlainText(value);
 }

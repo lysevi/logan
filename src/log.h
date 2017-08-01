@@ -2,6 +2,7 @@
 #define LOG_H
 
 #include "filter.h"
+#include "logviewer.h"
 #include "pattern.h"
 #include <QAbstractItemModel>
 #include <QDateTime>
@@ -86,7 +87,7 @@ public:
   //// Log methods
   static bool heighlightStr(QString *str, const HighlightPattern &pattern);
 
-  void setListVoxObject(QListView *object);
+  void setListVoxObject(LogViewer *object);
 
   QString plainText(const QModelIndex &index) const;
 
@@ -103,9 +104,6 @@ signals:
   void countChanged(int);
   void nameChanged();
   void filenameChanged();
-  void longOperationStart();
-  void longOperationStop();
-  void progress(int percent);
 public slots:
 protected:
   void loadFile();
@@ -127,7 +125,7 @@ protected:
   const HighlightPatterns *m_global_highlight;
 
   QTextCodec *m_codec;
-  QListView *m_lv_object;
+  LogViewer *m_lv_object;
   QFileInfo m_fileInfo;
   QDateTime m_lastModifed;
   QString m_default_encoding;

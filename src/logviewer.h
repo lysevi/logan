@@ -2,12 +2,15 @@
 #define LOGVIEWER_H
 
 #include "listboxeditableitem.h"
-#include "log.h"
+#include <QProgressDialog>
 #include <QWidget>
+#include <memory>
 
 namespace Ui {
 class LogViewer;
 }
+
+class Log;
 
 class LogViewer : public QWidget {
   Q_OBJECT
@@ -21,6 +24,11 @@ public:
   bool eventFilter(QObject *object, QEvent *event) override;
   void selectRow(int row);
   int selectedRow();
+
+  void progress(int percent);
+  void longOperationStart(const QString &title);
+  void longOperationStop();
+
 signals:
   void selectNewRow();
 private slots:
@@ -29,16 +37,13 @@ private slots:
   void copySelectedSlot();
   void onSelectionChangedSlot();
 
-  void progressSlot(int percent);
-  void longOperationStartSlot();
-  void longOperationStopSlot();
-
 private:
   Ui::LogViewer *ui;
   Log *m_model;
   ListboxEditableItem m_delegate;
   bool m_autoscroll;
   QFont m_default_font;
+  std::shared_ptr<QProgressDialog> m_progress_dlg;
 };
 
 #endif // LOGVIEWER_H

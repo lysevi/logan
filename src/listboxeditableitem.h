@@ -1,6 +1,5 @@
 #pragma once
 
-#include "log.h"
 #include <QDebug>
 #include <QObject>
 #include <QPainter>
@@ -38,11 +37,7 @@ public:
     return result;
   }
 
-  void setEditorData(QWidget *editor, const QModelIndex &index) const override {
-    auto log = dynamic_cast<const Log *>(index.model());
-    auto value = log->plainText(index).trimmed();
-    static_cast<QTextEdit *>(editor)->setPlainText(value);
-  }
+  void setEditorData(QWidget *editor, const QModelIndex &index) const override ;
   //    void setModelData(QWidget *editor, QAbstractItemModel *model,
   //                      const QModelIndex &index) const{
   //            //static_cast<QTextEdit*>(editor)->
