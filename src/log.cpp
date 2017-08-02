@@ -1,5 +1,6 @@
 #include "log.h"
 #include "logviewer.h"
+#include "mainwindow.h"
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -13,13 +14,22 @@
 
 const char LOG_ENDL = '\n';
 
-LinePositionList allLinePos(const QByteArray &bts) {
+LinePositionList allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts) {
+  if (progress_dlg != nullptr) {
+    progress_dlg->setRange(0, bts.size());
+  }
+  int progr = 0;
   int count = 0;
   auto size = bts.size();
   for (int i = 0; i < size; ++i) {
     if (bts[i] == LOG_ENDL) {
       count++;
     }
+    if (progress_dlg != nullptr && progr % 1000 == 0) {
+      progress_dlg->setValue(progr);
+      QApplication::processEvents();
+    }
+    progr++;
   }
   LinePositionList result(count);
   int start = 0;
@@ -32,6 +42,11 @@ LinePositionList allLinePos(const QByteArray &bts) {
       result[index++] = lp;
       start = i + 1;
     }
+    if (progress_dlg != nullptr && progr % 1000 == 0) {
+      progress_dlg->setValue(progr);
+      QApplication::processEvents();
+    }
+    progr++;
   }
   return result;
 }
@@ -67,12 +82,20 @@ Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlig
 }
 
 void Log::loadFile() {
+
   qDebug() << "loadFile " << m_fname;
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
+    QProgressDialog progress_dlg(MainWindow::instance);
+    progress_dlg.setWindowTitle("File loading.");
+    progress_dlg.setWindowModality(Qt::WindowModal);
+    progress_dlg.setModal(true);
+    progress_dlg.setAutoClose(true);
+    progress_dlg.setCancelButton(nullptr); // TODO make 'canceble'
+
     m_bts = inputFile.readAll();
-    m_lines = allLinePos(m_bts);
+    m_lines = allLinePos(&progress_dlg, m_bts);
     m_cache.resize(m_lines.size());
     inputFile.close();
   } else {
@@ -102,7 +125,7 @@ void Log::update() {
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     auto bts = inputFile.readAll();
-    auto lines = allLinePos(bts);
+    auto lines = allLinePos(nullptr, bts);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
       qDebug() << "diff " << diff;
@@ -121,8 +144,7 @@ void Log::update() {
       emit linesChanged();
 
       if (_fltr != nullptr) {
-        // TODO get qprogressdialog
-        resetFilter(nullptr, _fltr);
+        resetFilter(_fltr);
       } else {
         beginResetModel();
         endResetModel();
@@ -251,20 +273,26 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
   return QPair<int, QString>(index, "");
 }
 
-void Log::resetFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
+void Log::resetFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::resetFilter";
-  //std::lock_guard<std::mutex> lg(_locker);
-  //m_cache.resize(m_lines.size());
-  setFilter_impl(progress_dlg, fltr);
+  // std::lock_guard<std::mutex> lg(_locker);
+  setFilter_impl(fltr);
 }
 
-void Log::setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
+void Log::setFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
-  //std::lock_guard<std::mutex> lg(_locker);
-  setFilter_impl(progress_dlg, fltr);
+  // std::lock_guard<std::mutex> lg(_locker);
+  setFilter_impl(fltr);
 }
 
-void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
+void Log::setFilter_impl(const Filter_Ptr &fltr) {
+  QProgressDialog progress_dlg(MainWindow::instance);
+  progress_dlg.setWindowTitle("Filter application.");
+  progress_dlg.setWindowModality(Qt::WindowModal);
+  progress_dlg.setModal(true);
+  progress_dlg.setRange(0, linesCount());
+  progress_dlg.setAutoClose(true);
+
   int count = 0;
   QVector<CachedString> new_fltr_cache(m_lines.size());
 
@@ -279,20 +307,20 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
       new_fltr_cache[count] = cs;
       count++;
     }
-    if (progress_dlg != nullptr) {
-      qDebug() << "i=" << i;
-      progress_dlg->setValue(int(i));
-      QApplication::processEvents();
-    }
-    if(progress_dlg->wasCanceled()){
-        return;
+
+    qDebug() << "i=" << i;
+    progress_dlg.setValue(int(i));
+    QApplication::processEvents();
+
+    if (progress_dlg.wasCanceled()) {
+      return;
     }
   }
   beginResetModel();
   std::lock_guard<std::mutex> lg(_locker);
   new_fltr_cache.resize(count);
   _fltr = fltr;
-  m_fltr_cache=std::move(new_fltr_cache);
+  m_fltr_cache = std::move(new_fltr_cache);
   endResetModel();
 }
 

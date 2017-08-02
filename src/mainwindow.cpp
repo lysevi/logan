@@ -17,6 +17,7 @@
 
 const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
+MainWindow *MainWindow::instance = nullptr;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), _settings(new Settings(this)),
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   _settings->load();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
+  instance = this;
 }
 
 MainWindow::~MainWindow() {
@@ -487,18 +489,6 @@ void MainWindow::filterApplySlot() {
 }
 
 void MainWindow::resetFilter() {
-  /* {
-     QProgressDialog *dlg=new QProgressDialog(this);
-     dlg->setWindowModality(Qt::WindowModal);
-     dlg->setRange(0, 10000);
-     dlg->setAutoClose(false);
-     dlg->show();
-     for (int i = 0; i < 10000; ++i) {
-       dlg->setValue(i);
-     }
-   }
-   return;*/
-
   auto log = getLog(m_tabbar->currentIndex());
   if (log != nullptr) {
 
@@ -511,17 +501,7 @@ void MainWindow::resetFilter() {
     }
 
     if (fltrs_count != 0) {
-      QProgressDialog *dlg = new QProgressDialog(this);
-      dlg->setWindowTitle("Filter application.");
-      dlg->setWindowModality(Qt::WindowModal);
-      dlg->setModal(true);
-      dlg->setRange(0, log->linesCount());
-      dlg->setAutoClose(true);
-
-      log->resetFilter(dlg, fltr);
-
-      //dlg->close();
-      delete dlg;
+      log->resetFilter(fltr);
     } else {
       log->clearFilter();
     }

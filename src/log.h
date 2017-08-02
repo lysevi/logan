@@ -94,8 +94,8 @@ public:
   QPair<int, QString> findFrom(const QString &pattern, int index,
                                SearchDirection direction);
 
-  void setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
-  void resetFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
+  void setFilter(const Filter_Ptr &fltr);
+  void resetFilter(const Filter_Ptr &fltr);
   void clearFilter();
 
   QDateTime lastUpdate() const { return m_fileInfo.lastModified(); }
@@ -113,7 +113,7 @@ protected:
   void rawStringToValue(std::shared_ptr<QString> &rawString) const;
   std::shared_ptr<QString> makeString(int row) const;
 
-  void setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
+  void setFilter_impl(const Filter_Ptr &fltr);
 
 protected:
   mutable std::mutex _locker;
