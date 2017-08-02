@@ -13,8 +13,9 @@
 #include <QTextCodec>
 
 const char LOG_ENDL = '\n';
-
-LinePositionList allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts) {
+const int PROGR_STEP = 300;
+LinePositionList allLinePos(QProgressDialog *progress_dlg,
+                            const QByteArray &bts) {
   if (progress_dlg != nullptr) {
     progress_dlg->setRange(0, bts.size());
   }
@@ -25,7 +26,7 @@ LinePositionList allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts
     if (bts[i] == LOG_ENDL) {
       count++;
     }
-    if (progress_dlg != nullptr && progr % 1000 == 0) {
+    if (progress_dlg != nullptr && progr % PROGR_STEP == 0) {
       progress_dlg->setValue(progr);
       QApplication::processEvents();
     }
@@ -52,8 +53,8 @@ LinePositionList allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts
 }
 
 Log::Log(const QFileInfo &fileInfo, const QString &filename,
-         const HighlightPatterns *global_highlight, const QString &default_encoding,
-         QObject *parent)
+         const HighlightPatterns *global_highlight,
+         const QString &default_encoding, QObject *parent)
     : QAbstractItemModel(parent) {
 
   m_default_encoding = default_encoding;
@@ -73,11 +74,13 @@ Log::Log(const QFileInfo &fileInfo, const QString &filename,
   qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
 }
 
-Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlight,
+Log *Log::openFile(const QString &fname,
+                   const HighlightPatterns *global_highlight,
                    const QString &default_encoding, QObject *parent) {
   qDebug() << "openFile" << fname;
   QFileInfo fileInfo(fname);
-  auto ll = new Log(fileInfo, fname, global_highlight, default_encoding, parent);
+  auto ll =
+      new Log(fileInfo, fname, global_highlight, default_encoding, parent);
   return ll;
 }
 
@@ -88,7 +91,7 @@ void Log::loadFile() {
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     QProgressDialog progress_dlg(MainWindow::instance);
-    progress_dlg.setWindowTitle("File loading.");
+    progress_dlg.setWindowTitle("File loading: "+m_fname);
     progress_dlg.setWindowModality(Qt::WindowModal);
     progress_dlg.setModal(true);
     progress_dlg.setAutoClose(true);
@@ -105,13 +108,9 @@ void Log::loadFile() {
   m_load_complete = true;
 }
 
-QString Log::name() const {
-  return m_name;
-}
+QString Log::name() const { return m_name; }
 
-QString Log::filename() const {
-  return m_fname;
-}
+QString Log::filename() const { return m_fname; }
 
 void Log::update() {
   qDebug() << "update " << m_name << "=>" << m_fname;
@@ -148,7 +147,8 @@ void Log::update() {
       } else {
         beginResetModel();
         endResetModel();
-        //        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size +
+        //        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1,
+        //        old_size +
         //        diff);
         //        endInsertRows();
       }
@@ -160,7 +160,8 @@ void Log::update() {
     throw std::logic_error("file not exists!");
   }
 
-  qDebug() << "update elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
+  qDebug() << "update elapsed time:"
+           << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
@@ -228,8 +229,8 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
     auto ct = re.capturedTexts();
     for (auto &&captured_str : ct) {
       str->replace(re,
-                   "<font color=\"" + pattern.rgb.toUpper() + "\"><b>" + captured_str +
-                       "</b></font>");
+                   "<font color=\"" + pattern.rgb.toUpper() + "\"><b>" +
+                       captured_str + "</b></font>");
     }
     result = true;
   }
@@ -237,9 +238,7 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   return result;
 }
 
-void Log::setListVoxObject(LogViewer *object) {
-  m_lv_object = object;
-}
+void Log::setListVoxObject(LogViewer *object) { m_lv_object = object; }
 
 QPair<int, QString> Log::findFrom(const QString &pattern, int index,
                                   SearchDirection direction) {
@@ -308,10 +307,11 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
       count++;
     }
 
-    qDebug() << "i=" << i;
-    progress_dlg.setValue(int(i));
-    QApplication::processEvents();
-
+    if (i % PROGR_STEP == 0) {
+      qDebug() << "i=" << i;
+      progress_dlg.setValue(int(i));
+      QApplication::processEvents();
+    }
     if (progress_dlg.wasCanceled()) {
       return;
     }
@@ -362,7 +362,8 @@ void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
   rawString->replace('>', "&gt;");
   rawString->replace(' ', "&nbsp;"); // html eats white spaces
 
-  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
+  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end();
+       ++it) {
     heighlightStr(rawString.get(), *it);
   }
 }
