@@ -253,14 +253,14 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
 
 void Log::resetFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
   qDebug() << "Log::resetFilter";
-  std::lock_guard<std::mutex> lg(_locker);
-  m_cache.resize(m_lines.size());
+  //std::lock_guard<std::mutex> lg(_locker);
+  //m_cache.resize(m_lines.size());
   setFilter_impl(progress_dlg, fltr);
 }
 
 void Log::setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
-  std::lock_guard<std::mutex> lg(_locker);
+  //std::lock_guard<std::mutex> lg(_locker);
   setFilter_impl(progress_dlg, fltr);
 }
 
@@ -282,13 +282,14 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
     if (progress_dlg != nullptr) {
       qDebug() << "i=" << i;
       progress_dlg->setValue(int(i));
-      QApplication::processEvents(QEventLoop::ProcessEventsFlag::AllEvents);
+      QApplication::processEvents();
     }
     if(progress_dlg->wasCanceled()){
         return;
     }
   }
   beginResetModel();
+  std::lock_guard<std::mutex> lg(_locker);
   new_fltr_cache.resize(count);
   _fltr = fltr;
   m_fltr_cache=std::move(new_fltr_cache);
