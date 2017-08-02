@@ -94,11 +94,13 @@ public:
   QPair<int, QString> findFrom(const QString &pattern, int index,
                                SearchDirection direction);
 
-  void setFilter(QProgressDialog* progress_dlg, const Filter_Ptr &fltr);
-  void resetFilter(QProgressDialog* progress_dlg, const Filter_Ptr &fltr);
+  void setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
+  void resetFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
   void clearFilter();
 
   QDateTime lastUpdate() const { return m_fileInfo.lastModified(); }
+
+  size_t linesCount() const { return m_lines.size(); }
 signals:
   void linesChanged();
   void countChanged(int);
@@ -111,7 +113,7 @@ protected:
   void rawStringToValue(std::shared_ptr<QString> &rawString) const;
   std::shared_ptr<QString> makeString(int row) const;
 
-  void setFilter_impl(QProgressDialog* progress_dlg,const Filter_Ptr &fltr);
+  void setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr);
 
 protected:
   mutable std::mutex _locker;

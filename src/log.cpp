@@ -268,9 +268,8 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
   _fltr = fltr;
   int count = 0;
   m_fltr_cache.resize(m_lines.size());
-  int percent = 0;
+
   for (size_t i = 0; i < m_lines.size(); ++i) {
-    percent = (100.0 * i) / m_lines.size() + 1;
     auto qs = makeRawString(i);
     if (fltr->inFilter(*qs)) {
       rawStringToValue(qs);
@@ -282,8 +281,8 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
       count++;
     }
     if (progress_dlg != nullptr) {
-      qDebug() << percent << " of" << 100;
-      progress_dlg->setValue(percent);
+      qDebug() << "i=" << i;
+      progress_dlg->setValue(int(i));
     }
   }
   beginResetModel();

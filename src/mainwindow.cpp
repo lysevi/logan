@@ -513,7 +513,8 @@ void MainWindow::resetFilter() {
     if (fltrs_count != 0) {
       QProgressDialog *dlg = new QProgressDialog(this);
       dlg->setWindowModality(Qt::WindowModal);
-      dlg->setRange(0, 100);
+      dlg->setRange(0, log->linesCount());
+      dlg->setCancelButton(nullptr);
       dlg->setAutoClose(false);
       dlg->showNormal();
 
