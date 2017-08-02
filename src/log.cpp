@@ -265,9 +265,8 @@ void Log::setFilter(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
 }
 
 void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) {
-  _fltr = fltr;
   int count = 0;
-  m_fltr_cache.resize(m_lines.size());
+  QVector<CachedString> new_fltr_cache(m_lines.size());
 
   for (size_t i = 0; i < m_lines.size(); ++i) {
     auto qs = makeRawString(i);
@@ -277,16 +276,22 @@ void Log::setFilter_impl(QProgressDialog *progress_dlg, const Filter_Ptr &fltr) 
       cs.index = i;
       cs.originValue = qs;
       cs.Value = cs.originValue;
-      m_fltr_cache[count] = cs;
+      new_fltr_cache[count] = cs;
       count++;
     }
     if (progress_dlg != nullptr) {
       qDebug() << "i=" << i;
       progress_dlg->setValue(int(i));
+      QApplication::processEvents(QEventLoop::ProcessEventsFlag::AllEvents);
+    }
+    if(progress_dlg->wasCanceled()){
+        return;
     }
   }
   beginResetModel();
-  m_fltr_cache.resize(count);
+  new_fltr_cache.resize(count);
+  _fltr = fltr;
+  m_fltr_cache=std::move(new_fltr_cache);
   endResetModel();
 }
 
