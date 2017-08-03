@@ -1,4 +1,5 @@
 #include "logviewer.h"
+#include "log.h"
 #include "ui_logviewer.h"
 #include <QApplication>
 #include <QClipboard>
@@ -31,6 +32,7 @@ LogViewer::LogViewer(const QFont &font, QWidget *parent)
           &LogViewer::onScrollRangeChanged);
   connect(ui->actioncopy, &QAction::triggered, this, &LogViewer::copySelectedSlot);
   connect(ui->listView, &QListView::clicked, this, &LogViewer::onSelectionChangedSlot);
+  m_progress_dlg = nullptr;
 }
 
 LogViewer::~LogViewer() {
@@ -39,7 +41,7 @@ LogViewer::~LogViewer() {
 
 void LogViewer::setModel(Log *model_) {
   this->ui->listView->setModel(model_);
-  model_->setListVoxObject(this->ui->listView);
+  model_->setListVoxObject(this);
   m_model = model_;
   connect(model_, SIGNAL(rowsInserted(QModelIndex, int, int)), this->ui->listView,
           SLOT(scrollToBottom()));

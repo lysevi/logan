@@ -28,6 +28,9 @@ Log *Controller::openFile(const QString &encoding, const QString &fname) {
     return nullptr;
   }
   auto log = Log::openFile(fname, &m_global_highlight, encoding, this);
+  if (log == nullptr) {
+    return nullptr;
+  }
   m_logs[fname] = log;
   return log;
 }

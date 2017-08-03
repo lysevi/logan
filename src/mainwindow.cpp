@@ -17,6 +17,7 @@
 
 const QString version = QString(GIT_VERSION);
 const QString logan_version = "Logan - " + version;
+MainWindow *MainWindow::instance = nullptr;
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent), ui(new Ui::MainWindow), _settings(new Settings(this)),
@@ -57,6 +58,7 @@ MainWindow::MainWindow(QWidget *parent)
 
   _settings->load();
   QTimer::singleShot(300, this, SLOT(showMaximized()));
+  instance = this;
 }
 
 MainWindow::~MainWindow() {

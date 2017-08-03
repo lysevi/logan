@@ -1,4 +1,6 @@
 #include "log.h"
+#include "logviewer.h"
+#include "mainwindow.h"
 #include <QDateTime>
 #include <QDebug>
 #include <QFileInfo>
@@ -6,20 +8,35 @@
 #include <QPair>
 #include <QRegExp>
 //#include <QtConcurrent>
+#include <QApplication>
 #include <QScrollBar>
 #include <QTextCodec>
 
 const char LOG_ENDL = '\n';
+const int PROGR_STEP = 300;
 
-LinePositionList allLinePos(const QByteArray &bts) {
+bool allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts,
+                LinePositionList &result) {
+  if (progress_dlg != nullptr) {
+    progress_dlg->setRange(0, bts.size());
+  }
+  int progr = 0;
   int count = 0;
   auto size = bts.size();
   for (int i = 0; i < size; ++i) {
     if (bts[i] == LOG_ENDL) {
       count++;
     }
+    if (progress_dlg != nullptr && progr % PROGR_STEP == 0) {
+      progress_dlg->setValue(progr);
+      QApplication::processEvents();
+    }
+    if (progress_dlg != nullptr && progress_dlg->wasCanceled()) {
+      return false;
+    }
+    progr++;
   }
-  LinePositionList result(count);
+  result.resize(count);
   int start = 0;
   int index = 0;
   for (int i = 0; i < size; ++i) {
@@ -30,8 +47,16 @@ LinePositionList allLinePos(const QByteArray &bts) {
       result[index++] = lp;
       start = i + 1;
     }
+    if (progress_dlg != nullptr && progr % 1000 == 0) {
+      progress_dlg->setValue(progr);
+      QApplication::processEvents();
+    }
+    if (progress_dlg != nullptr && progress_dlg->wasCanceled()) {
+      return false;
+    }
+    progr++;
   }
-  return result;
+  return true;
 }
 
 Log::Log(const QFileInfo &fileInfo, const QString &filename,
@@ -51,9 +76,6 @@ Log::Log(const QFileInfo &fileInfo, const QString &filename,
   if (m_codec == nullptr) {
     throw std::logic_error("m_codec==nullptr");
   }
-
-  loadFile();
-  qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
 }
 
 Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlight,
@@ -61,23 +83,40 @@ Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlig
   qDebug() << "openFile" << fname;
   QFileInfo fileInfo(fname);
   auto ll = new Log(fileInfo, fname, global_highlight, default_encoding, parent);
+
+  if (!ll->loadFile()) {
+    qDebug() << "not loaded " << ll->m_name;
+    delete ll;
+    return nullptr;
+  }
+  qDebug() << "loaded " << ll->m_name << " lines:" << ll->m_lines.size();
   return ll;
 }
 
-void Log::loadFile() {
+bool Log::loadFile() {
+  bool result = false;
   qDebug() << "loadFile " << m_fname;
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
+    QProgressDialog progress_dlg(MainWindow::instance);
+    progress_dlg.setWindowTitle("File loading: " + m_fname);
+    progress_dlg.setWindowModality(Qt::WindowModal);
+    progress_dlg.setModal(true);
+    progress_dlg.setAutoClose(true);
+
     m_bts = inputFile.readAll();
-    m_lines = allLinePos(m_bts);
-    m_cache.resize(m_lines.size());
+    result = allLinePos(&progress_dlg, m_bts, m_lines);
+    if (result) {
+      m_cache.resize(m_lines.size());
+    }
     inputFile.close();
   } else {
     throw std::logic_error("file not exists!");
   }
   qDebug() << "elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
   m_load_complete = true;
+  return result;
 }
 
 QString Log::name() const {
@@ -100,7 +139,8 @@ void Log::update() {
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     auto bts = inputFile.readAll();
-    auto lines = allLinePos(bts);
+    LinePositionList lines;
+    allLinePos(nullptr, bts, lines);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
       qDebug() << "diff " << diff;
@@ -123,7 +163,8 @@ void Log::update() {
       } else {
         beginResetModel();
         endResetModel();
-        //        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1, old_size +
+        //        beginInsertRows(createIndex(0, 0, nullptr), old_size - 1,
+        //        old_size +
         //        diff);
         //        endInsertRows();
       }
@@ -212,7 +253,7 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   return result;
 }
 
-void Log::setListVoxObject(QListView *object) {
+void Log::setListVoxObject(LogViewer *object) {
   m_lv_object = object;
 }
 
@@ -250,21 +291,27 @@ QPair<int, QString> Log::findFrom(const QString &pattern, int index,
 
 void Log::resetFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::resetFilter";
-  std::lock_guard<std::mutex> lg(_locker);
-  m_cache.resize(m_lines.size());
+  // std::lock_guard<std::mutex> lg(_locker);
   setFilter_impl(fltr);
 }
 
 void Log::setFilter(const Filter_Ptr &fltr) {
   qDebug() << "Log::setFilter";
-  std::lock_guard<std::mutex> lg(_locker);
+  // std::lock_guard<std::mutex> lg(_locker);
   setFilter_impl(fltr);
 }
 
 void Log::setFilter_impl(const Filter_Ptr &fltr) {
-  _fltr = fltr;
+  QProgressDialog progress_dlg(MainWindow::instance);
+  progress_dlg.setWindowTitle("Filter application.");
+  progress_dlg.setWindowModality(Qt::WindowModal);
+  progress_dlg.setModal(true);
+  progress_dlg.setRange(0, linesCount());
+  progress_dlg.setAutoClose(true);
+
   int count = 0;
-  m_fltr_cache.resize(m_lines.size());
+  QVector<CachedString> new_fltr_cache(m_lines.size());
+
   for (size_t i = 0; i < m_lines.size(); ++i) {
     auto qs = makeRawString(i);
     if (fltr->inFilter(*qs)) {
@@ -273,13 +320,24 @@ void Log::setFilter_impl(const Filter_Ptr &fltr) {
       cs.index = i;
       cs.originValue = qs;
       cs.Value = cs.originValue;
-      m_fltr_cache[count] = cs;
+      new_fltr_cache[count] = cs;
       count++;
     }
-  }
 
+    if (i % PROGR_STEP == 0) {
+      qDebug() << "i=" << i;
+      progress_dlg.setValue(int(i));
+      QApplication::processEvents();
+    }
+    if (progress_dlg.wasCanceled()) {
+      return;
+    }
+  }
   beginResetModel();
-  m_fltr_cache.resize(count);
+  std::lock_guard<std::mutex> lg(_locker);
+  new_fltr_cache.resize(count);
+  _fltr = fltr;
+  m_fltr_cache = std::move(new_fltr_cache);
   endResetModel();
 }
 

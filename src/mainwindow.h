@@ -64,6 +64,7 @@ class MainWindow : public QMainWindow {
 
 public:
   friend class Settings;
+  static MainWindow *instance;
   explicit MainWindow(QWidget *parent = 0);
   ~MainWindow();
   void openFile(const QString &fname);
@@ -121,9 +122,10 @@ public slots:
   void updateStatusBarInfoSlot();
   void filterApplySlot();
 
-  //about
+  // about
   void aboutProgram();
   void aboutQt();
+
 private:
   int _current_tab;
   Ui::MainWindow *ui;
