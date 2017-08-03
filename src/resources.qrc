@@ -1,12 +1,8 @@
 <RCC>
     <qresource prefix="/">
         <file>icons/update.svg</file>
-        <file>icons/merge.svg</file>
         <file>icons/open.svg</file>
         <file>icons/close.svg</file>
-        <file>icons/felt.svg</file>
-        <file>icons/clear.svg</file>
-        <file>icons/down.svg</file>
         <file>icons/autoscroll.svg</file>
         <file>icons/fonts.svg</file>
         <file>icons/logan.png</file>
