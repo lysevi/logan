@@ -108,7 +108,7 @@ signals:
   void filenameChanged();
 public slots:
 protected:
-  void loadFile();
+  bool loadFile();
   std::shared_ptr<QString> makeRawString(int row) const;
   void rawStringToValue(std::shared_ptr<QString> &rawString) const;
   std::shared_ptr<QString> makeString(int row) const;

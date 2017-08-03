@@ -14,8 +14,9 @@
 
 const char LOG_ENDL = '\n';
 const int PROGR_STEP = 300;
-LinePositionList allLinePos(QProgressDialog *progress_dlg,
-                            const QByteArray &bts) {
+
+bool allLinePos(QProgressDialog *progress_dlg, const QByteArray &bts,
+                LinePositionList &result) {
   if (progress_dlg != nullptr) {
     progress_dlg->setRange(0, bts.size());
   }
@@ -30,9 +31,12 @@ LinePositionList allLinePos(QProgressDialog *progress_dlg,
       progress_dlg->setValue(progr);
       QApplication::processEvents();
     }
+    if (progress_dlg != nullptr && progress_dlg->wasCanceled()) {
+      return false;
+    }
     progr++;
   }
-  LinePositionList result(count);
+  result.resize(count);
   int start = 0;
   int index = 0;
   for (int i = 0; i < size; ++i) {
@@ -47,14 +51,17 @@ LinePositionList allLinePos(QProgressDialog *progress_dlg,
       progress_dlg->setValue(progr);
       QApplication::processEvents();
     }
+    if (progress_dlg != nullptr && progress_dlg->wasCanceled()) {
+      return false;
+    }
     progr++;
   }
-  return result;
+  return true;
 }
 
 Log::Log(const QFileInfo &fileInfo, const QString &filename,
-         const HighlightPatterns *global_highlight,
-         const QString &default_encoding, QObject *parent)
+         const HighlightPatterns *global_highlight, const QString &default_encoding,
+         QObject *parent)
     : QAbstractItemModel(parent) {
 
   m_default_encoding = default_encoding;
@@ -69,48 +76,56 @@ Log::Log(const QFileInfo &fileInfo, const QString &filename,
   if (m_codec == nullptr) {
     throw std::logic_error("m_codec==nullptr");
   }
-
-  loadFile();
-  qDebug() << "loaded " << m_name << " lines:" << m_lines.size();
 }
 
-Log *Log::openFile(const QString &fname,
-                   const HighlightPatterns *global_highlight,
+Log *Log::openFile(const QString &fname, const HighlightPatterns *global_highlight,
                    const QString &default_encoding, QObject *parent) {
   qDebug() << "openFile" << fname;
   QFileInfo fileInfo(fname);
-  auto ll =
-      new Log(fileInfo, fname, global_highlight, default_encoding, parent);
+  auto ll = new Log(fileInfo, fname, global_highlight, default_encoding, parent);
+
+  if (!ll->loadFile()) {
+    qDebug() << "not loaded " << ll->m_name;
+    delete ll;
+    return nullptr;
+  }
+  qDebug() << "loaded " << ll->m_name << " lines:" << ll->m_lines.size();
   return ll;
 }
 
-void Log::loadFile() {
-
+bool Log::loadFile() {
+  bool result = false;
   qDebug() << "loadFile " << m_fname;
   auto curDT = QDateTime::currentDateTimeUtc();
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     QProgressDialog progress_dlg(MainWindow::instance);
-    progress_dlg.setWindowTitle("File loading: "+m_fname);
+    progress_dlg.setWindowTitle("File loading: " + m_fname);
     progress_dlg.setWindowModality(Qt::WindowModal);
     progress_dlg.setModal(true);
     progress_dlg.setAutoClose(true);
-    progress_dlg.setCancelButton(nullptr); // TODO make 'canceble'
 
     m_bts = inputFile.readAll();
-    m_lines = allLinePos(&progress_dlg, m_bts);
-    m_cache.resize(m_lines.size());
+    result = allLinePos(&progress_dlg, m_bts, m_lines);
+    if (result) {
+      m_cache.resize(m_lines.size());
+    }
     inputFile.close();
   } else {
     throw std::logic_error("file not exists!");
   }
   qDebug() << "elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
   m_load_complete = true;
+  return result;
 }
 
-QString Log::name() const { return m_name; }
+QString Log::name() const {
+  return m_name;
+}
 
-QString Log::filename() const { return m_fname; }
+QString Log::filename() const {
+  return m_fname;
+}
 
 void Log::update() {
   qDebug() << "update " << m_name << "=>" << m_fname;
@@ -124,7 +139,8 @@ void Log::update() {
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     auto bts = inputFile.readAll();
-    auto lines = allLinePos(nullptr, bts);
+    LinePositionList lines;
+    allLinePos(nullptr, bts, lines);
     auto diff = lines.size() - m_lines.size();
     if (diff > 0) {
       qDebug() << "diff " << diff;
@@ -160,8 +176,7 @@ void Log::update() {
     throw std::logic_error("file not exists!");
   }
 
-  qDebug() << "update elapsed time:"
-           << curDT.secsTo(QDateTime::currentDateTimeUtc());
+  qDebug() << "update elapsed time:" << curDT.secsTo(QDateTime::currentDateTimeUtc());
 }
 
 int Log::rowCount(const QModelIndex &parent) const {
@@ -229,8 +244,8 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
     auto ct = re.capturedTexts();
     for (auto &&captured_str : ct) {
       str->replace(re,
-                   "<font color=\"" + pattern.rgb.toUpper() + "\"><b>" +
-                       captured_str + "</b></font>");
+                   "<font color=\"" + pattern.rgb.toUpper() + "\"><b>" + captured_str +
+                       "</b></font>");
     }
     result = true;
   }
@@ -238,7 +253,9 @@ bool Log::heighlightStr(QString *str, const HighlightPattern &pattern) {
   return result;
 }
 
-void Log::setListVoxObject(LogViewer *object) { m_lv_object = object; }
+void Log::setListVoxObject(LogViewer *object) {
+  m_lv_object = object;
+}
 
 QPair<int, QString> Log::findFrom(const QString &pattern, int index,
                                   SearchDirection direction) {
@@ -362,8 +379,7 @@ void Log::rawStringToValue(std::shared_ptr<QString> &rawString) const {
   rawString->replace('>', "&gt;");
   rawString->replace(' ', "&nbsp;"); // html eats white spaces
 
-  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end();
-       ++it) {
+  for (auto it = m_global_highlight->begin(); it != m_global_highlight->end(); ++it) {
     heighlightStr(rawString.get(), *it);
   }
 }
