@@ -5,6 +5,13 @@
 int main(int argc, char *argv[]) {
   //    QApplication::setAttribute(Qt::ApplicationAttribute::AA_EnableHighDpiScaling);
   QApplication a(argc, argv);
+
+  QTranslator translator;
+  auto current_locale = ":/translations/logan_" + QLocale::system().name();
+  qDebug() << "lang: " << current_locale;
+  translator.load(current_locale);
+  a.installTranslator(&translator);
+
   MainWindow w;
   w.show();
 
