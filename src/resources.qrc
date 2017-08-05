@@ -9,5 +9,6 @@
         <file>icons/logan.svg</file>
         <file>icons/find.svg</file>
         <file>icons/filter.svg</file>
+        <file>translations/logan_ru.qm</file>
     </qresource>
 </RCC>

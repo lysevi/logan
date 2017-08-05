@@ -8,6 +8,7 @@
 #include <QVector>
 
 class HighlightModel : public QAbstractTableModel {
+    Q_OBJECT
 public:
   HighlightModel(const HighlightPatterns &hp, QObject *parrent = nullptr);
   int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -29,8 +30,6 @@ public:
   HighlightPatterns result();
 
   void resetTo(const HighlightPatterns &hp);
-signals:
-  void editCompleted(const QString &);
 };
 
 #endif // HIGHLIGHTMODEL_H

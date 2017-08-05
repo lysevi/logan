@@ -46,8 +46,6 @@ bool HighlightModel::setData(const QModelIndex &index, const QVariant &value, in
       _hp[index.row()].rgb = value.toString();
       result = _hp[index.row()].rgb;
     }
-
-    emit editCompleted(result);
   }
   return true;
 }
@@ -55,8 +53,6 @@ bool HighlightModel::setData(const QModelIndex &index, const QVariant &value, in
 Qt::ItemFlags HighlightModel::flags(const QModelIndex & /*index*/) const {
   return Qt::ItemIsSelectable | Qt::ItemIsEditable | Qt::ItemIsEnabled;
 }
-
-void HighlightModel::editCompleted(const QString &) {}
 
 HighlightPatterns HighlightModel::result() {
   HighlightPatterns result;

@@ -100,7 +100,7 @@ bool Log::loadFile() {
   QFile inputFile(m_fname);
   if (inputFile.open(QIODevice::ReadOnly)) {
     QProgressDialog progress_dlg(MainWindow::instance);
-    progress_dlg.setWindowTitle("File loading: " + m_fname);
+    progress_dlg.setWindowTitle(tr("File loading: ") + m_fname);
     progress_dlg.setWindowModality(Qt::WindowModal);
     progress_dlg.setModal(true);
     progress_dlg.setAutoClose(true);
@@ -303,7 +303,7 @@ void Log::setFilter(const Filter_Ptr &fltr) {
 
 void Log::setFilter_impl(const Filter_Ptr &fltr) {
   QProgressDialog progress_dlg(MainWindow::instance);
-  progress_dlg.setWindowTitle("Filter application.");
+  progress_dlg.setWindowTitle(tr("Filter application."));
   progress_dlg.setWindowModality(Qt::WindowModal);
   progress_dlg.setModal(true);
   progress_dlg.setRange(0, linesCount());
