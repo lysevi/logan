@@ -41,7 +41,7 @@
     <message>
         <location filename="../filterparamsform.ui" line="111"/>
         <source>Or</source>
-        <translation type="unfinished"></translation>
+        <translation type="unfinished">Или</translation>
     </message>
     <message>
         <location filename="../filterparamsform.ui" line="135"/>
